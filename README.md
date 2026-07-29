@@ -24,6 +24,7 @@ Clement Welsch
 
 ## Architectures des dossiers
 +---.venv
+      
       .gitignore
       pyvenv.cfg
       +---Include
@@ -33,9 +34,11 @@ Clement Welsch
 +---data
 
 +---docs
+      
       journal.md
       
 +---notebooks
+      
       first_notebook.ipynb
       
 +---src
