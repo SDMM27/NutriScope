@@ -23,22 +23,22 @@ Clement Welsch
 + https://github.com/openfoodfacts/openfoodfacts-python
 
 ## Architectures des dossiers
-+---.venv
+.venv/
       
       .gitignore
       pyvenv.cfg
-      +---Include
-      +---Lib
+      Include/
+      Lib/
             ...
 
-+---data
+data/
 
-+---docs
+docs/
       
       journal.md
       
-+---notebooks
+notebooks/
       
       first_notebook.ipynb
       
-+---src
+src/
