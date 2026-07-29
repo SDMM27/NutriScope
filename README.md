@@ -24,21 +24,18 @@ Clement Welsch
 
 ## Architectures des dossiers
 +---.venv
-ª   ª   .gitignore
-ª   ª   pyvenv.cfg
-ª   ª   
-ª   +---Include
-ª   +---Lib
-ª   ª   ...
-ª                   
-+---data
-ª       
-+---docs
-ª       journal.md
-ª       
-+---notebooks
-ª       first_notebook.ipynb
-ª       
-+---src
-      
+      .gitignore
+      pyvenv.cfg
+      +---Include
+      +---Lib
+            ...
 
++---data
+
++---docs
+      journal.md
+      
++---notebooks
+      first_notebook.ipynb
+      
++---src
