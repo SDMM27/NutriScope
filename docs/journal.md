@@ -1,6 +1,6 @@
 # Journal de NutriScope
 
-## Choix du format du fichier des données d'open food facts
+## Choix du format du fichier des données d'open food facts (29/07)
 Pour commencer, le CSV est un choix à exclure étant donné le fait que ce soit un format lourd et lent sur des gros volumes, bien qu'il soit simple et lisible pour des humains. De plus, le format CSV n'est pas du tout adapté aux objets imbriqués.
 
 Il nous reste donc à choisir entre le format JSONL et le format Parquet.
