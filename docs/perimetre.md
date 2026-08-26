@@ -1,12 +1,16 @@
 # Périmètre alimentaire au lancement : 6 rayons.
+
+## Objectif
+
+## Rayons couverts
 Voici les 6 rayons qui ont été retenu à la fin du TP2 comme candidats potentiels :
 
-+ Boissons
-+ Produits laitiers
-+ Céréales et petit-déjeuner
-+ Biscuits et snacks
-+ Plats préparés et conserves
-+ Sauces et condiments
+- Boissons
+- Produits laitiers
+- Céréales et petit-déjeuner
+- Biscuits et snacks
+- Plats préparés et conserves
+- Sauces et condiments
 
 Ce choix vise à maintenir un compromis entre couverture du catalogue et spécialisation du dataset. Les six rayons présentent des profils nutritionnels, des compositions et des caractéristiques visuelles suffisamment différents pour limiter les ambiguïtés de classification tout en couvrant une diversité importante de produits.
 
@@ -35,5 +39,28 @@ Ils couvrent des profils nutritionnels très différents :
 
 Cela donne à notre dataset un espace nutritionnel assez large sans essayer de couvrir tout le supermarché.
 
+## Fonctionnalités
+
+### Nutri-Score
+### Substitution
+### Images
+### RAG / Assistant
+### Application
+### Machine Learning
+
 ## Profiling
-A suivre ....
+### Colonnes conservées
+
+### Colonnes secondaires
+
+### Colonnes écartées
+
+### Critères de sélection
+
+### Seuil de complétude
+
+### Gestion des valeurs aberrantes
+
+### Fuite de cible
+
+## Limites du périmètre
