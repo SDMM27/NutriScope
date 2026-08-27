@@ -41,7 +41,7 @@ justifie le seuil de complétude retenu pour le profiling
 
 ## Relecture (qui relit quoi)
 
-Équipe à deux personnes : **Sacha Don** et **Clément Welsch**.
+Équipe de deux personnes : **Sacha Don** et **Clément Welsch**.
 
 - Toute PR vers `develop` est relue et approuvée par **l'autre collaborateur** (pas d'auto-merge sans relecture croisée), même sur un petit projet de TP — l'objectif est de repérer les erreurs de raisonnement/calcul sur les données avant intégration.
 - L'auteur de la PR ne merge pas sa propre PR : c'est le relecteur qui merge après validation.
