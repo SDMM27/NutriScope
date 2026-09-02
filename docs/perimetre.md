@@ -80,8 +80,8 @@ Profiling réalisé sur le périmètre France du dataset `food.parquet` : **1 24
 **Identification et catalogue**
 
 ```text
-code, product_name, generic_name, brands, brands_tags,
-categories, categories_tags, quantity, url
+code, product_name, brands_tags,
+categories_tags, quantity
 ```
 
 **Nutrition** (cœur du projet : Nutri-Score, comparaison, substitution, RAG, ML)
@@ -98,11 +98,7 @@ ainsi que les autres vitamines/minéraux/nutriments disponibles lorsqu'ils prés
 **Composition et ingrédients** (RAG, substitution, comparaison, NLP/ML)
 
 ```text
-ingredients_text, traces, traces_tags,
-additives_n, additives, additives_tags,
-ingredients_from_palm_oil_n, ingredients_from_palm_oil, ingredients_from_palm_oil_tags,
-ingredients_that_may_be_from_palm_oil_n, ingredients_that_may_be_from_palm_oil,
-ingredients_that_may_be_from_palm_oil_tags
+ingredients_original_tags
 ```
 
 **Images** (classifieur Keras, affichage app)
@@ -119,11 +115,10 @@ Conservées avec une priorité faible (`KEEP_LOW`) : utiles au RAG, à la substi
 
 ```text
 packaging, packaging_tags,
-labels, labels_tags, labels_fr,
+labels, labels_tags, labels_fr, quantity
 completeness,
 origins, origins_tags,
 manufacturing_places, manufacturing_places_tags,
-countries, countries_tags, countries_fr,
 serving_size
 ```
 
