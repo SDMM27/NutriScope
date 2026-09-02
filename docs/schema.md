@@ -45,21 +45,8 @@ Quatre entités demandées par le sujet + une table de liaison pour `categories_
 | `code` | `code` | `VARCHAR` | **PK**, NOT NULL | code-barres OFF ; texte car certains codes internes (`200x...`) ne sont pas numériques |
 | `product_name` | `nom` | `VARCHAR` | | nom retenu pour le périmètre France |
 | `brands_tags[1]` | `marque_id` | `INTEGER` | FK → `marques(id)`, NULL possible | marque absente pour une partie du catalogue |
-| `quantity` | `quantite` | `VARCHAR` | | texte brut déclaré (ex. `"500 g"`) |
-| `product_quantity` | `quantite_normalisee` | `NUMERIC` | | quantité normalisée par OFF (à privilégier plutôt que de parser `quantity`) |
-| `product_quantity_unit` | `unite_quantite` | `VARCHAR` | | unité normalisée associée |
-| `ingredients_text` | `ingredients` | `TEXT` | | texte des ingrédients (RAG) |
-| `images` (construit à partir de `code` + `imgid`) | `url_image` | `VARCHAR` | | pas de colonne `image_url` directe dans le parquet — à construire depuis la structure `images` |
-| `images` (idem, taille réduite) | `url_image_miniature` | `VARCHAR` | | idem |
 | `nutriscore_grade` | `nutriscore_lettre` | `VARCHAR(20)` | CHECK dans `('a','b','c','d','e','not-applicable','unknown')` | conservé en référence, **jamais en feature** (fuite de cible) |
 | `nutriscore_score` | `nutriscore_score` | `INTEGER` | | idem, référence uniquement |
-| `nova_group` | `groupe_nova` | `SMALLINT` | CHECK entre 1 et 4, NULL possible | 73 % de valeurs manquantes |
-| `completeness` | `completude` | `NUMERIC(4,3)` | CHECK entre 0 et 1 | valeurs > 1 mises à NULL au chargement |
-
-`image_url`/`image_small_url` n'existent pas comme colonnes du parquet (vérifié via `DESCRIBE`) — seule la
-colonne `images` (struct détaillant imgid/tailles) existe. Il faudra reconstruire l'URL au chargement
-(pattern OFF `.../images/products/<code>/<imgid>.<taille>.jpg`), ou revoir cette colonne si trop complexe
-pour le J1.
 
 ### `marques`
 

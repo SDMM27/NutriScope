@@ -14,12 +14,9 @@ CREATE TABLE produits (
     code                  VARCHAR PRIMARY KEY,
     nom                   VARCHAR,
     marque_id             INTEGER REFERENCES marques(id),
-    ingredients           TEXT,
-    url_image             VARCHAR,
     nutriscore_lettre     VARCHAR(20)
         CHECK (nutriscore_lettre IN ('a','b','c','d','e','not-applicable','unknown')),
     nutriscore_score      INTEGER,
-    completude            NUMERIC(4,3) CHECK (completude BETWEEN 0 AND 1)
 );
 
 CREATE TABLE produits_categories (
