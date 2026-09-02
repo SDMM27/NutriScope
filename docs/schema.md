@@ -5,55 +5,55 @@
 Quatre entités demandées par le sujet + une table de liaison pour `categories_tags` (multi-valué) :
 
 ```text
-        marques                    categories
+        brands                     categories
       ┌──────────┐               ┌──────────────┐
-      │ id  PK    │               │ id   PK       │
-      │ nom UQ    │               │ tag  UQ       │
+      │ id   PK   │               │ id   PK       │
+      │ name UQ   │               │ tag  UQ       │
       └────┬─────┘               └──────┬────────┘
            │ 0..1                       │ 0..N
-           │                    ┌───────┴─────────────┐
-           │                    │ produits_categories  │  (liaison)
-           │                    │ code         FK,PK    │
-           │                    │ categorie_id FK,PK    │
-           │                    └───────┬─────────────┘
-           │                            │ 0..N
-      ┌────┴────────────────────────────┴───┐
-      │              produits                │
-      │ code (PK, code-barres)               │
-      │ nom, quantite, ...                   │
-      │ marque_id FK → marques(id)           │
-      └───────────────┬───────────────────────┘
+           │                    ┌────────┴───────────────┐
+           │                    │ products_categories     │  (liaison)
+           │                    │ code        FK,PK       │
+           │                    │ category_id FK,PK       │
+           │                    └────────┬───────────────┘
+           │                             │ 0..N
+      ┌────┴─────────────────────────────┴───┐
+      │              products                 │
+      │ code (PK, code-barres)                │
+      │ name, quantity, ...                   │
+      │ brand_id FK → brands(id)              │
+      └───────────────┬────────────────────────┘
                        │ 1..1
                  ┌─────┴──────┐
-                 │ nutriments │
+                 │ nutrients  │
                  │ code PK,FK │
                  └────────────┘
 ```
 
-- `produits` → `marques` : plusieurs produits pour une marque (1..N), une marque par produit
-- `produits` ↔ `categories` : many-to-many via `produits_categories`, parce que `categories_tags` est une
+- `products` → `brands` : plusieurs produits pour une marque (1..N), une marque par produit
+- `products` ↔ `categories` : many-to-many via `products_categories`, parce que `categories_tags` est une
   liste dans la source.
-- `produits` → `nutriments` : relation 1-1 (une ligne de nutriments par produit), séparée de `produits`
+- `products` → `nutrients` : relation 1-1 (une ligne de nutriments par produit), séparée de `products`
   pour isoler les colonnes nutritionnelles typées/contraintes du reste des métadonnées.
 
 ## Tables détaillées
 
-### `produits`
+### `products`
 
 | Colonne parquet | Colonne (base) | Type | Contrainte | Notes |
 |---|---|---|---|---|
 | `code` | `code` | `VARCHAR` | **PK**, NOT NULL | code-barres OFF ; texte car certains codes internes (`200x...`) ne sont pas numériques |
-| `product_name` | `nom` | `VARCHAR` | | nom retenu pour le périmètre France |
-| `brands_tags[1]` | `marque_id` | `INTEGER` | FK → `marques(id)`, NULL possible | marque absente pour une partie du catalogue |
-| `nutriscore_grade` | `nutriscore_lettre` | `VARCHAR(20)` | CHECK dans `('a','b','c','d','e','not-applicable','unknown')` | conservé en référence, **jamais en feature** (fuite de cible) |
+| `product_name` | `name` | `VARCHAR` | | nom retenu pour le périmètre France |
+| `brands_tags[1]` | `brand_id` | `INTEGER` | FK → `brands(id)`, NULL possible | marque absente pour une partie du catalogue |
+| `nutriscore_grade` | `nutriscore_grade` | `VARCHAR(20)` | CHECK dans `('a','b','c','d','e','not-applicable','unknown')` | conservé en référence, **jamais en feature** (fuite de cible) |
 | `nutriscore_score` | `nutriscore_score` | `INTEGER` | | idem, référence uniquement |
 
-### `marques`
+### `brands`
 
 | Colonne parquet | Colonne (base) | Type | Contrainte |
 |---|---|---|---|
 | — | `id` | `INTEGER` | **PK** |
-| `brands_tags[1]` | `nom` | `VARCHAR` | **UNIQUE**, NOT NULL |
+| `brands_tags[1]` | `name` | `VARCHAR` | **UNIQUE**, NOT NULL |
 
 Une ligne par valeur distincte de `brands_tags[1]` (dédupliquée par construction via l'UNIQUE).
 
@@ -66,17 +66,17 @@ Une ligne par valeur distincte de `brands_tags[1]` (dédupliquée par constructi
 
 Une ligne par tag distinct de `categories_tags` (ex. `en:dairies`).
 
-### `produits_categories` (liaison)
+### `products_categories` (liaison)
 
 | Colonne parquet | Colonne (base) | Type | Contrainte |
 |---|---|---|---|
-| `code` | `code` | `VARCHAR` | FK → `produits(code)` |
-| `categories_tags` (un élément, résolu vers `categories.id`) | `categorie_id` | `INTEGER` | FK → `categories(id)` |
+| `code` | `code` | `VARCHAR` | FK → `products(code)` |
+| `categories_tags` (un élément, résolu vers `categories.id`) | `category_id` | `INTEGER` | FK → `categories(id)` |
 
 **PK** composite `(code, category_id)`. Une ligne par (produit, catégorie) — porte la multi-valuation de
 `categories_tags`.
 
-### `nutriments`
+### `nutrients`
 
 Table large (une colonne par nutriment retenu au TP2). Le parquet n'a pas de colonnes `xxx_100g` à plat :
 chaque valeur est extraite de la colonne struct `nutriments` (liste de `{name, "100g", ...}`), filtrée sur
@@ -84,18 +84,16 @@ le `name` correspondant.
 
 | Colonne parquet (`nutriments`, filtré sur `name=`) | Colonne (base) | Type | Contrainte |
 |---|---|---|---|
-| `code` | `code` | `VARCHAR` | **PK**, FK → `produits(code)` |
-| `'energy'` | `energie_100g` | `NUMERIC(7,2)` | CHECK ≥ 0 (kJ, pas de borne à 100) |
-| `'energy-kcal'` | `energie_kcal_100g` | `NUMERIC(7,2)` | CHECK ≥ 0 |
-| `'proteins'` | `proteines_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
-| `'carbohydrates'` | `glucides_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
-| `'sugars'` | `sucres_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
-| `'fat'` | `lipides_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
-| `'saturated-fat'` | `acides_gras_satures_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
-| `'fiber'` | `fibres_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100, NULL fréquent (30 % de couverture, non exigé) |
-| `'sodium'` | `sodium_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
-| `'salt'` | `sel_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
-| `'fruits-vegetables-nuts'` | `fruits_legumes_noix_100g` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
+| `code` | `code` | `VARCHAR` | **PK**, FK → `products(code)` |
+| `'energy'` | `energy` | `NUMERIC(7,2)` | CHECK ≥ 0 (kJ, pas de borne à 100) |
+| `'energy-kcal'` | `energy_kcal` | `NUMERIC(7,2)` | CHECK ≥ 0 |
+| `'proteins'` | `proteins` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
+| `'carbohydrates'` | `carbohydrates` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
+| `'sugars'` | `sugars` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
+| `'fat'` | `fat` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
+| `'saturated-fat'` | `saturated_fat` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
+| `'fiber'` | `fiber` | `NUMERIC(5,2)` | CHECK entre 0 et 100, NULL fréquent (30 % de couverture, non exigé) |
+| `'salt'` | `salt` | `NUMERIC(5,2)` | CHECK entre 0 et 100 |
 
 Reprend exactement l'ensemble de nutriments « cœur du projet » retenu dans perimetre.md.
 Les valeurs négatives ou hors bornes détectées au TP2 sont mises à `NULL` au chargement (règle déjà
@@ -103,7 +101,7 @@ actée dans perimetre.md, appliquée dès maintenant plutôt qu'au TP9 pour pouv
 
 ## Contraintes et clés
 
-- **Unicité du code-barres** : `produits.code` en clé primaire. Nécessite une déduplication préalable au
+- **Unicité du code-barres** : `products.code` en clé primaire. Nécessite une déduplication préalable au
   chargement (27 codes en double sur le périmètre France, 3 cas identifiés dans perimetre.md) :
   1. même produit ré-importé deux fois → on garde la fiche la plus complète (`completeness` la plus haute) ;
   2. code interne `200x…` réattribué à deux produits différents → **exclu du périmètre chargé**, ce code
@@ -114,17 +112,17 @@ actée dans perimetre.md, appliquée dès maintenant plutôt qu'au TP9 pour pouv
   cascade automatique en base. Ce n'est pas gênant ici puisque le script de chargement fait un
   `DROP ... ` + recréation complète à chaque exécution plutôt que des suppressions ciblées ; si un besoin
   de suppression ciblée apparaît plus tard, il faudra l'écrire à la main dans le script (supprimer
-  `nutriments`/`produits_categories` avant `produits`).
+  `nutrients`/`products_categories` avant `products`).
 - **Types corrects sur les nutriments** : `NUMERIC` (pas `FLOAT`, pour éviter les imprécisions binaires sur
   des bornes strictes 0–100) + `CHECK` par colonne reprenant les bornes physiques documentées au TP2.
 
 ## DDL indicatif (DuckDB)
 
 ```sql
-CREATE SEQUENCE seq_marques START 1;
-CREATE TABLE marques (
-    id  INTEGER PRIMARY KEY DEFAULT nextval('seq_marques'),
-    nom VARCHAR NOT NULL UNIQUE
+CREATE SEQUENCE seq_brands START 1;
+CREATE TABLE brands (
+    id  INTEGER PRIMARY KEY DEFAULT nextval('seq_brands'),
+    name VARCHAR NOT NULL UNIQUE
 );
 
 CREATE SEQUENCE seq_categories START 1;
@@ -133,41 +131,32 @@ CREATE TABLE categories (
     tag VARCHAR NOT NULL UNIQUE
 );
 
-CREATE TABLE produits (
+CREATE TABLE products (
     code                  VARCHAR PRIMARY KEY,
-    nom                   VARCHAR,
-    marque_id             INTEGER REFERENCES marques(id),
-    quantite              VARCHAR,
-    quantite_normalisee   NUMERIC,
-    unite_quantite        VARCHAR,
-    ingredients           TEXT,
-    url_image             VARCHAR,
-    url_image_miniature   VARCHAR,
-    nutriscore_lettre     VARCHAR(20)
-        CHECK (nutriscore_lettre IN ('a','b','c','d','e','not-applicable','unknown')),
-    nutriscore_score      INTEGER,
-    groupe_nova           SMALLINT CHECK (groupe_nova BETWEEN 1 AND 4),
-    completude            NUMERIC(4,3) CHECK (completude BETWEEN 0 AND 1)
+    name                  VARCHAR,
+    brand_id              INTEGER REFERENCES brands(id),
+    nutriscore_grade      VARCHAR(20)
+        CHECK (nutriscore_grade IN ('a','b','c','d','e','not-applicable','unknown')),
+    nutriscore_score      INTEGER
 );
 
-CREATE TABLE produits_categories (
-    code         VARCHAR REFERENCES produits(code),
-    categorie_id INTEGER REFERENCES categories(id),
-    PRIMARY KEY (code, categorie_id)
+CREATE TABLE products_categories (
+    code        VARCHAR REFERENCES products(code),
+    category_id INTEGER REFERENCES categories(id),
+    PRIMARY KEY (code, category_id)
 );
 
-CREATE TABLE nutriments (
-    code                       VARCHAR PRIMARY KEY REFERENCES produits(code),
-    energie_100g                NUMERIC(7,2) CHECK (energie_100g >= 0),
-    energie_kcal_100g            NUMERIC(7,2) CHECK (energie_kcal_100g >= 0),
-    proteines_100g                 NUMERIC(5,2) CHECK (proteines_100g BETWEEN 0 AND 100),
-    glucides_100g                   NUMERIC(5,2) CHECK (glucides_100g BETWEEN 0 AND 100),
-    sucres_100g                      NUMERIC(5,2) CHECK (sucres_100g BETWEEN 0 AND 100),
-    lipides_100g                      NUMERIC(5,2) CHECK (lipides_100g BETWEEN 0 AND 100),
-    acides_gras_satures_100g           NUMERIC(5,2) CHECK (acides_gras_satures_100g BETWEEN 0 AND 100),
-    fibres_100g                         NUMERIC(5,2) CHECK (fibres_100g BETWEEN 0 AND 100),
-    sodium_100g                          NUMERIC(5,2) CHECK (sodium_100g BETWEEN 0 AND 100),
-    sel_100g                              NUMERIC(5,2) CHECK (sel_100g BETWEEN 0 AND 100),
-    fruits_legumes_noix_100g               NUMERIC(5,2) CHECK (fruits_legumes_noix_100g BETWEEN 0 AND 100)
+CREATE TABLE nutrients (
+    code VARCHAR PRIMARY KEY REFERENCES products(code),
+    energy NUMERIC(7,2) CHECK (energy >= 0),
+    energy_kcal NUMERIC(7,2) CHECK (energy_kcal >= 0),
+    proteins NUMERIC(5,2) CHECK (proteins BETWEEN 0 AND 100),
+    carbohydrates NUMERIC(5,2) CHECK (carbohydrates BETWEEN 0 AND 100),
+    sugars NUMERIC(5,2) CHECK (sugars BETWEEN 0 AND 100),
+    fat NUMERIC(5,2) CHECK (fat BETWEEN 0 AND 100),
+    saturated_fat NUMERIC(5,2) CHECK (saturated_fat BETWEEN 0 AND 100),
+    fiber NUMERIC(5,2) CHECK (fiber BETWEEN 0 AND 100),
+    salt NUMERIC(5,2) CHECK (salt BETWEEN 0 AND 100)
 );
+
 ```
