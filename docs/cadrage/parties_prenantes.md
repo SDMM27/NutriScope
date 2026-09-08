@@ -132,10 +132,10 @@ Le cœur de cible est 'la famille pressée' qui a un temps limité le samedi mat
 ### 3. Proposition de valeur face à la concurrence
 *Quelle proposition de valeur souhaitez-vous apporter aux utilisateurs, notamment par rapport aux solutions existantes comme Yuka ?*
 
-Les concurrents actuels se concentrent majoritairement sur l'attribution d'un score privé pour attirer les utilisateurs. Chez Nutriscope, nous souhaitons une plus grande transparence en donnant plus d'information utile, de la pédagogie et des conseils pour repérer les pièges des emballages alimentaires.
+Les concurrents actuels se concentrent majoritairement sur l'attribution d'un score privé pour attirer les utilisateurs. Chez Nutriscope, nous souhaitons une plus grande transparence en donnant plus d'informations utiles, de la pédagogie et des conseils pour repérer les pièges des emballages alimentaires.
 
 ### 4. Définition du succès du projet
-*À quoi ressemblerait, selon vous, un projet NutriScope réussi dans huit mois ? Quels résultats attendez-vous à cette échéance ?*
+*À quoi ressemblerait, selon vous, un projet NutriScope réussi dans quatre mois ? Quels résultats attendez-vous à cette échéance ?*
 
 1. recherche d'un produit + scan d'un code barre
 2. fiche produit
@@ -169,5 +169,5 @@ Il inclura les dépenses courantes au développement d'une application : héberg
 ### 9. 
 *Quels sont les principaux risques ou points de vigilance que vous identifiez sur le projet, et quelles parties prenantes devons-nous consulter ou tenir informés au cours de son développement ?*
 
-Il est primordial pour Nutriscope de respecter les réglementations en vigueur aussi bien sur l'utilisation des données clients (RGPD/AI Act) que de celles imposées par OpenFoodFacts.
+Il est primordial pour Nutriscope de respecter les réglementations en vigueur aussi bien sur l'utilisation des données clients (RGPD/AI Act) que de celles imposées par OpenFoodFacts. C'est donc pourquoi un suivi avec le DPO sera nécessaire tout au long du projet.
 
