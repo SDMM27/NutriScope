@@ -18,9 +18,9 @@ DB_CONFIG = {
 REQUIRED_FILES = [
     "brands.parquet",
     "categories.parquet",
-    "nutrients.parquet",
     "products.parquet",
     "products_categories.parquet",
+    "nutrients.parquet",
 ]
 
 # Nom de la base telle qu'elle sera vue par DuckDB
@@ -198,8 +198,8 @@ def clear_database(connection):
     """
 
     tables = [
-        "products_categories",
         "nutrients",
+        "products_categories",
         "products",
         "categories",
         "brands",
@@ -275,11 +275,13 @@ def main():
         #
         # L'ordre est important :
         #
-        # brands/categories/nutrients
+        # brands/categories
         #       ↓
-        # products
+        #    products
         #       ↓
         # products_categories
+        #       ↓
+        #    nutrients
         #
         # afin de respecter les FOREIGN KEY.
         # ----------------------------------------------------
@@ -300,13 +302,6 @@ def main():
 
         import_parquet(
             connection,
-            "nutrients.parquet",
-            "nutrients",
-            "code, energy, energy_kcal, proteins, carbohydrates, sugars, fat, saturated_fat, fiber, salt",
-)
-
-        import_parquet(
-            connection,
             "products.parquet",
             "products",
         )
@@ -316,6 +311,13 @@ def main():
             "products_categories.parquet",
             "products_categories",
         )
+
+        import_parquet(
+            connection,
+            "nutrients.parquet",
+            "nutrients",
+            "code, energy, energy_kcal, proteins, carbohydrates, sugars, fat, saturated_fat, fiber, salt",
+)
 
         # ----------------------------------------------------
         # 6. Contrôle final
