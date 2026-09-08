@@ -1,7 +1,7 @@
 CREATE SEQUENCE seq_brands START 1;
 CREATE TABLE brands (
     id  INTEGER PRIMARY KEY DEFAULT nextval('seq_brands'),
-    brand_name VARCHAR NOT NULL UNIQUE
+    name VARCHAR NOT NULL UNIQUE
 );
 
 CREATE SEQUENCE seq_categories START 1;
