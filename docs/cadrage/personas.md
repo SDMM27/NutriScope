@@ -1,3 +1,26 @@
+# Persona — Famille pressée
+
+## Profil
+Léa, 36 ans, mère de famille, deux enfants (7 et 10 ans).
+
+## Contexte
+Fait les courses de la semaine en hypermarché avec les enfants, souvent le samedi matin ou en sortant du travail, avec peu de temps disponible.
+
+## Objectif
+Trouver rapidement des produits sains pour ses enfants sans passer du temps à lire les étiquettes.
+
+## Problème
+Elle a quelques secondes par produit avant de devoir trancher, entre le chariot à remplir et les enfants qui réclament certaines marques.
+
+## Frustrations
+Les applications existantes sont souvent trop lentes ou demandent trop d'étapes avant de donner une réponse claire, ce qui la fait abandonner en plein rayon.
+
+## Attentes
+Elle souhaite que NutriScope lui donne une réponse quasi instantanée, sans avoir à lire un texte long.
+
+## Besoin principal
+Pouvoir scanner un produit et obtenir en quelques secondes une réponse claire, avec une seule alternative simple et disponible dans le même rayon.
+
 # Persona — Restaurateur / gérant food truck
 
 ## Profil
