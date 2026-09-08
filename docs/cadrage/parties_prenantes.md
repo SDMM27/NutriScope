@@ -22,6 +22,8 @@ Quatre quadrants en découlent, avec une stratégie d'engagement propre à chacu
 
 **Précision de périmètre.** Le cadre réglementaire (RGPD, AI Act) est une **contrainte** que le projet doit respecter, pas une partie prenante : il n'a ni intérêt propre ni pouvoir d'influence au sens de la matrice, mais s'impose à toutes les parties prenantes listées ci-dessous. Il est traité comme exigence transverse (registre RGPD, analyse de biais, positionnement AI Act, accessibilité RGAA — livrés en même temps que le reste, cf. cahier des TP) et suivi via le DPO.
 
+---
+
 ## Les parties prenantes
 
 ### Direction (sponsor du projet)
@@ -80,7 +82,7 @@ Quatre quadrants en découlent, avec une stratégie d'engagement propre à chacu
 
 ## Positionnement sur la matrice
 
-![Matrice pouvoir–intérêt des parties prenantes NutriScope](parties_prenantes_matrice.svg)
+![Matrice pouvoir–intérêt des parties prenantes NutriScope](parties_prenantes_matrice.png)
 
 Version texte (repli sans rendu d'image) :
 
@@ -113,22 +115,24 @@ R         │   identifiée à ce stade)       │                              
 - Trame d'entretien semi-directif pour valider ces hypothèses avec la direction.
 - Mise à jour de cette carte après l'entretien réel avec la direction (ce qui est confirmé, infirmé, découvert).
 
+---
+
 ## Entretien avec la Direction
 
 ### 1. Origine du projet NutriScope
 *Quelle est l’origine du projet NutriScope et quel problème principal souhaitez-vous résoudre ?*
 
-Suite à une étude réalisé par l'équipe marketing de Nutriscope, il a été identifié que le secteur alimentaire reste encore trop confus auprès du grand public et qu'il a du mal à choisir de façon conscienceux les produits qui lui correspond. Le but est d'atteindre une application simple, personnalisé à l'utilisateur avec des informations fiables.
+Suite à une étude réalisée par l'équipe marketing de Nutriscope, il a été identifié que le secteur alimentaire reste encore trop confus auprès du grand public et qu'il a du mal à choisir de façon consciencieuse les produits qui lui correspondent. Le but est d'atteindre une application simple, personnalisée à l'utilisateur avec des informations fiables.
 
 ### 2. Utilisateurs cible
 *Quels sont les utilisateurs que vous ciblez en priorité et quels sont, selon vous, leurs principaux besoins ou difficultés ?*
 
-Le coeur de cible est 'la famille pressée' qui a un temps limité le samedi matin, les bras chargés de courses et des enfants courant dans les rayons. Nutriscope doit apporter la serrénité aux parents de pouvoir choisir les bons produits malgré tout.
+Le cœur de cible est 'la famille pressée' qui a un temps limité le samedi matin, les bras chargés de courses et des enfants courant dans les rayons. Nutriscope doit apporter la sérénité aux parents de pouvoir choisir les bons produits malgré tout.
 
-### 3. Proposition de valeur face à la concurence
+### 3. Proposition de valeur face à la concurrence
 *Quelle proposition de valeur souhaitez-vous apporter aux utilisateurs, notamment par rapport aux solutions existantes comme Yuka ?*
 
-Les concurents actuels se concentrent majoritairement sur l'attribution d'un score privé pour attirer les utilisateurs. Chez Nutriscore, nous souhaitons une plus grand transparence en donnant plus d'information utile, de la pédagogie et des conseils pour repérer les pièges des emballages alimentaires.
+Les concurrents actuels se concentrent majoritairement sur l'attribution d'un score privé pour attirer les utilisateurs. Chez Nutriscope, nous souhaitons une plus grande transparence en donnant plus d'information utile, de la pédagogie et des conseils pour repérer les pièges des emballages alimentaires.
 
 ### 4. Définition du succès du projet
 *À quoi ressemblerait, selon vous, un projet NutriScope réussi dans huit mois ? Quels résultats attendez-vous à cette échéance ?*
@@ -142,29 +146,31 @@ Les concurents actuels se concentrent majoritairement sur l'attribution d'un sco
 ### 5. Indicateurs de réussite
 *Quels indicateurs ou résultats permettront de mesurer la réussite du projet, aussi bien sur le plan technique que sur le plan utilisateur ou business ?*
 
-Il est attendu sur le court terme que l'application génère 100.000 inscription avec une participation mensuel active d'au moins d'un tier de ceux là.
+Il est attendu sur le court terme que l'application génère 100.000 inscriptions avec une participation mensuelle active d'au moins d'un tiers de ceux-là.
 Au bout des 30 premiers jours de l'application, il est espéré 40% de ré-utilisation de l'application après la première inscription.
 
 ### 6. Sources utilisées
 *Quelles données et sources sont disponibles pour le développement du projet, et existe-t-il des contraintes particulières concernant leur qualité, leur accès ou leur utilisation ?*
-Pour le moment, uniquement les données fournis par OpenFoodFacts seront utilisées.
+
+Pour le moment, uniquement les données fournies par OpenFoodFacts seront utilisées.
 
 ### 7. Consultations de spécialistes
-*Est ce qu'il est prévu par Nutriscope d'engager une relation avec différent corps de spécialiste afin de fiabiliser ou légitimer le contenu de l'application? (scientifiques, nutrisionnistes, médecins)*
+*Est ce qu'il est prévu par Nutriscope d'engager une relation avec différent corps de spécialiste afin de fiabiliser ou légitimer le contenu de l'application? (scientifiques, nutritionnistes, médecins)*
 
 Pour le moment, il n'est pas encore défini si une discussion avec des professionnels de la nutrition sera nécessaire.
-Pour le cadre médical, Nutriscope ne veut surtout pas faire miroiter aux utilisateurs que les informations transmises par l'application puisse remplacer la consultation d'un professionnel de la santé.
+Pour le cadre médical, Nutriscope ne veut surtout pas faire miroiter aux utilisateurs que les informations transmises par l'application puissent remplacer la consultation d'un professionnel de la santé.
 
 ### 8. 
 *Quelles contraintes devons-nous prendre en compte dès maintenant, notamment en matière de délais, de budget, de réglementation, de technologies ou de ressources ?*
 
-Un budjet prévisionnel pour le MVP (Minimum value product) a été estimé à 120.000€.
+Un budget prévisionnel pour le MVP (Minimum value product) a été estimé à 120.000€.
 Il inclura les dépenses courantes au développement d'une application : hébergement, salaire des employés,...
 
 ### 9. 
-*Quels sont les principaux risques ou points de vigilance que vous identifiez sur le projet, et quelles parties prenantes devons-nous consulter ou tenir informées au cours de son développement ?*
+*Quels sont les principaux risques ou points de vigilance que vous identifiez sur le projet, et quelles parties prenantes devons-nous consulter ou tenir informés au cours de son développement ?*
 
 Il est primordial pour Nutriscope de respecter les réglementations en vigueur aussi bien sur l'utilisation des données clients (RGPD/AI Act) que de celles imposées par OpenFoodFacts.
 
 ### 10. 
 *Existe-t-il actuellement des hypothèses, orientations ou choix concernant le projet qui pourraient nécessiter d’être remis en question ou validés avant de poursuivre le développement ?*
+
