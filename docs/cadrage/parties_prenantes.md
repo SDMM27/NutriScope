@@ -171,6 +171,3 @@ Il inclura les dépenses courantes au développement d'une application : héberg
 
 Il est primordial pour Nutriscope de respecter les réglementations en vigueur aussi bien sur l'utilisation des données clients (RGPD/AI Act) que de celles imposées par OpenFoodFacts.
 
-### 10. 
-*Existe-t-il actuellement des hypothèses, orientations ou choix concernant le projet qui pourraient nécessiter d’être remis en question ou validés avant de poursuivre le développement ?*
-
