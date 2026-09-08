@@ -38,6 +38,15 @@ flowchart TD
     Decide -- "rien" --> NoCheck --> EndBuy
     FinalGw -- "oui" --> EndBuy
     FinalGw -- "non" --> EndNoBuy
+
+    classDef evt fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20
+    classDef act fill:#ffffff,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef gw fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,color:#e65100
+    class Start,EndBuy,EndNoBuy evt
+    class Decide,FoundGw,FinalGw gw
+    class ReadLabel,WebSearch,NoCheck,ScanYuka,ShowScore act
+    style LaneUser fill:#ffffff,stroke:#cfd8dc,stroke-width:1px
+    style LaneYuka fill:#ffffff,stroke:#cfd8dc,stroke-width:1px
 ```
 
 *F5 (Thomas, achats professionnels) n'apparaît pas comme une case du schéma : c'est cette boucle entière qui est rejouée à l'identique, produit par produit, sans vue d'ensemble sur un rayon — une friction sur la répétition, pas sur une étape précise.*
@@ -99,6 +108,21 @@ flowchart TD
     ChooseGw -- "garder" --> EndKeep
     ChooseGw -- "alternative" --> LocateAlt --> EndAlt
     ChooseGw -- "ne pas acheter" --> EndNoBuy
+
+    classDef evt fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20
+    classDef act fill:#ffffff,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef gw fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,color:#e65100
+    classDef ia fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20
+    classDef data fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1.5px,color:#424242
+    class Start,EndKeep,EndAlt,EndNoBuy evt
+    class ChooseGw,FoundGw gw
+    class Scan,Search,AskPhoto,Display,LocateAlt,ReadResult act
+    class Classify,Predict,FindSubs,Generate ia
+    class Data data
+    style LaneUser fill:#ffffff,stroke:#cfd8dc,stroke-width:1px
+    style LaneApp fill:#ffffff,stroke:#cfd8dc,stroke-width:1px
+    style LaneIA fill:#ffffff,stroke:#cfd8dc,stroke-width:1px
+    style LaneData fill:#ffffff,stroke:#cfd8dc,stroke-width:1px
 ```
 
 Le to-be ferme F1, F2, F3 (contrôle fait désormais en rayon) et F6 (vérification enfin assez rapide) ; F4 est traité en injectant le profil (budget, diabète) dans la recherche de substituts. Ne pas acheter devient une issue nommée : un produit reposé faute de bonne alternative est un succès du parcours, pas un échec — une donnée à mesurer au même titre qu'un achat. F5 (achats professionnels de Thomas, produit par produit) n'est pas résolu : c'est une limite assumée de ce périmètre.
