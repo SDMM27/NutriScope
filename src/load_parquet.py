@@ -131,8 +131,10 @@ def inspect_parquet(connection, parquet_path):
 def import_parquet(
     connection,
     parquet_filename,
-    postgres_table,
+    postgres_table, cols=""
 ):
+    
+    print(cols)
     """
     Insère le contenu d'un fichier Parquet
     dans une table PostgreSQL.
@@ -167,8 +169,8 @@ def import_parquet(
     # Insertion
     connection.execute(
         f"""
-        INSERT INTO {POSTGRES_DB_ALIAS}.public.{postgres_table}
-        SELECT *
+        INSERT INTO {POSTGRES_DB_ALIAS}.public.{postgres_table} ({cols})
+        SELECT DISTINCT *
         FROM read_parquet('{parquet_path}');
         """
     )
@@ -185,6 +187,33 @@ def import_parquet(
         f"Lignes dans PostgreSQL après import : "
         f"{destination_count}"
     )
+
+# ============================================================
+# Import principal
+# ============================================================
+
+def clear_database(connection):
+    """
+    Vide toutes les tables NutriScope avant un nouvel import.
+    """
+
+    tables = [
+        "products_categories",
+        "nutrients",
+        "products",
+        "categories",
+        "brands",
+    ]
+
+    for table in tables:
+        connection.execute(
+            f"""
+            TRUNCATE TABLE
+            {POSTGRES_DB_ALIAS}.public.{table}
+            """
+        )
+
+    print("Base de données vidée.")
 
 
 # ============================================================
@@ -232,7 +261,16 @@ def main():
             )
 
         # ----------------------------------------------------
-        # 4. Import des tables
+        # 4. Nettoyage de la BDD
+        # ----------------------------------------------------
+        print()
+        print("=" * 60)
+        print("Nettoyage de la BDD")
+        print("=" * 60)
+        clear_database(connection)
+
+        # ----------------------------------------------------
+        # 5. Import des tables
         # ----------------------------------------------------
         #
         # L'ordre est important :
@@ -250,19 +288,22 @@ def main():
             connection,
             "brands.parquet",
             "brands",
+            "name"
         )
 
         import_parquet(
             connection,
             "categories.parquet",
             "categories",
+            "tag",
         )
 
         import_parquet(
             connection,
             "nutrients.parquet",
             "nutrients",
-        )
+            "code, energy, energy_kcal, proteins, carbohydrates, sugars, fat, saturated_fat, fiber, salt",
+)
 
         import_parquet(
             connection,
@@ -277,7 +318,7 @@ def main():
         )
 
         # ----------------------------------------------------
-        # 5. Contrôle final
+        # 6. Contrôle final
         # ----------------------------------------------------
 
         print()
