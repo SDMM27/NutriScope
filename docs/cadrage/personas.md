@@ -21,29 +21,6 @@ Elle souhaite que NutriScope lui donne une réponse quasi instantanée, sans avo
 ## Besoin principal
 Pouvoir scanner un produit et obtenir en quelques secondes une réponse claire, avec une seule alternative simple et disponible dans le même rayon.
 
-# Persona — Restaurateur / gérant food truck
-
-## Profil
-Thomas, 38 ans, restaurateur indépendant et gérant d'un food truck.
-
-## Contexte
-Il fait régulièrement ses achats professionnels chez METRO et doit choisir rapidement entre de nombreux produits similaires.
-
-## Objectif
-Améliorer la qualité nutritionnelle des produits utilisés dans ses plats et proposés à ses clients, tout en maîtrisant ses coûts.
-
-## Problème
-Il manque de temps pour comparer les compositions, les additifs et le Nutri-Score des différents produits disponibles.
-
-## Frustrations
-Les emballages et informations nutritionnelles sont nombreux et difficiles à comparer rapidement, notamment lorsqu'il cherche une alternative aux grandes marques.
-
-## Attentes
-Il souhaite que NutriScope lui permette de comparer facilement les produits et de lui proposer des alternatives plus saines.
-
-## Besoin principal
-Pouvoir choisir rapidement de meilleurs produits lors de ses achats professionnels afin d'améliorer la qualité de son offre.
-
 # Persona — Étudiant à petit budget
  
 ## Profil
