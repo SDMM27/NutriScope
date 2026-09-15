@@ -42,7 +42,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_DB: nutriscope
  
     ports:
       - "5432:5432"
@@ -57,7 +57,7 @@ volumes:
 ### Explication rapide
 
 * `postgres:17` : utilise l'image officielle PostgreSQL 17.
-* `container_name: postgres-dev` : donne au conteneur le nom `postgres-dev`.
+* `container_name: postgres` : donne au conteneur le nom `postgres`.
 * `POSTGRES_USER` : utilisateur PostgreSQL créé au premier démarrage.
 * `POSTGRES_PASSWORD` : mot de passe de cet utilisateur.
 * `POSTGRES_DB` : base de données créée automatiquement au premier démarrage.
@@ -89,7 +89,7 @@ Docker va télécharger l'image PostgreSQL si elle n'est pas déjà présente, p
 Dans **Docker Desktop**, vérifier que le conteneur :
 
 ```text
-postgres-dev
+postgres
 ```
 
 est présent et possède le statut **Running**.
@@ -100,7 +100,7 @@ On peut également vérifier depuis le terminal avec :
 docker ps
 ```
 
-Le conteneur `postgres-dev` doit apparaître dans la liste.
+Le conteneur `postgres` doit apparaître dans la liste.
 
 ---
 
@@ -122,7 +122,7 @@ Dans DBeaver :
 | --------- | ----------- |
 | Host      | `localhost` |
 | Port      | `5432`      |
-| Database  | `formation` |
+| Database  | `nutriscope` |
 | Username  | `postgres`  |
 | Password  | `postgres`  |
 
@@ -141,16 +141,16 @@ Windows
 │
 ├── Docker Desktop
 │   │
-│   └── Conteneur : postgres-dev
+│   └── Conteneur : postgres
 │       │
 │       └── PostgreSQL 17
-│           └── Base : formation
+│           └── Base : nutriscope
 │
 └── DBeaver
     │
     └── Connexion PostgreSQL
         └── localhost:5432
-            └── formation
+            └── nutriscope
 ```
 
 Une fois cette configuration terminée, nous disposons tous les deux du même environnement PostgreSQL pour travailler sur NutriScope.
