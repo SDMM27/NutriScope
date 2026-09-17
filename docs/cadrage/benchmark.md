@@ -1,6 +1,6 @@
 # Benchmark de l'existant — NutriScope
 
-> TP 6 — Opportunité & concurrence (points 1 et 2 : benchmark + matrice comparative, 2 pages max pour tout le TP6). Restent à ajouter : SWOT (point 3), proposition de valeur (point 4).
+> TP 6 — Opportunité & concurrence (points 1 et 2 : benchmark + matrice comparative, 2 pages max pour tout le TP6).
 
 9 acteurs du scan de produits en grande distribution, proches du périmètre de NutriScope (scan en magasin, score, alternatives) : Yuka, Open Food Facts, myLabel, ScanUp, QuelProduit (UFC-Que Choisir), BiteWatch, YaQuoiDedans, BuyOrNot, Kwalito.
 
@@ -67,3 +67,12 @@ Légende : ✓ présent et direct · ◐ partiel (limité, indirect, ou à confi
 | Personnalisation des recommandations. | Qualité variable des données Open Food Facts. |
 | Accompagnement vers une décision plutôt que simple notation. | Risque de perte de confiance en cas de recommandation ou information incorrecte. |
 | Possibilité d'évolution vers du B2B ou de la marque blanche. | Contraintes réglementaires et responsabilité liées aux recommandations nutritionnelles. |
+
+# Proposition de valeur
+
+NutriScope est un freemium qui rend l'alternative visible directement sur l'écran de scan, expliquée, là où Yuka la relègue dans un onglet de la fiche produit et myLabel reste le seul à l'afficher immédiatement (cf. matrice comparative).
+
+| | Gratuit | Premium |
+|---|---|---|
+| Alternative | Une, affichée au scan, avec explication du pourquoi | Plusieurs alternatives proposées |
+| Usage hors-ligne | ✗ | Téléchargement de catégories de produits pour scanner hors connexion |
