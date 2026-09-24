@@ -72,3 +72,5 @@ Desktop.ini
 
 #Data
 [Dd]ata/
+# les rapports générés du TP 9 sont versionnés (docs/data/), pas les données
+!docs/data/
