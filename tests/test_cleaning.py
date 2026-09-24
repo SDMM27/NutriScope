@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.cleaning import REGLES, CompteRendu, nettoyer, typer_colonnes
+from src.cleaning import REGLES, CompteRendu, nettoyer, typer_colonnes, borner_nutriments
 
 
 @pytest.fixture
@@ -60,3 +60,19 @@ def test_nettoyer_enchaine_les_regles(brut):
 def test_pipeline_commence_par_typer_colonnes():
     assert REGLES[0] is typer_colonnes
     assert all(callable(regle) for regle in REGLES)
+
+
+@pytest.fixture
+def nutriments_invalides() -> pd.DataFrame:
+    return pd.DataFrame({
+        "fat_100g": [25.0, -1.0, 101.0],
+        "sugars_100g": [25.0, -1.0, 101.0],
+        "carbohydrates_100g": [25.0, -1.0, 101.0],
+        "sodium_100g": [25.0, -1.0, 101.0],
+    })
+
+def test_borner_nutriments_valeurs_invalides(nutriments_invalides):
+    df, journal = borner_nutriments(nutriments_invalides)
+    assert not pd.isna(df["fat_100g"].iloc[0])
+    assert pd.isna(df["fat_100g"].iloc[1])
+    assert pd.isna(df["fat_100g"].iloc[2])
