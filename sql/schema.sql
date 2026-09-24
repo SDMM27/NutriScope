@@ -12,6 +12,7 @@ CREATE TABLE categories (
 
 CREATE TABLE products (
     code                  VARCHAR PRIMARY KEY,
+    completeness          REAL,
     name                  VARCHAR,
     brand_id              INTEGER REFERENCES brands(id),
     nutriscore_grade      VARCHAR(20)
