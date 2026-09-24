@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.cleaning import CompteRendu, nettoyer, typer_colonnes
+from src.cleaning import REGLES, CompteRendu, nettoyer, typer_colonnes
 
 
 @pytest.fixture
@@ -52,6 +52,11 @@ def test_typer_colonnes_idempotente(brut):
 
 
 def test_nettoyer_enchaine_les_regles(brut):
-    df, journal = nettoyer(brut)
+    df, journal = nettoyer(brut, [typer_colonnes])
     assert [cr.regle for cr in journal] == ["typer_colonnes"]
     assert df["code"].dtype == "string"
+
+
+def test_pipeline_commence_par_typer_colonnes():
+    assert REGLES[0] is typer_colonnes
+    assert all(callable(regle) for regle in REGLES)
