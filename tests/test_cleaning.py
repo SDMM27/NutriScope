@@ -69,10 +69,21 @@ def nutriments_invalides() -> pd.DataFrame:
         "sugars_100g": [25.0, -1.0, 101.0],
         "carbohydrates_100g": [25.0, -1.0, 101.0],
         "sodium_100g": [25.0, -1.0, 101.0],
+        "saturated-fat_100g": [25.0, -1.0, 101.0],
     })
 
 def test_borner_nutriments_valeurs_invalides(nutriments_invalides):
     df, journal = borner_nutriments(nutriments_invalides)
-    assert not pd.isna(df["fat_100g"].iloc[0])
-    assert pd.isna(df["fat_100g"].iloc[1])
-    assert pd.isna(df["fat_100g"].iloc[2])
+
+    colonnes = [
+        "fat_100g",
+        "sugars_100g",
+        "carbohydrates_100g",
+        "sodium_100g",
+        "saturated-fat_100g",
+    ]
+
+    for colonne in colonnes:
+        assert not pd.isna(df[colonne].iloc[0])
+        assert pd.isna(df[colonne].iloc[1])
+        assert pd.isna(df[colonne].iloc[2])
