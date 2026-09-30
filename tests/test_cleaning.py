@@ -2,33 +2,53 @@ import pandas as pd
 import pytest
 
 from src.cleaning import (
+    KJ_PAR_KCAL,
     REGLES,
     CompteRendu,
     borner_nutriments,
     corriger_energie,
     dedupliquer_codes,
     nettoyer,
-    traiter_categories_vides,
-    typer_colonnes,
     normaliser_unites,
     strategie_manquants,
-    KJ_PAR_KCAL,
+    traiter_categories_vides,
+    typer_colonnes,
 )
 
 
 # ---------------------------------------------------------------------------
-# typer_colonnes
+# Rule 1 - typer_colonnes
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
 def brut() -> pd.DataFrame:
-    """Quelques lignes telles qu'elles sortent d'un CSV lu sans précaution."""
+    """Sample rows as they may be read from a raw CSV."""
     return pd.DataFrame({
-        "code": ["0000356470029", "00004206", "3017620422003"],
-        "nova_group": [2.0, None, "4"],
-        "nutriscore_score": ["12", "abc", 3.5],
-        "fat_100g": ["25.0", 12, None],
-        "completeness": [0.3, 0.275, 0.9],
+        "code": [
+            "0000356470029",
+            "00004206",
+            "3017620422003",
+        ],
+        "nova_group": [
+            2.0,
+            None,
+            "4",
+        ],
+        "nutriscore_score": [
+            "12",
+            "abc",
+            3.5,
+        ],
+        "fat_100g": [
+            "25.0",
+            12,
+            None,
+        ],
+        "completeness": [
+            0.3,
+            0.275,
+            0.9,
+        ],
     })
 
 
@@ -37,11 +57,15 @@ def test_typer_colonnes_types(brut):
 
     assert df["code"].dtype == "string"
     assert df["code"].iloc[0] == "0000356470029"
+
     assert df["nova_group"].dtype == "Int64"
     assert df["nutriscore_score"].dtype == "Int64"
+
     assert df["fat_100g"].dtype == "float64"
     assert df["completeness"].dtype == "float64"
+
     assert df["nova_group"].tolist()[2] == 4
+
     assert isinstance(cr, CompteRendu)
     assert cr.regle == "typer_colonnes"
 
@@ -56,6 +80,7 @@ def test_typer_colonnes_valeurs_illisibles(brut):
     assert cr.details == {
         "valeurs_non_numeriques": 2,
     }
+
     assert cr.lignes_touchees == 2
     assert cr.lignes_avant == cr.lignes_apres == 3
 
@@ -77,63 +102,7 @@ def test_typer_colonnes_idempotente(brut):
 
 
 # ---------------------------------------------------------------------------
-# traiter_categories_vides
-# ---------------------------------------------------------------------------
-
-@pytest.fixture
-def categories_vides() -> pd.DataFrame:
-    return pd.DataFrame({
-        "code": [
-            "000001",
-            "000002",
-            "000003",
-            "000004",
-        ],
-        "categories": [
-            "Snacks",
-            "",
-            "   ",
-            None,
-        ],
-    })
-
-
-def test_traiter_categories_vides(categories_vides):
-    resultat, cr = traiter_categories_vides(categories_vides)
-
-    assert resultat["categories"].iloc[0] == "Snacks"
-    assert pd.isna(resultat["categories"].iloc[1])
-    assert pd.isna(resultat["categories"].iloc[2])
-    assert pd.isna(resultat["categories"].iloc[3])
-
-    assert isinstance(cr, CompteRendu)
-    assert cr.regle == "traiter_categories_vides"
-    assert cr.lignes_avant == 4
-    assert cr.lignes_apres == 4
-    assert cr.lignes_touchees == 2
-    assert cr.details == {
-        "categories_vides": 2,
-    }
-
-
-def test_traiter_categories_vides_ne_modifie_pas_l_entree(categories_vides):
-    copie = categories_vides.copy()
-
-    traiter_categories_vides(categories_vides)
-
-    pd.testing.assert_frame_equal(categories_vides, copie)
-
-
-def test_traiter_categories_vides_idempotente(categories_vides):
-    une_fois, _ = traiter_categories_vides(categories_vides)
-    deux_fois, cr = traiter_categories_vides(une_fois)
-
-    pd.testing.assert_frame_equal(une_fois, deux_fois)
-    assert cr.lignes_touchees == 0
-
-
-# ---------------------------------------------------------------------------
-# dedupliquer_codes
+# Rule 2 - dedupliquer_codes
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
@@ -183,8 +152,10 @@ def test_dedupliquer_codes(codes_dupliques):
         "000003",
     ]
 
+    # The duplicate with the highest completeness is kept.
     assert resultat.loc[
-        resultat["code"] == "000001", "name"
+        resultat["code"] == "000001",
+        "name",
     ].iloc[0] == "Produit A doublon"
 
     assert len(resultat) == 3
@@ -194,10 +165,37 @@ def test_dedupliquer_codes(codes_dupliques):
     assert cr.lignes_avant == 6
     assert cr.lignes_apres == 3
     assert cr.lignes_touchees == 3
+
     assert cr.details == {
         "codes_absents": 2,
         "doublons_supprimes": 1,
     }
+
+
+def test_dedupliquer_codes_garde_le_plus_recent_en_cas_degalite():
+    donnees = pd.DataFrame({
+        "code": [
+            "000001",
+            "000001",
+        ],
+        "name": [
+            "Ancienne version",
+            "Nouvelle version",
+        ],
+        "completeness": [
+            90.0,
+            90.0,
+        ],
+        "last_modified_t": [
+            1000,
+            2000,
+        ],
+    })
+
+    resultat, _ = dedupliquer_codes(donnees)
+
+    assert len(resultat) == 1
+    assert resultat.iloc[0]["name"] == "Nouvelle version"
 
 
 def test_dedupliquer_codes_ne_modifie_pas_l_entree(codes_dupliques):
@@ -216,37 +214,143 @@ def test_dedupliquer_codes_idempotente(codes_dupliques):
     assert cr.lignes_touchees == 0
 
 
-def test_dedupliquer_codes_garde_le_plus_recent_en_cas_degalite():
-    donnees = pd.DataFrame({
-        "code": ["000001", "000001"],
-        "name": ["Ancienne version", "Nouvelle version"],
-        "completeness": [90.0, 90.0],
-        "last_modified_t": [1000, 2000],
+# ---------------------------------------------------------------------------
+# Rule 3 - normaliser_unites
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def donnees_unites():
+    return pd.DataFrame({
+        "energy-kcal_100g": [
+            None,   # kcal missing
+            100.0,  # coherent ratio
+            100.0,  # inconsistent ratio
+        ],
+        "energy_100g": [
+            418.4,
+            418.4,
+            1000.0,
+        ],
+        "salt_100g": [
+            None,   # salt missing
+            2.5,    # coherent with sodium
+            5.0,    # inconsistent with sodium
+        ],
+        "sodium_100g": [
+            1.0,
+            1.0,
+            1.0,
+        ],
     })
 
-    resultat, _ = dedupliquer_codes(donnees)
 
-    assert len(resultat) == 1
-    assert resultat.iloc[0]["name"] == "Nouvelle version"
+def test_normaliser_unites(donnees_unites):
+    resultat, cr = normaliser_unites(donnees_unites)
+
+    assert resultat.loc[0, "energy-kcal_100g"] == pytest.approx(100.0)
+    assert resultat.loc[2, "energy-kcal_100g"] == pytest.approx(
+        1000.0 / KJ_PAR_KCAL
+    )
+
+    assert resultat.loc[0, "salt_100g"] == pytest.approx(2.5)
+    assert resultat.loc[0, "sodium_100g"] == pytest.approx(1.0)
+
+    assert resultat.loc[1, "salt_100g"] == pytest.approx(2.5)
+    assert resultat.loc[1, "sodium_100g"] == pytest.approx(1.0)
+
+    assert resultat.loc[2, "salt_100g"] == pytest.approx(5.0)
+    assert resultat.loc[2, "sodium_100g"] == pytest.approx(2.0)
+
+    assert cr.lignes_touchees == 2
+    assert cr.details["kcal_derivees"] == 1
+    assert cr.details["kcal_recalculees"] == 1
+    assert cr.details["sel_derive"] == 1
+    assert cr.details["sodium_recalcule"] == 1
+
+
+def test_normaliser_unites_ne_modifie_pas_l_entree(donnees_unites):
+    copie = donnees_unites.copy()
+
+    normaliser_unites(donnees_unites)
+
+    pd.testing.assert_frame_equal(donnees_unites, copie)
+
+
+def test_normaliser_unites_idempotente(donnees_unites):
+    une_fois, _ = normaliser_unites(donnees_unites)
+    deux_fois, cr = normaliser_unites(une_fois)
+
+    pd.testing.assert_frame_equal(une_fois, deux_fois)
+    assert cr.lignes_touchees == 0
+
+
+def test_normaliser_unites_kj_nuls_ne_recalculent_pas():
+    donnees = pd.DataFrame({
+        "energy-kcal_100g": [
+            100.0,
+            200.0,
+        ],
+        "energy_100g": [
+            0.0,
+            -100.0,
+        ],
+        "salt_100g": [
+            1.0,
+            1.0,
+        ],
+        "sodium_100g": [
+            0.4,
+            0.4,
+        ],
+    })
+
+    resultat, cr = normaliser_unites(donnees)
+
+    assert resultat["energy-kcal_100g"].tolist() == [
+        100.0,
+        200.0,
+    ]
+
+    assert cr.details["kcal_recalculees"] == 0
 
 
 # ---------------------------------------------------------------------------
-# borner_nutriments
+# Rule 4 - borner_nutriments
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
 def nutriments_invalides() -> pd.DataFrame:
     return pd.DataFrame({
-        "fat_100g": [25.0, -1.0, 101.0],
-        "sugars_100g": [25.0, -1.0, 101.0],
-        "carbohydrates_100g": [25.0, -1.0, 101.0],
-        "sodium_100g": [25.0, -1.0, 40.1],
-        "saturated-fat_100g": [25.0, -1.0, 101.0],
+        "fat_100g": [
+            25.0,
+            -1.0,
+            101.0,
+        ],
+        "sugars_100g": [
+            25.0,
+            -1.0,
+            101.0,
+        ],
+        "carbohydrates_100g": [
+            25.0,
+            -1.0,
+            101.0,
+        ],
+        "sodium_100g": [
+            25.0,
+            -1.0,
+            40.1,
+        ],
+        "saturated-fat_100g": [
+            25.0,
+            -1.0,
+            101.0,
+        ],
     })
 
 
 def test_borner_nutriments_valeurs_invalides(nutriments_invalides):
-    df, journal = borner_nutriments(nutriments_invalides)
+    df, _ = borner_nutriments(nutriments_invalides)
 
     colonnes = [
         "fat_100g",
@@ -264,13 +368,29 @@ def test_borner_nutriments_valeurs_invalides(nutriments_invalides):
 
 def test_borner_nutriments_sous_totaux():
     df = pd.DataFrame({
-        "carbohydrates_100g": [50.0, 50.0, 50.0],
-        "sugars_100g": [50.0, 50.4, 51.0],
-        "fat_100g": [20.0, 20.0, 20.0],
-        "saturated-fat_100g": [20.0, 20.4, 21.0],
+        "carbohydrates_100g": [
+            50.0,
+            50.0,
+            50.0,
+        ],
+        "sugars_100g": [
+            50.0,
+            50.4,
+            51.0,
+        ],
+        "fat_100g": [
+            20.0,
+            20.0,
+            20.0,
+        ],
+        "saturated-fat_100g": [
+            20.0,
+            20.4,
+            21.0,
+        ],
     })
 
-    resultat, cr = borner_nutriments(df)
+    resultat, _ = borner_nutriments(df)
 
     assert not pd.isna(resultat["sugars_100g"].iloc[0])
     assert not pd.isna(resultat["sugars_100g"].iloc[1])
@@ -282,19 +402,19 @@ def test_borner_nutriments_sous_totaux():
 
 
 # ---------------------------------------------------------------------------
-# corriger_energie
+# Rule 5 - corriger_energie
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
 def energie_invalide() -> pd.DataFrame:
     return pd.DataFrame({
         "energy-kcal_100g": [
-            0.0,      # kcal nulles avec macros > 0
-            -1.0,     # kcal négatives
-            901.0,    # kcal > 900
-            100.0,    # kcal incohérentes avec le calcul 4/4/9
-            370.0,    # kcal cohérentes avec le calcul 4/4/9
-            100.0,    # alcool : incohérence ignorée
+            0.0,      # zero kcal with positive macros
+            -1.0,     # negative kcal
+            901.0,    # kcal above maximum
+            100.0,    # inconsistent with 4/4/9 calculation
+            370.0,    # consistent with 4/4/9 calculation
+            100.0,    # alcoholic beverage: coherence check ignored
         ],
         "energy_100g": [
             0.0,
@@ -346,7 +466,157 @@ def test_corriger_energie(energie_invalide):
 
 
 # ---------------------------------------------------------------------------
-# Pipeline complet : nettoyer
+# Rule 6 - traiter_categories_vides
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def categories_vides() -> pd.DataFrame:
+    return pd.DataFrame({
+        "code": [
+            "000001",
+            "000002",
+            "000003",
+            "000004",
+        ],
+        "categories": [
+            "Snacks",
+            "",
+            "   ",
+            None,
+        ],
+    })
+
+
+def test_traiter_categories_vides(categories_vides):
+    resultat, cr = traiter_categories_vides(categories_vides)
+
+    assert resultat["categories"].iloc[0] == "Snacks"
+    assert pd.isna(resultat["categories"].iloc[1])
+    assert pd.isna(resultat["categories"].iloc[2])
+    assert pd.isna(resultat["categories"].iloc[3])
+
+    assert isinstance(cr, CompteRendu)
+    assert cr.regle == "traiter_categories_vides"
+    assert cr.lignes_avant == 4
+    assert cr.lignes_apres == 4
+    assert cr.lignes_touchees == 2
+
+    assert cr.details == {
+        "categories_vides": 2,
+    }
+
+
+def test_traiter_categories_vides_ne_modifie_pas_l_entree(categories_vides):
+    copie = categories_vides.copy()
+
+    traiter_categories_vides(categories_vides)
+
+    pd.testing.assert_frame_equal(categories_vides, copie)
+
+
+def test_traiter_categories_vides_idempotente(categories_vides):
+    une_fois, _ = traiter_categories_vides(categories_vides)
+    deux_fois, cr = traiter_categories_vides(une_fois)
+
+    pd.testing.assert_frame_equal(une_fois, deux_fois)
+    assert cr.lignes_touchees == 0
+
+
+# ---------------------------------------------------------------------------
+# Rule 7 - strategie_manquants
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def donnees_manquants() -> pd.DataFrame:
+    return pd.DataFrame({
+        "code": [
+            "000001",
+            "000002",
+            "000003",
+        ],
+        "name": [
+            "Produit A",
+            None,
+            "Produit C",
+        ],
+        "completeness": [
+            80.0,
+            None,
+            90.0,
+        ],
+        "brand_id": [
+            1,
+            None,
+            3,
+        ],
+        "nutriscore_grade": [
+            "a",
+            None,
+            "c",
+        ],
+        "nutriscore_score": [
+            1,
+            None,
+            10,
+        ],
+        "proteins_100g": [
+            5.0,
+            None,
+            10.0,
+        ],
+        "sugars_100g": [
+            2.0,
+            None,
+            5.0,
+        ],
+        "salt_100g": [
+            0.5,
+            None,
+            1.0,
+        ],
+    })
+
+
+def test_strategie_manquants_conserve_les_na(donnees_manquants):
+    resultat, cr = strategie_manquants(donnees_manquants)
+
+    pd.testing.assert_frame_equal(
+        resultat,
+        donnees_manquants,
+    )
+
+    assert isinstance(cr, CompteRendu)
+    assert cr.regle == "strategie_manquants"
+    assert cr.lignes_avant == 3
+    assert cr.lignes_apres == 3
+    assert cr.lignes_touchees == 0
+
+
+def test_strategie_manquants_ne_modifie_pas_l_entree(donnees_manquants):
+    copie = donnees_manquants.copy()
+
+    strategie_manquants(donnees_manquants)
+
+    pd.testing.assert_frame_equal(
+        donnees_manquants,
+        copie,
+    )
+
+
+def test_strategie_manquants_idempotente(donnees_manquants):
+    une_fois, _ = strategie_manquants(donnees_manquants)
+    deux_fois, cr = strategie_manquants(une_fois)
+
+    pd.testing.assert_frame_equal(
+        une_fois,
+        deux_fois,
+    )
+
+    assert cr.lignes_touchees == 0
+
+
+# ---------------------------------------------------------------------------
+# Complete pipeline - nettoyer
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
@@ -446,7 +716,10 @@ def donnees_pipeline() -> pd.DataFrame:
 
 
 def test_nettoyer_enchaine_toutes_les_regles(donnees_pipeline):
-    resultat, journal = nettoyer(donnees_pipeline, REGLES)
+    resultat, journal = nettoyer(
+        donnees_pipeline,
+        REGLES,
+    )
 
     assert [cr.regle for cr in journal] == [
         "typer_colonnes",
@@ -463,7 +736,10 @@ def test_nettoyer_enchaine_toutes_les_regles(donnees_pipeline):
 
 
 def test_nettoyer_applique_les_transformations(donnees_pipeline):
-    resultat, journal = nettoyer(donnees_pipeline, REGLES)
+    resultat, _ = nettoyer(
+        donnees_pipeline,
+        REGLES,
+    )
 
     assert len(resultat) == 3
 
@@ -481,123 +757,12 @@ def test_nettoyer_applique_les_transformations(donnees_pipeline):
 def test_nettoyer_ne_modifie_pas_l_entree(donnees_pipeline):
     copie = donnees_pipeline.copy()
 
-    nettoyer(donnees_pipeline, REGLES)
+    nettoyer(
+        donnees_pipeline,
+        REGLES,
+    )
 
-    pd.testing.assert_frame_equal(donnees_pipeline, copie)
-
-
-@pytest.fixture
-def donnees_unites():
-    return pd.DataFrame({
-        "energy-kcal_100g": [
-            None,   # kcal manquantes
-            100.0,  # ratio cohérent
-            100.0,  # ratio incohérent
-        ],
-        "energy_100g": [
-            418.4,
-            418.4,
-            1000.0,
-        ],
-        "salt_100g": [
-            None,   # sel manquant
-            2.5,    # cohérent avec sodium
-            5.0,    # incohérent avec sodium
-        ],
-        "sodium_100g": [
-            1.0,
-            1.0,
-            1.0,
-        ],
-    })
-
-
-def test_normaliser_unites(donnees_unites):
-    resultat, cr = normaliser_unites(donnees_unites)
-
-    assert resultat.loc[0, "energy-kcal_100g"] == pytest.approx(100.0)
-    assert resultat.loc[2, "energy-kcal_100g"] == pytest.approx(1000.0 / KJ_PAR_KCAL)
-
-    assert resultat.loc[0, "salt_100g"] == pytest.approx(2.5)
-    assert resultat.loc[0, "sodium_100g"] == pytest.approx(1.0)
-
-    assert resultat.loc[1, "salt_100g"] == pytest.approx(2.5)
-    assert resultat.loc[1, "sodium_100g"] == pytest.approx(1.0)
-
-    assert resultat.loc[2, "salt_100g"] == pytest.approx(5.0)
-    assert resultat.loc[2, "sodium_100g"] == pytest.approx(2.0)
-
-    assert cr.lignes_touchees == 2
-    assert cr.details["kcal_derivees"] == 1
-    assert cr.details["kcal_recalculees"] == 1
-    assert cr.details["sel_derive"] == 1
-    assert cr.details["sodium_recalcule"] == 1
-
-def test_normaliser_unites_ne_modifie_pas_l_entree(donnees_unites):
-    copie = donnees_unites.copy()
-
-    normaliser_unites(donnees_unites)
-
-    pd.testing.assert_frame_equal(donnees_unites, copie)
-
-def test_normaliser_unites_idempotente(donnees_unites):
-    une_fois, _ = normaliser_unites(donnees_unites)
-    deux_fois, cr = normaliser_unites(une_fois)
-
-    pd.testing.assert_frame_equal(une_fois, deux_fois)
-    assert cr.lignes_touchees == 0
-
-def test_normaliser_unites_kj_nuls_ne_recalculent_pas():
-    donnees = pd.DataFrame({
-        "energy-kcal_100g": [100.0, 200.0],
-        "energy_100g": [0.0, -100.0],
-        "salt_100g": [1.0, 1.0],
-        "sodium_100g": [0.4, 0.4],
-    })
-
-    resultat, cr = normaliser_unites(donnees)
-
-    assert resultat["energy-kcal_100g"].tolist() == [100.0, 200.0]
-    assert cr.details["kcal_recalculees"] == 0
-
-@pytest.fixture
-def donnees_manquants() -> pd.DataFrame:
-    return pd.DataFrame({
-        "code": ["000001", "000002", "000003"],
-        "name": ["Produit A", None, "Produit C"],
-        "completeness": [80.0, None, 90.0],
-        "brand_id": [1, None, 3],
-        "nutriscore_grade": ["a", None, "c"],
-        "nutriscore_score": [1, None, 10],
-        "proteins_100g": [5.0, None, 10.0],
-        "sugars_100g": [2.0, None, 5.0],
-        "salt_100g": [0.5, None, 1.0],
-    })
-
-
-def test_strategie_manquants_conserve_les_na(donnees_manquants):
-    resultat, cr = strategie_manquants(donnees_manquants)
-
-    pd.testing.assert_frame_equal(resultat, donnees_manquants)
-
-    assert isinstance(cr, CompteRendu)
-    assert cr.regle == "strategie_manquants"
-    assert cr.lignes_avant == 3
-    assert cr.lignes_apres == 3
-    assert cr.lignes_touchees == 0
-
-
-def test_strategie_manquants_ne_modifie_pas_l_entree(donnees_manquants):
-    copie = donnees_manquants.copy()
-
-    strategie_manquants(donnees_manquants)
-
-    pd.testing.assert_frame_equal(donnees_manquants, copie)
-
-
-def test_strategie_manquants_idempotente(donnees_manquants):
-    une_fois, _ = strategie_manquants(donnees_manquants)
-    deux_fois, cr = strategie_manquants(une_fois)
-
-    pd.testing.assert_frame_equal(une_fois, deux_fois)
-    assert cr.lignes_touchees == 0
+    pd.testing.assert_frame_equal(
+        donnees_pipeline,
+        copie,
+    )
