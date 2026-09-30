@@ -285,20 +285,6 @@ def corriger_energie(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
     return res, _compte_rendu("corriger_energie", df, res, masques)
 
 
-# ============================================================
-# Pipeline
-# ============================================================
-
-# Ordre imposé : types, textes, doublons, unités, bornes, énergie,
-# catégories, manquants. Chaque règle ajoutée se branche ici.
-REGLES = [
-    typer_colonnes,
-    normaliser_unites,
-    borner_nutriments,
-    corriger_energie,
-]
-
-
 def lire_brut(chemin: str | Path) -> pd.DataFrame:
     """Lit un export CSV Open Food Facts en gardant `code` en texte."""
     return pd.read_csv(chemin, dtype={"code": "string"}, low_memory=False)
@@ -311,3 +297,66 @@ def nettoyer(brut: pd.DataFrame, regles=None) -> tuple[pd.DataFrame, list[Compte
         df, compte_rendu = regle(df)
         journal.append(compte_rendu)
     return df, journal
+
+def dedupliquer_codes(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
+    """Removes duplicated product codes while preserving rows with missing codes."""
+    res = df.copy()
+
+    doublons = res["code"].duplicated(keep="first") & res["code"].notna()
+
+    res = res.loc[~doublons].copy()
+
+    return res, _compte_rendu(
+        "dedupliquer_codes",
+        df,
+        res,
+        {"doublons_supprimes": doublons},
+    )
+
+def test_dedupliquer_codes_ne_modifie_pas_l_entree(codes_dupliques):
+    copie = codes_dupliques.copy()
+
+    dedupliquer_codes(codes_dupliques)
+
+    pd.testing.assert_frame_equal(codes_dupliques, copie)
+
+
+def test_dedupliquer_codes_idempotente(codes_dupliques):
+    une_fois, _ = dedupliquer_codes(codes_dupliques)
+    deux_fois, cr = dedupliquer_codes(une_fois)
+
+    pd.testing.assert_frame_equal(une_fois, deux_fois)
+    assert cr.lignes_touchees == 0
+
+def traiter_categories_vides(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
+    """Replaces empty category values with missing values."""
+    res = df.copy()
+
+    categories_vides = (
+        res["categories"].notna()
+        & res["categories"].astype("string").str.strip().eq("")
+    )
+
+    res.loc[categories_vides, "categories"] = pd.NA
+
+    return res, _compte_rendu(
+        "traiter_categories_vides",
+        df,
+        res,
+        {"categories_vides": categories_vides},
+    )
+
+# ============================================================
+# Pipeline
+# ============================================================
+
+# Ordre imposé : types, textes, doublons, unités, bornes, énergie,
+# catégories, manquants. Chaque règle ajoutée se branche ici.
+REGLES = [
+    typer_colonnes,
+    traiter_categories_vides,
+    dedupliquer_codes,
+    normaliser_unites,
+    borner_nutriments,
+    corriger_energie,
+]
