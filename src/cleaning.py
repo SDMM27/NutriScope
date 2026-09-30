@@ -298,19 +298,55 @@ def nettoyer(brut: pd.DataFrame, regles=None) -> tuple[pd.DataFrame, list[Compte
         journal.append(compte_rendu)
     return df, journal
 
-def dedupliquer_codes(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
-    """Removes duplicated product codes while preserving rows with missing codes."""
+def dedupliquer_codes(
+    df: pd.DataFrame,
+) -> tuple[pd.DataFrame, CompteRendu]:
+    """Remove rows without a code and duplicate product codes.
+
+    For duplicate codes, keeps the row with the highest completeness.
+    If completeness is equal, keeps the most recently modified row when
+    last_modified_t is available.
+    """
     res = df.copy()
 
-    doublons = res["code"].duplicated(keep="first") & res["code"].notna()
+    codes_absents = res["code"].isna()
 
-    res = res.loc[~doublons].copy()
+    res = res.loc[~codes_absents].copy()
+
+    sort_columns = ["code"]
+
+    if "completeness" in res.columns:
+        sort_columns.append("completeness")
+
+    if "last_modified_t" in res.columns:
+        sort_columns.append("last_modified_t")
+
+    ascending = [True] + [False] * (len(sort_columns) - 1)
+
+    res = (
+        res.sort_values(
+            sort_columns,
+            ascending=ascending,
+            na_position="last",
+        )
+        .drop_duplicates(subset="code", keep="first")
+    )
+
+    lignes_supprimees = ~df.index.isin(res.index)
+
+    doublons_supprimes = (
+        lignes_supprimees
+        & df["code"].notna()
+    )
 
     return res, _compte_rendu(
         "dedupliquer_codes",
         df,
         res,
-        {"doublons_supprimes": doublons},
+        {
+            "codes_absents": codes_absents,
+            "doublons_supprimes": doublons_supprimes,
+        },
     )
 
 def test_dedupliquer_codes_ne_modifie_pas_l_entree(codes_dupliques):
@@ -347,6 +383,26 @@ def traiter_categories_vides(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRend
     )
 
 # ============================================================
+# Strategie Manquants
+# ============================================================
+def strategie_manquants(
+    df: pd.DataFrame,
+) -> tuple[pd.DataFrame, CompteRendu]:
+    """Apply the missing-value strategy without imputing unknown values.
+
+    Missing values are preserved as NA. Products are not removed here:
+    rows without a product code are already handled by dedupliquer_codes.
+    """
+    res = df.copy()
+
+    return res, _compte_rendu(
+        "strategie_manquants",
+        df,
+        res,
+        {},
+    )
+
+# ============================================================
 # Pipeline
 # ============================================================
 
@@ -354,9 +410,10 @@ def traiter_categories_vides(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRend
 # catégories, manquants. Chaque règle ajoutée se branche ici.
 REGLES = [
     typer_colonnes,
-    traiter_categories_vides,
     dedupliquer_codes,
     normaliser_unites,
     borner_nutriments,
     corriger_energie,
+    traiter_categories_vides,
+    strategie_manquants,
 ]

@@ -11,6 +11,7 @@ from src.cleaning import (
     traiter_categories_vides,
     typer_colonnes,
     normaliser_unites,
+    strategie_manquants,
     KJ_PAR_KCAL,
 )
 
@@ -154,30 +155,47 @@ def codes_dupliques() -> pd.DataFrame:
             "Produit sans code 2",
             "Produit C",
         ],
+        "completeness": [
+            50.0,
+            80.0,
+            90.0,
+            70.0,
+            60.0,
+            75.0,
+        ],
+        "last_modified_t": [
+            1000,
+            1000,
+            900,
+            1000,
+            2000,
+            1000,
+        ],
     })
 
 
 def test_dedupliquer_codes(codes_dupliques):
     resultat, cr = dedupliquer_codes(codes_dupliques)
 
-    assert resultat["code"].tolist()[:2] == [
+    assert resultat["code"].tolist() == [
         "000001",
         "000002",
+        "000003",
     ]
 
-    assert pd.isna(resultat["code"].iloc[2])
-    assert pd.isna(resultat["code"].iloc[3])
+    assert resultat.loc[
+        resultat["code"] == "000001", "name"
+    ].iloc[0] == "Produit A doublon"
 
-    assert resultat["code"].iloc[4] == "000003"
-
-    assert len(resultat) == 5
+    assert len(resultat) == 3
 
     assert isinstance(cr, CompteRendu)
     assert cr.regle == "dedupliquer_codes"
     assert cr.lignes_avant == 6
-    assert cr.lignes_apres == 5
-    assert cr.lignes_touchees == 1
+    assert cr.lignes_apres == 3
+    assert cr.lignes_touchees == 3
     assert cr.details == {
+        "codes_absents": 2,
         "doublons_supprimes": 1,
     }
 
@@ -196,6 +214,20 @@ def test_dedupliquer_codes_idempotente(codes_dupliques):
 
     pd.testing.assert_frame_equal(une_fois, deux_fois)
     assert cr.lignes_touchees == 0
+
+
+def test_dedupliquer_codes_garde_le_plus_recent_en_cas_degalite():
+    donnees = pd.DataFrame({
+        "code": ["000001", "000001"],
+        "name": ["Ancienne version", "Nouvelle version"],
+        "completeness": [90.0, 90.0],
+        "last_modified_t": [1000, 2000],
+    })
+
+    resultat, _ = dedupliquer_codes(donnees)
+
+    assert len(resultat) == 1
+    assert resultat.iloc[0]["name"] == "Nouvelle version"
 
 
 # ---------------------------------------------------------------------------
@@ -418,11 +450,12 @@ def test_nettoyer_enchaine_toutes_les_regles(donnees_pipeline):
 
     assert [cr.regle for cr in journal] == [
         "typer_colonnes",
-        "traiter_categories_vides",
         "dedupliquer_codes",
         "normaliser_unites",
         "borner_nutriments",
         "corriger_energie",
+        "traiter_categories_vides",
+        "strategie_manquants",
     ]
 
     assert len(journal) == len(REGLES)
@@ -526,3 +559,45 @@ def test_normaliser_unites_kj_nuls_ne_recalculent_pas():
 
     assert resultat["energy-kcal_100g"].tolist() == [100.0, 200.0]
     assert cr.details["kcal_recalculees"] == 0
+
+@pytest.fixture
+def donnees_manquants() -> pd.DataFrame:
+    return pd.DataFrame({
+        "code": ["000001", "000002", "000003"],
+        "name": ["Produit A", None, "Produit C"],
+        "completeness": [80.0, None, 90.0],
+        "brand_id": [1, None, 3],
+        "nutriscore_grade": ["a", None, "c"],
+        "nutriscore_score": [1, None, 10],
+        "proteins_100g": [5.0, None, 10.0],
+        "sugars_100g": [2.0, None, 5.0],
+        "salt_100g": [0.5, None, 1.0],
+    })
+
+
+def test_strategie_manquants_conserve_les_na(donnees_manquants):
+    resultat, cr = strategie_manquants(donnees_manquants)
+
+    pd.testing.assert_frame_equal(resultat, donnees_manquants)
+
+    assert isinstance(cr, CompteRendu)
+    assert cr.regle == "strategie_manquants"
+    assert cr.lignes_avant == 3
+    assert cr.lignes_apres == 3
+    assert cr.lignes_touchees == 0
+
+
+def test_strategie_manquants_ne_modifie_pas_l_entree(donnees_manquants):
+    copie = donnees_manquants.copy()
+
+    strategie_manquants(donnees_manquants)
+
+    pd.testing.assert_frame_equal(donnees_manquants, copie)
+
+
+def test_strategie_manquants_idempotente(donnees_manquants):
+    une_fois, _ = strategie_manquants(donnees_manquants)
+    deux_fois, cr = strategie_manquants(une_fois)
+
+    pd.testing.assert_frame_equal(une_fois, deux_fois)
+    assert cr.lignes_touchees == 0
