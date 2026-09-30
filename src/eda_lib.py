@@ -27,6 +27,12 @@ COLONNES_G_100G = [
 ]
 NUTRIMENT_MAX_G = 100.0
 KCAL_MAX = 900.0
+# seuils des incohérences métier (les trois premiers sont ceux de src/cleaning.py)
+TOLERANCE_SOUS_TOTAL_G = 0.5   # sucres ≤ glucides + 0,5 ; saturés ≤ lipides + 0,5
+SEL_PAR_SODIUM = 2.5
+TOLERANCE_SEL_SODIUM = 0.1
+ECART_ENERGIE_KCAL = 150.0     # écart toléré entre énergie déclarée et calculée
+CIBLE = "nutriscore_score"
 RAYON = "pnns_groups_1"
 RAYON_INCONNU = "unknown"
 GRADES = ["a", "b", "c", "d", "e"]
@@ -152,13 +158,49 @@ def v_cramer(table: pd.DataFrame) -> float:
 # ============================================================
 
 def completude_par_groupe(df: pd.DataFrame, groupe: str, colonnes: list[str], min_n: int = 20) -> pd.DataFrame:
-    """Taux de présence par nutriment, taux de fiches complètes et présence du score, par groupe."""
-    raise NotImplementedError
+    """Complétude par groupe (rayon, marque…), en %, avec l'effectif `n`.
+
+    Pour chaque groupe d'au moins `min_n` produits : taux de présence de
+    chaque colonne, `fiches_completes` (toutes les colonnes présentes) et
+    `score_present` (`nutriscore_score` renseigné). Les produits sans valeur
+    de `groupe` sont ignorés. Tri par `fiches_completes` décroissant.
+    """
+    presence = df[colonnes].notna()
+    presence["fiches_completes"] = presence.all(axis=1)
+    presence["score_present"] = df[CIBLE].notna()
+    groupes = presence.groupby(df[groupe], observed=True)
+    table = groupes.mean() * 100
+    table.insert(0, "n", groupes.size())
+    table = table[table["n"] >= min_n]
+    return table.sort_values(["fiches_completes", "n"], ascending=False, kind="stable")
 
 
 def incoherences_metier(df: pd.DataFrame) -> pd.DataFrame:
-    """Un drapeau booléen par produit et par incohérence. On compte, on ne corrige pas."""
-    raise NotImplementedError
+    """Un drapeau booléen par produit et par incohérence. On compte, on ne corrige pas.
+
+    - `sucres_sup_glucides` : sucres > glucides + TOLERANCE_SOUS_TOTAL_G ;
+    - `satures_sup_lipides` : saturés > lipides + TOLERANCE_SOUS_TOTAL_G ;
+    - `sel_different_sodium` : |sel − 2,5 × sodium| > TOLERANCE_SEL_SODIUM ;
+    - `energie_ecart_449` : énergie déclarée à plus de ECART_ENERGIE_KCAL (150 kcal)
+      de l'énergie calculée 4 × glucides + 4 × protéines + 9 × lipides ;
+    - `energie_nulle_macros` : 0 kcal alors qu'un macronutriment est > 0.
+
+    Une valeur manquante ne lève aucun drapeau.
+    """
+    kcal = df["energy-kcal_100g"]
+    macro_positif = (df[["carbohydrates_100g", "proteins_100g", "fat_100g"]] > 0).any(axis=1)
+    return pd.DataFrame({
+        "sucres_sup_glucides": df["sugars_100g"] > df["carbohydrates_100g"] + TOLERANCE_SOUS_TOTAL_G,
+        "satures_sup_lipides": df["saturated-fat_100g"] > df["fat_100g"] + TOLERANCE_SOUS_TOTAL_G,
+        "sel_different_sodium": (df["salt_100g"] - SEL_PAR_SODIUM * df["sodium_100g"]).abs() > TOLERANCE_SEL_SODIUM,
+        "energie_ecart_449": (kcal - energie_calculee(df)).abs() > ECART_ENERGIE_KCAL,
+        "energie_nulle_macros": (kcal == 0) & macro_positif,
+    })
+
+
+def energie_calculee(df: pd.DataFrame) -> pd.Series:
+    """kcal attendues : 4 × glucides + 4 × protéines + 9 × lipides (NA si l'un des trois manque)."""
+    return 4 * df["carbohydrates_100g"] + 4 * df["proteins_100g"] + 9 * df["fat_100g"]
 
 
 # ============================================================
