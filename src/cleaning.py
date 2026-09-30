@@ -18,7 +18,7 @@ import pandas as pd
 
 
 if int(pd.__version__.split(".")[0]) < 3:
-    pd.options.mode.copy_on_write = True
+    pd.options.mode.copy_on_write = True  # déjà le comportement par défaut en pandas 3
 
 
 # ---------------------------------------------------------------------------
@@ -32,11 +32,11 @@ RAPPORT_KJ_KCAL_MIN = 3.9
 RAPPORT_KJ_KCAL_MAX = 4.5
 TOLERANCE_SEL_SODIUM = 0.1
 
-NUTRIMENT_MAX_G = 100.0
-SODIUM_MAX_G = NUTRIMENT_MAX_G / SEL_PAR_SODIUM
-TOLERANCE_SOUS_TOTAL_G = 0.5
+NUTRIMENT_MAX_G = 100.0        # g pour 100 g
+SODIUM_MAX_G = NUTRIMENT_MAX_G / SEL_PAR_SODIUM   # 40 g : sel ≤ 100 g
+TOLERANCE_SOUS_TOTAL_G = 0.5   # sucres ≤ glucides + 0,5 ; saturés ≤ lipides + 0,5
 
-KCAL_MAX = 900.0
+KCAL_MAX = 900.0               # 100 g de lipides purs
 KCAL_PAR_G_GLUCIDES = 4.0
 KCAL_PAR_G_PROTEINES = 4.0
 KCAL_PAR_G_LIPIDES = 9.0
@@ -667,6 +667,8 @@ def strategie_manquants(
 # ---------------------------------------------------------------------------
 # Lecture et pipeline complet
 # ---------------------------------------------------------------------------
+# Ordre imposé : types, textes, doublons, unités, bornes, énergie,
+# catégories, manquants. Chaque règle ajoutée se branche ici.
 
 def lire_brut(
     chemin: str | Path,
