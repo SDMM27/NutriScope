@@ -10,6 +10,8 @@ from src.cleaning import (
     nettoyer,
     traiter_categories_vides,
     typer_colonnes,
+    normaliser_unites,
+    KJ_PAR_KCAL,
 )
 
 
@@ -449,3 +451,78 @@ def test_nettoyer_ne_modifie_pas_l_entree(donnees_pipeline):
     nettoyer(donnees_pipeline, REGLES)
 
     pd.testing.assert_frame_equal(donnees_pipeline, copie)
+
+
+@pytest.fixture
+def donnees_unites():
+    return pd.DataFrame({
+        "energy-kcal_100g": [
+            None,   # kcal manquantes
+            100.0,  # ratio cohérent
+            100.0,  # ratio incohérent
+        ],
+        "energy_100g": [
+            418.4,
+            418.4,
+            1000.0,
+        ],
+        "salt_100g": [
+            None,   # sel manquant
+            2.5,    # cohérent avec sodium
+            5.0,    # incohérent avec sodium
+        ],
+        "sodium_100g": [
+            1.0,
+            1.0,
+            1.0,
+        ],
+    })
+
+
+def test_normaliser_unites(donnees_unites):
+    resultat, cr = normaliser_unites(donnees_unites)
+
+    assert resultat.loc[0, "energy-kcal_100g"] == pytest.approx(100.0)
+    assert resultat.loc[2, "energy-kcal_100g"] == pytest.approx(1000.0 / KJ_PAR_KCAL)
+
+    assert resultat.loc[0, "salt_100g"] == pytest.approx(2.5)
+    assert resultat.loc[0, "sodium_100g"] == pytest.approx(1.0)
+
+    assert resultat.loc[1, "salt_100g"] == pytest.approx(2.5)
+    assert resultat.loc[1, "sodium_100g"] == pytest.approx(1.0)
+
+    assert resultat.loc[2, "salt_100g"] == pytest.approx(5.0)
+    assert resultat.loc[2, "sodium_100g"] == pytest.approx(2.0)
+
+    assert cr.lignes_touchees == 2
+    assert cr.details["kcal_derivees"] == 1
+    assert cr.details["kcal_recalculees"] == 1
+    assert cr.details["sel_derive"] == 1
+    assert cr.details["sodium_recalcule"] == 1
+
+def test_normaliser_unites_ne_modifie_pas_l_entree(donnees_unites):
+    copie = donnees_unites.copy()
+
+    normaliser_unites(donnees_unites)
+
+    pd.testing.assert_frame_equal(donnees_unites, copie)
+
+def test_normaliser_unites_idempotente(donnees_unites):
+    une_fois, _ = normaliser_unites(donnees_unites)
+    deux_fois, cr = normaliser_unites(une_fois)
+
+    pd.testing.assert_frame_equal(une_fois, deux_fois)
+    assert cr.lignes_touchees == 0
+
+def test_normaliser_unites_kj_nuls_ne_recalculent_pas():
+    donnees = pd.DataFrame({
+        "energy-kcal_100g": [100.0, 200.0],
+        "energy_100g": [0.0, -100.0],
+        "salt_100g": [1.0, 1.0],
+        "sodium_100g": [0.4, 0.4],
+    })
+
+    resultat, cr = normaliser_unites(donnees)
+
+    assert resultat["energy-kcal_100g"].tolist() == [100.0, 200.0]
+    assert cr.details["kcal_recalculees"] == 0
