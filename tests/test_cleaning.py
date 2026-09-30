@@ -1,7 +1,15 @@
 import pandas as pd
 import pytest
 
-from src.cleaning import REGLES, CompteRendu, nettoyer, typer_colonnes, borner_nutriments
+from src.cleaning import (
+    REGLES,
+    CompteRendu,
+    nettoyer,
+    typer_colonnes,
+    borner_nutriments,
+    corriger_energie,
+    KJ_PAR_KCAL,
+)
 
 
 @pytest.fixture
@@ -68,7 +76,7 @@ def nutriments_invalides() -> pd.DataFrame:
         "fat_100g": [25.0, -1.0, 101.0],
         "sugars_100g": [25.0, -1.0, 101.0],
         "carbohydrates_100g": [25.0, -1.0, 101.0],
-        "sodium_100g": [25.0, -1.0, 101.0],
+        "sodium_100g": [25.0, -1.0, 40.1], #sel +/- sodium * 2.5
         "saturated-fat_100g": [25.0, -1.0, 101.0],
     })
 
@@ -87,3 +95,79 @@ def test_borner_nutriments_valeurs_invalides(nutriments_invalides):
         assert not pd.isna(df[colonne].iloc[0])
         assert pd.isna(df[colonne].iloc[1])
         assert pd.isna(df[colonne].iloc[2])
+
+
+def test_borner_nutriments_sous_totaux():
+    df = pd.DataFrame({
+        "carbohydrates_100g": [50.0, 50.0, 50.0],
+        "sugars_100g": [50.0, 50.4, 51.0],
+        "fat_100g": [20.0, 20.0, 20.0],
+        "saturated-fat_100g": [20.0, 20.4, 21.0],
+    })
+
+    resultat, cr = borner_nutriments(df)
+
+    assert not pd.isna(resultat["sugars_100g"].iloc[0])
+    assert not pd.isna(resultat["sugars_100g"].iloc[1])
+    assert pd.isna(resultat["sugars_100g"].iloc[2])
+
+    assert not pd.isna(resultat["saturated-fat_100g"].iloc[0])
+    assert not pd.isna(resultat["saturated-fat_100g"].iloc[1])
+    assert pd.isna(resultat["saturated-fat_100g"].iloc[2])
+
+@pytest.fixture
+def energie_invalide() -> pd.DataFrame:
+    return pd.DataFrame({
+        "energy-kcal_100g": [
+            0.0,
+            -1.0,
+            901.0,
+            100.0,
+            370.0,
+            100.0,
+        ],
+        "energy_100g": [
+            0.0,
+            -1.0,
+            901.0,
+            418.4,
+            1548.08,
+            418.4,
+        ],
+        "carbohydrates_100g": [50.0] * 6,
+        "proteins_100g": [20.0] * 6,
+        "fat_100g": [10.0] * 6,
+        "pnns_groups_1": [
+            None,
+            None,
+            None,
+            None,
+            None,
+            "Alcoholic beverages",
+        ],
+    })
+
+def test_corriger_energie(energie_invalide):
+    resultat, cr = corriger_energie(energie_invalide)
+
+    assert resultat["energy-kcal_100g"].tolist() == [
+        370.0,
+        370.0,
+        370.0,
+        370.0,
+        370.0,
+        100.0,
+    ]
+
+    assert isinstance(cr, CompteRendu)
+    assert cr.regle == "corriger_energie"
+    assert cr.details == {
+    "nulles_recalculees": 1,
+    "nulles_invalidees": 0,
+    "negatives_recalculees": 1,
+    "negatives_invalidees": 0,
+    "sup_900_recalculees": 1,
+    "sup_900_invalidees": 0,
+    "incoherentes_recalculees": 1,
+    "incoherentes_invalidees": 0,
+}
