@@ -7,7 +7,7 @@ def insert_products(connection):
 
     Étapes :
         1. nettoyage des chaînes
-        2. dédoublonnage des codes
+        2. dédoublonnage des codes selon la completeness
         3. recherche de la marque
         4. insertion PostgreSQL
     """
@@ -18,6 +18,7 @@ def insert_products(connection):
 
             SELECT
                 REPLACE(code, chr(0), '') AS code,
+                completeness,
                 REPLACE(name, chr(0), '') AS name,
                 REPLACE(brand_name, chr(0), '') AS brand_name,
                 REPLACE(nutriscore_grade, chr(0), '')
@@ -38,11 +39,13 @@ def insert_products(connection):
 
             QUALIFY ROW_NUMBER() OVER (
                 PARTITION BY code
+                ORDER BY completeness DESC NULLS LAST
             ) = 1
         )
 
         INSERT INTO {POSTGRES_DB_ALIAS}.public.products (
             code,
+            completeness,
             name,
             brand_id,
             nutriscore_grade,
@@ -51,6 +54,7 @@ def insert_products(connection):
 
         SELECT
             p.code,
+            p.completeness,
             p.name,
             b.id,
             p.nutriscore_grade,
