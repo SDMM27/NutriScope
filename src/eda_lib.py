@@ -5,7 +5,9 @@ appelle ces fonctions, trace et commente. Tout ce qui calcule est testé
 dans `tests/test_eda_lib.py`.
 """
 
+import numpy as np
 import pandas as pd
+from scipy import stats
 
 if int(pd.__version__.split(".")[0]) < 3:
     pd.options.mode.copy_on_write = True  # déjà le comportement par défaut en pandas 3
@@ -65,18 +67,84 @@ def rayons_connus(df: pd.DataFrame) -> pd.DataFrame:
 # ============================================================
 
 def resume_univarie(s: pd.Series) -> pd.Series:
-    """Effectif, manquants, moyenne, médiane, écart-type, IQR, MAD, CV, asymétrie, aplatissement, quantiles."""
-    raise NotImplementedError
+    """Résumé d'une variable numérique, calculé sur les valeurs présentes.
+
+    Effectif (`n`), manquants, moyenne, médiane, écart-type, IQR, MAD
+    (médiane des écarts absolus à la médiane), CV (écart-type / moyenne),
+    asymétrie, aplatissement, quantiles 5 / 25 / 75 / 95 %, min et max.
+    """
+    x = s.dropna()
+    p05, q1, mediane, q3, p95 = x.quantile([0.05, 0.25, 0.5, 0.75, 0.95])
+    return pd.Series({
+        "n": len(x), "manquants": int(s.isna().sum()),
+        "moyenne": x.mean(), "mediane": mediane, "ecart_type": x.std(),
+        "IQR": q3 - q1, "MAD": stats.median_abs_deviation(x),
+        "CV": x.std() / x.mean(), "asymetrie": x.skew(), "aplatissement": x.kurt(),
+        "p05": p05, "Q1": q1, "Q3": q3, "p95": p95, "min": x.min(), "max": x.max(),
+    })
+
+
+def _effectifs_par_rayon(df: pd.DataFrame, colonnes: list[str]) -> pd.DataFrame:
+    """Nombre de valeurs présentes par (nutriment, rayon), en format long."""
+    effectifs = df.groupby(RAYON, observed=True)[colonnes].count()
+    effectifs = effectifs.rename_axis(columns="nutriment").T.stack().rename("n")
+    return effectifs.reset_index()
 
 
 def profil_par_rayon(df: pd.DataFrame, colonnes: list[str], min_n: int = 30) -> pd.DataFrame:
-    """Médiane, quartiles, moyenne et effectif par rayon et par nutriment ; rayons de moins de `min_n` écartés."""
-    raise NotImplementedError
+    """Effectif, quartiles, médiane et moyenne par nutriment et par rayon.
+
+    Une ligne par (nutriment, rayon). Les groupes de moins de `min_n` valeurs
+    présentes sont écartés : une médiane sur 12 produits ne se commente pas.
+    Ils sont listés par `rayons_ecartes`.
+    """
+    lignes = []
+    for colonne in colonnes:
+        for rayon, x in df.groupby(RAYON, observed=True)[colonne]:
+            x = x.dropna()
+            if len(x) < min_n:
+                continue
+            q1, mediane, q3 = x.quantile([0.25, 0.5, 0.75])
+            lignes.append({"nutriment": colonne, "rayon": rayon, "n": len(x),
+                           "Q1": q1, "mediane": mediane, "Q3": q3, "moyenne": x.mean()})
+    colonnes_sortie = ["nutriment", "rayon", "n", "Q1", "mediane", "Q3", "moyenne"]
+    return pd.DataFrame(lignes, columns=colonnes_sortie).set_index(["nutriment", "rayon"])
+
+
+def rayons_ecartes(df: pd.DataFrame, colonnes: list[str], min_n: int = 30) -> pd.DataFrame:
+    """Les (nutriment, rayon) de moins de `min_n` valeurs présentes, avec leur effectif."""
+    effectifs = _effectifs_par_rayon(df, colonnes)
+    return effectifs[effectifs["n"] < min_n].rename(columns={RAYON: "rayon"}).reset_index(drop=True)
+
+
+def croisement_rayon_grade(df: pd.DataFrame, min_n: int = 30) -> pd.DataFrame:
+    """Effectifs rayon × grade Nutri-Score, limités aux grades a–e.
+
+    Les grades `unknown` et `not-applicable` sont écartés : ce ne sont pas
+    des notes. Les rayons de moins de `min_n` produits notés sont écartés
+    aussi. Pour les parts par rayon, voir `parts_par_ligne`.
+    """
+    notes = df[df["nutriscore_grade"].isin(GRADES)]
+    table = pd.crosstab(notes[RAYON], notes["nutriscore_grade"])
+    table = table.reindex(columns=GRADES, fill_value=0)
+    return table[table.sum(axis=1) >= min_n]
+
+
+def parts_par_ligne(table: pd.DataFrame) -> pd.DataFrame:
+    """Un tableau d'effectifs en % par ligne (chaque ligne somme à 100)."""
+    return table.div(table.sum(axis=1), axis=0) * 100
 
 
 def v_cramer(table: pd.DataFrame) -> float:
-    """V de Cramér d'un tableau de contingence (rayon × grade)."""
-    raise NotImplementedError
+    """V de Cramér d'un tableau de contingence : 0 = indépendance, 1 = liaison parfaite.
+
+    V = racine(khi² / (n × (min(lignes, colonnes) − 1))). Les lignes et colonnes
+    vides sont retirées, sinon le khi² n'est pas défini.
+    """
+    table = table.loc[table.sum(axis=1) > 0, table.sum(axis=0) > 0]
+    khi2 = stats.chi2_contingency(table, correction=False)[0]
+    n = table.to_numpy().sum()
+    return float(np.sqrt(khi2 / (n * (min(table.shape) - 1))))
 
 
 # ============================================================
