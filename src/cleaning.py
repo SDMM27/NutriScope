@@ -1,14 +1,14 @@
-"""Cleaning rules for NutriScope (TP 9).
+"""Règles de nettoyage NutriScope (TP 9).
 
-Contract shared by all cleaning rules:
-`rule(df) -> (DataFrame, CompteRendu)`.
+Contrat commun : chaque règle est une fonction pure
+`regle(df) -> (DataFrame, CompteRendu)`. Elle travaille sur une copie,
+ne modifie jamais son entrée et documente ses seuils, qui sont des
+constantes nommées ci-dessous.
 
-Each rule works on a copy and never modifies its input. Business thresholds
-are defined as named constants below.
-
-`lignes_touchees` counts rows where a value actually changed or where the row
-was removed. A row affected by several sub-rules is counted once in
-`lignes_touchees`, but once per sub-rule in `details`.
+`lignes_touchees` compte des lignes dont une valeur a réellement changé
+(ou qui ont été supprimées) : une ligne touchée par trois sous-règles
+compte une fois, mais trois fois dans `details`. Relancer une règle sur
+sa propre sortie doit donc donner zéro ligne touchée.
 """
 
 from dataclasses import dataclass, field
@@ -21,16 +21,15 @@ if int(pd.__version__.split(".")[0]) < 3:
     pd.options.mode.copy_on_write = True
 
 
-# ============================================================
-# Business constants
-# ============================================================
+# ---------------------------------------------------------------------------
+# Constantes métier
+# ---------------------------------------------------------------------------
 
 KJ_PAR_KCAL = 4.184
 SEL_PAR_SODIUM = 2.5
 
 RAPPORT_KJ_KCAL_MIN = 3.9
 RAPPORT_KJ_KCAL_MAX = 4.5
-
 TOLERANCE_SEL_SODIUM = 0.1
 
 NUTRIMENT_MAX_G = 100.0
@@ -47,10 +46,6 @@ CALCUL_ENERGIE_MIN = 50.0
 RAYON_ALCOOL = "Alcoholic beverages"
 
 
-# ============================================================
-# Column groups
-# ============================================================
-
 COLONNES_NUTRIMENTS = [
     "energy-kcal_100g",
     "energy_100g",
@@ -62,7 +57,6 @@ COLONNES_NUTRIMENTS = [
     "proteins_100g",
     "salt_100g",
     "sodium_100g",
-    "fruits-vegetables-legumes_100g",
 ]
 
 COLONNES_REELS = COLONNES_NUTRIMENTS + [
@@ -88,13 +82,13 @@ COLONNES_0_100 = [
 ]
 
 
-# ============================================================
-# Common report contract
-# ============================================================
+# ---------------------------------------------------------------------------
+# Contrat commun des comptes rendus
+# ---------------------------------------------------------------------------
 
 @dataclass
 class CompteRendu:
-    """Summary of the changes performed by one cleaning rule."""
+    """Résumé des transformations effectuées par une règle."""
 
     regle: str
     lignes_avant: int
@@ -109,7 +103,8 @@ def _compte_rendu(
     apres: pd.DataFrame,
     masques: dict[str, pd.Series],
 ) -> CompteRendu:
-    """Build a report from one boolean mask per sub-rule."""
+    """Construit un compte rendu à partir des masques de modifications."""
+
     touchees = pd.Series(False, index=avant.index)
 
     for masque in masques.values():
@@ -134,7 +129,8 @@ def _a_change(
     avant: pd.Series,
     apres: pd.Series,
 ) -> pd.Series:
-    """Return True where a value changed, excluding NA -> NA."""
+    """Indique les lignes dont la valeur a réellement changé."""
+
     identiques = (
         (avant == apres).fillna(False)
         | (avant.isna() & apres.isna())
@@ -143,73 +139,100 @@ def _a_change(
     return ~identiques.astype(bool)
 
 
-# ============================================================
-# Rule 1 - Column typing
-# ============================================================
+# ---------------------------------------------------------------------------
+# Règle 1 - typer_colonnes
+# ---------------------------------------------------------------------------
 
 def typer_colonnes(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Set expected pandas types for codes, numeric columns and counters.
+    """Convertit les colonnes vers les types attendus.
 
-    - `code` is converted to pandas `string`.
-    - Counters use nullable `Int64`.
-    - Nutrients, completeness and timestamps use `float64`.
-    - Invalid numeric values are converted to NA.
+    - `code` est conservé en texte ;
+    - les colonnes nutritionnelles et réelles sont converties en float ;
+    - les compteurs sont convertis en entiers nullable ;
+    - les valeurs numériques illisibles deviennent NA.
     """
+
     res = df.copy()
-    illisibles = pd.Series(False, index=df.index)
 
-    if "code" in res.columns:
-        res["code"] = res["code"].astype("string")
+    res["code"] = res["code"].astype("string")
 
-    for col in [c for c in COLONNES_REELS if c in res.columns]:
-        valeurs = pd.to_numeric(
-            res[col],
+    valeurs_non_numeriques = pd.Series(
+        False,
+        index=res.index,
+    )
+
+    for colonne in COLONNES_REELS:
+        if colonne not in res.columns:
+            continue
+
+        avant = res[colonne]
+        apres = pd.to_numeric(
+            avant,
             errors="coerce",
         ).astype("float64")
 
-        illisibles |= res[col].notna() & valeurs.isna()
-        res[col] = valeurs
-
-    for col in [c for c in COLONNES_COMPTEURS if c in res.columns]:
-        valeurs = pd.to_numeric(
-            res[col],
-            errors="coerce",
-        ).astype("float64")
-
-        valeurs = valeurs.where(
-            valeurs.round() == valeurs
+        valeurs_non_numeriques |= (
+            avant.notna()
+            & apres.isna()
         )
 
-        illisibles |= res[col].notna() & valeurs.isna()
-        res[col] = valeurs.astype("Int64")
+        res[colonne] = apres
+
+    for colonne in COLONNES_COMPTEURS:
+        if colonne not in res.columns:
+            continue
+
+        avant = pd.to_numeric(
+            res[colonne],
+            errors="coerce",
+        )
+
+        valeurs_non_numeriques |= (
+            res[colonne].notna()
+            & avant.isna()
+        )
+
+        valeurs_non_entieres = (
+            avant.notna()
+            & (avant % 1 != 0)
+        )
+
+        valeurs_non_numeriques |= valeurs_non_entieres
+
+        res[colonne] = avant.where(
+            ~valeurs_non_entieres
+        ).astype("Int64")
 
     return res, _compte_rendu(
         "typer_colonnes",
         df,
         res,
-        {"valeurs_non_numeriques": illisibles},
+        {
+            "valeurs_non_numeriques": valeurs_non_numeriques,
+        },
     )
 
 
-# ============================================================
-# Rule 2 - Code deduplication
-# ============================================================
+# ---------------------------------------------------------------------------
+# Règle 2 - dedupliquer_codes
+# ---------------------------------------------------------------------------
 
 def dedupliquer_codes(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Remove rows without a code and duplicate product codes.
+    """Supprime les lignes sans code et les doublons de codes.
 
-    For duplicate codes, keep the row with the highest completeness.
-    If completeness is equal, keep the most recently modified row.
+    Pour les codes en double, conserve la ligne ayant la meilleure
+    complétude. En cas d'égalité, conserve la ligne la plus récemment
+    modifiée lorsque `last_modified_t` est disponible.
     """
+
     res = df.copy()
 
     codes_absents = res["code"].isna()
 
-    # Products without a code cannot be reliably identified.
     res = res.loc[~codes_absents].copy()
 
     sort_columns = ["code"]
@@ -220,7 +243,9 @@ def dedupliquer_codes(
     if "last_modified_t" in res.columns:
         sort_columns.append("last_modified_t")
 
-    ascending = [True] + [False] * (len(sort_columns) - 1)
+    ascending = [True] + [False] * (
+        len(sort_columns) - 1
+    )
 
     res = (
         res.sort_values(
@@ -234,7 +259,9 @@ def dedupliquer_codes(
         )
     )
 
-    lignes_supprimees = ~df.index.isin(res.index)
+    lignes_supprimees = ~df.index.isin(
+        res.index
+    )
 
     doublons_supprimes = (
         lignes_supprimees
@@ -252,19 +279,32 @@ def dedupliquer_codes(
     )
 
 
-# ============================================================
-# Rule 3 - Unit normalization
-# ============================================================
+# ---------------------------------------------------------------------------
+# Règle 3 - normaliser_unites
+# ---------------------------------------------------------------------------
 
 def normaliser_unites(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Align kcal with kJ and salt with sodium."""
-    res = df.copy()
+    """Aligne les unités kcal/kJ et sel/sodium.
 
-    # --------------------------------------------------------
-    # Energy
-    # --------------------------------------------------------
+    Énergie :
+    - si les kcal sont absentes et les kJ présents, les kcal sont
+      calculées à partir des kJ ;
+    - si le rapport kJ/kcal est hors de l'intervalle attendu,
+      les kcal sont recalculées à partir des kJ ;
+    - les kJ nuls ou négatifs ne servent pas de référence.
+
+    Sel / sodium :
+    - le sel absent est dérivé du sodium ;
+    - le sodium absent est dérivé du sel ;
+    - en cas d'incohérence, le sodium est recalculé à partir du sel.
+
+    Les valeurs ne sont pas bornées ici : cette opération est réalisée
+    par `borner_nutriments`.
+    """
+
+    res = df.copy()
 
     kcal = res["energy-kcal_100g"]
     kj = res["energy_100g"]
@@ -299,10 +339,6 @@ def normaliser_unites(
 
     res["energy-kcal_100g"] = nouvelles_kcal
 
-    # --------------------------------------------------------
-    # Salt / sodium
-    # --------------------------------------------------------
-
     sel = res["salt_100g"]
     sodium = res["sodium_100g"]
 
@@ -327,8 +363,9 @@ def normaliser_unites(
     )
 
     incoherent = (
-        sel - sodium * SEL_PAR_SODIUM
-    ).abs() > TOLERANCE_SEL_SODIUM
+        (sel - sodium * SEL_PAR_SODIUM).abs()
+        > TOLERANCE_SEL_SODIUM
+    )
 
     nouveau_sodium = sodium.mask(
         incoherent,
@@ -337,7 +374,10 @@ def normaliser_unites(
 
     sodium_recalcule = (
         incoherent
-        & _a_change(sodium, nouveau_sodium)
+        & _a_change(
+            sodium,
+            nouveau_sodium,
+        )
     )
 
     res["salt_100g"] = sel
@@ -357,55 +397,65 @@ def normaliser_unites(
     )
 
 
-# ============================================================
-# Rule 4 - Nutrient bounds
-# ============================================================
+# ---------------------------------------------------------------------------
+# Règle 4 - borner_nutriments
+# ---------------------------------------------------------------------------
 
 def borner_nutriments(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Set physically impossible nutrient values to NA."""
+    """Remplace les valeurs nutritionnelles incohérentes par NA.
+
+    Règles :
+    - nutriments en g/100 g négatifs ou supérieurs à 100 → NA ;
+    - sodium supérieur à 40 g/100 g → NA ;
+    - sucres supérieurs aux glucides + tolérance → NA ;
+    - acides gras saturés supérieurs aux lipides + tolérance → NA.
+    """
+
     res = df.copy()
     masques = {}
 
     bornes = {
-        col: NUTRIMENT_MAX_G
-        for col in COLONNES_0_100
-    } | {
-        "sodium_100g": SODIUM_MAX_G,
+        colonne: NUTRIMENT_MAX_G
+        for colonne in COLONNES_0_100
     }
 
-    for col, borne in bornes.items():
-        if col not in res.columns:
+    bornes["sodium_100g"] = SODIUM_MAX_G
+
+    for colonne, borne in bornes.items():
+        if colonne not in res.columns:
             continue
 
-        negatif = res[col] < 0
-        sup_borne = res[col] > borne
+        negatif = res[colonne] < 0
+        sup_borne = res[colonne] > borne
 
-        res[col] = res[col].mask(
+        res[colonne] = res[colonne].mask(
             negatif | sup_borne
         )
 
-        masques[f"{col}_negatifs"] = negatif
-        masques[f"{col}_sup_borne"] = sup_borne
+        masques[f"{colonne}_negatifs"] = negatif
+        masques[f"{colonne}_sup_borne"] = sup_borne
 
     sucres_sup = (
         res["sugars_100g"]
-        > res["carbohydrates_100g"] + TOLERANCE_SOUS_TOTAL_G
+        > res["carbohydrates_100g"]
+        + TOLERANCE_SOUS_TOTAL_G
     )
 
-    res["sugars_100g"] = res["sugars_100g"].mask(
-        sucres_sup
-    )
+    res["sugars_100g"] = res[
+        "sugars_100g"
+    ].mask(sucres_sup)
 
     satures_sup = (
         res["saturated-fat_100g"]
-        > res["fat_100g"] + TOLERANCE_SOUS_TOTAL_G
+        > res["fat_100g"]
+        + TOLERANCE_SOUS_TOTAL_G
     )
 
-    res["saturated-fat_100g"] = res["saturated-fat_100g"].mask(
-        satures_sup
-    )
+    res["saturated-fat_100g"] = res[
+        "saturated-fat_100g"
+    ].mask(satures_sup)
 
     masques["sucres_sup_glucides"] = sucres_sup
     masques["satures_sup_lipides"] = satures_sup
@@ -418,25 +468,39 @@ def borner_nutriments(
     )
 
 
-# ============================================================
-# Rule 5 - Energy correction
-# ============================================================
+# ---------------------------------------------------------------------------
+# Règle 5 - corriger_energie
+# ---------------------------------------------------------------------------
 
 def calcul_energie_449(
     df: pd.DataFrame,
 ) -> pd.Series:
-    """Calculate expected kcal using the 4 / 4 / 9 formula."""
+    """Calcule l'énergie théorique selon la formule 4/4/9."""
+
     return (
-        KCAL_PAR_G_GLUCIDES * df["carbohydrates_100g"]
-        + KCAL_PAR_G_PROTEINES * df["proteins_100g"]
-        + KCAL_PAR_G_LIPIDES * df["fat_100g"]
+        KCAL_PAR_G_GLUCIDES
+        * df["carbohydrates_100g"]
+        + KCAL_PAR_G_PROTEINES
+        * df["proteins_100g"]
+        + KCAL_PAR_G_LIPIDES
+        * df["fat_100g"]
     )
 
 
 def corriger_energie(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Correct impossible or inconsistent energy values."""
+    """Corrige ou invalide les valeurs énergétiques incohérentes.
+
+    Une énergie est corrigée lorsqu'elle est nulle, négative, supérieure
+    à 900 kcal ou incohérente de plus de 50 % avec le calcul 4/4/9.
+
+    Le recalcul n'est effectué que lorsque le calcul théorique est valide
+    et supérieur ou égal à 50 kcal.
+
+    Les boissons alcoolisées sont exclues de la règle d'incohérence 4/4/9.
+    """
+
     res = df.copy()
 
     kcal = res["energy-kcal_100g"]
@@ -444,7 +508,10 @@ def corriger_energie(
 
     calcul_valide = (
         calcul.notna()
-        & calcul.between(0, KCAL_MAX)
+        & calcul.between(
+            0,
+            KCAL_MAX,
+        )
     )
 
     alcool = (
@@ -472,7 +539,10 @@ def corriger_energie(
     negatives = kcal < 0
     sup_900 = kcal > KCAL_MAX
 
-    ecart = (kcal - calcul).abs() / calcul
+    ecart = (
+        (kcal - calcul).abs()
+        / calcul
+    )
 
     incoherentes = (
         ~nulles
@@ -503,12 +573,11 @@ def corriger_energie(
 
     res["energy-kcal_100g"] = nouvelles_kcal
 
-    res["energy_100g"] = (
-        res["energy_100g"]
-        .mask(
-            a_corriger,
-            nouvelles_kcal * KJ_PAR_KCAL,
-        )
+    res["energy_100g"] = res[
+        "energy_100g"
+    ].mask(
+        a_corriger,
+        nouvelles_kcal * KJ_PAR_KCAL,
     )
 
     masques = {}
@@ -519,12 +588,13 @@ def corriger_energie(
         ("sup_900", sup_900),
         ("incoherentes", incoherentes),
     ]:
-        masques[f"{nom}_recalculees"] = (
-            cas & calcul_valide
-        )
-        masques[f"{nom}_invalidees"] = (
-            cas & ~calcul_valide
-        )
+        masques[
+            f"{nom}_recalculees"
+        ] = cas & calcul_valide
+
+        masques[
+            f"{nom}_invalidees"
+        ] = cas & ~calcul_valide
 
     return res, _compte_rendu(
         "corriger_energie",
@@ -534,14 +604,15 @@ def corriger_energie(
     )
 
 
-# ============================================================
-# Rule 6 - Empty categories
-# ============================================================
+# ---------------------------------------------------------------------------
+# Règle 6 - traiter_categories_vides
+# ---------------------------------------------------------------------------
 
 def traiter_categories_vides(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Replace empty category strings with missing values."""
+    """Remplace les catégories vides par des valeurs manquantes."""
+
     res = df.copy()
 
     categories_vides = (
@@ -561,22 +632,28 @@ def traiter_categories_vides(
         "traiter_categories_vides",
         df,
         res,
-        {"categories_vides": categories_vides},
+        {
+            "categories_vides": categories_vides,
+        },
     )
 
 
-# ============================================================
-# Rule 7 - Missing values strategy
-# ============================================================
+# ---------------------------------------------------------------------------
+# Règle 7 - strategie_manquants
+# ---------------------------------------------------------------------------
 
 def strategie_manquants(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Preserve missing values without artificial imputation.
+    """Applique la stratégie de gestion des valeurs manquantes.
 
-    Missing values remain NA. Rows without a product code have already been
-    removed by `dedupliquer_codes`.
+    Les valeurs manquantes sont conservées à NA : aucune valeur inconnue
+    n'est artificiellement imputée.
+
+    Les produits ne sont pas supprimés ici. Les lignes sans code ont déjà
+    été traitées par `dedupliquer_codes`.
     """
+
     res = df.copy()
 
     return res, _compte_rendu(
@@ -587,14 +664,15 @@ def strategie_manquants(
     )
 
 
-# ============================================================
-# Input and pipeline
-# ============================================================
+# ---------------------------------------------------------------------------
+# Lecture et pipeline complet
+# ---------------------------------------------------------------------------
 
 def lire_brut(
     chemin: str | Path,
 ) -> pd.DataFrame:
-    """Read an Open Food Facts CSV while preserving product codes as strings."""
+    """Lit un export CSV Open Food Facts en conservant `code` en texte."""
+
     return pd.read_csv(
         chemin,
         dtype={"code": "string"},
@@ -602,23 +680,6 @@ def lire_brut(
     )
 
 
-def nettoyer(
-    brut: pd.DataFrame,
-    regles=None,
-) -> tuple[pd.DataFrame, list[CompteRendu]]:
-    """Apply the cleaning rules in order."""
-    df = brut
-    journal = []
-
-    for regle in regles if regles is not None else REGLES:
-        df, compte_rendu = regle(df)
-        journal.append(compte_rendu)
-
-    return df, journal
-
-
-# Order defined by TP9.
-# `normaliser_textes` is optional and is intentionally deferred.
 REGLES = [
     typer_colonnes,
     dedupliquer_codes,
@@ -628,3 +689,21 @@ REGLES = [
     traiter_categories_vides,
     strategie_manquants,
 ]
+
+
+def nettoyer(
+    brut: pd.DataFrame,
+    regles=None,
+) -> tuple[pd.DataFrame, list[CompteRendu]]:
+    """Applique les règles dans l'ordre et retourne le résultat et le journal."""
+
+    df = brut
+    journal = []
+
+    for regle in (
+        regles if regles is not None else REGLES
+    ):
+        df, compte_rendu = regle(df)
+        journal.append(compte_rendu)
+
+    return df, journal
