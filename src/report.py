@@ -3,7 +3,7 @@
 Usage, depuis la racine du dépôt :
 
     python -m src.report
-    python -m src.report --source data/echantillon_france.csv --sortie docs/data/rapport_nettoyage.md
+    python -m src.report --source data/extracts/france_brut.parquet --sortie docs/data/rapport_nettoyage.md
 
 Le rapport est généré, jamais édité à la main. Seule la date d'en-tête
 change d'une exécution à l'autre.
@@ -20,11 +20,11 @@ from src.cleaning import (
     COLONNES_0_100, CompteRendu, calcul_energie_449, lire_brut, nettoyer, typer_colonnes,
 )
 
-SOURCE_PAR_DEFAUT = Path("data/echantillon_france.csv")
+SOURCE_PAR_DEFAUT = Path("data/extracts/france_brut.parquet")  # produit par src/extract_perimeter.py
 SORTIE_PAR_DEFAUT = Path("docs/data/rapport_nettoyage.md")
 
 COLONNES_CLES = [
-    "product_name", "brands", "categories_tags", "pnns_groups_1", "nutriscore_grade",
+    "product_name", "brands", "food_groups_tags", "pnns_groups_1", "nutriscore_grade",
     "energy-kcal_100g", "fat_100g", "saturated-fat_100g", "carbohydrates_100g",
     "sugars_100g", "fiber_100g", "proteins_100g", "salt_100g",
 ]
