@@ -15,6 +15,7 @@ def mini() -> pd.DataFrame:
         "product_name": ["Yaourt", "Biscuit", "Beurre"],
         "brands": ["A", None, "C"],
         "categories_tags": ["en:yogurts", "en:biscuits", None],
+        "food_groups_tags": [["en:milk-and-dairy-products"], [], None],
         "pnns_groups_1": ["Milk and dairy products", "Sugary snacks", "Fat and sauces"],
         "nutriscore_grade": ["a", "e", "e"],
         "energy-kcal_100g": [60.0, 450.0, 24000.0],
