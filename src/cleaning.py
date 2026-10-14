@@ -620,28 +620,36 @@ def traiter_categories_vides(
     """Remplace les catégories vides par des valeurs manquantes."""
 
     res = df.copy()
+    masques = {}
 
-    categories_vides = (
-        res["categories"].notna()
-        & res["categories"]
-        .astype("string")
-        .str.strip()
-        .eq("")
-    )
+    colonnes_categories = [
+        colonne
+        for colonne in (
+            "categories",
+            "categories_tags",
+            "food_groups_tags",
+        )
+        if colonne in res.columns
+    ]
 
-    res.loc[
-        categories_vides,
-        "categories",
-    ] = pd.NA
+    for colonne in colonnes_categories:
+        valeurs = res[colonne].astype("string")
+
+        categories_vides = (
+            res[colonne].notna()
+            & valeurs.str.strip().eq("").fillna(False)
+        )
+
+        res[colonne] = res[colonne].mask(categories_vides, pd.NA)
+        masques[f"{colonne}_vides"] = categories_vides
 
     return res, _compte_rendu(
         "traiter_categories_vides",
         df,
         res,
-        {
-            "categories_vides": categories_vides,
-        },
+        masques,
     )
+
 
 
 # ============================================================
