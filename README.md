@@ -99,47 +99,89 @@ Le pipeline traite actuellement environ :
 
 Le fichier source `nutrients.parquet` contient davantage de lignes que la table finale en raison de doublons sur les codes produits. Les données sont donc dédoublonnées avant leur intégration.
 
-## Nettoyage et qualité des données
+## Pipeline de nettoyage des données
 
-Les règles de nettoyage sont explicites et documentées afin d'éviter de rendre les transformations implicites.
+Le module `src/cleaning.py` fournit un pipeline de nettoyage reproductible pour préparer les données Open Food Facts avant leur exploitation dans les étapes suivantes du projet NutriScope.
 
-Les traitements comprennent notamment :
+### Objectifs
 
-* normalisation des unités ;
-* contrôle des valeurs nutritionnelles ;
-* contrôle des valeurs énergétiques aberrantes ;
-* dédoublonnage des produits à partir du code-barres ;
-* gestion des catégories vides ;
-* stratégie explicite pour les valeurs manquantes.
+* Normaliser les types et les unités des données.
+* Dédupliquer les produits à partir de leur code.
+* Détecter et traiter les valeurs nutritionnelles invalides ou incohérentes.
+* Normaliser les catégories vides.
+* Conserver les valeurs manquantes lorsqu'aucune correction fiable n'est possible.
+* Produire un journal des transformations effectuées.
 
-Les valeurs nutritionnelles impossibles ou hors des bornes attendues sont notamment transformées en valeurs `NULL` plutôt que conservées comme données potentiellement erronées.
+### Ordre des règles
 
-Les bornes utilisées sont :
+Le pipeline applique les règles suivantes dans cet ordre :
 
-* nutriments : **0 à 100 g/100 g** ;
-* énergie : **0 à 99 999,99** pour les valeurs énergétiques.
+1. `typer_colonnes` : normalisation des types de colonnes.
+2. `dedupliquer_codes` : traitement des produits en doublon.
+3. `normaliser_unites` : harmonisation des unités et des valeurs nutritionnelles.
+4. `borner_nutriments` : invalidation des valeurs nutritionnelles hors limites définies.
+5. `corriger_energie` : correction des valeurs énergétiques lorsqu'un calcul fiable est possible.
+6. `traiter_categories_vides` : remplacement des chaînes de catégories vides par des valeurs manquantes.
+7. `strategie_manquants` : conservation des valeurs manquantes sans imputation artificielle.
 
-La stratégie appliquée aux valeurs manquantes est définie **colonne par colonne** selon l'utilisation future de la donnée :
+L'ordre est défini dans `REGLES` dans `src/cleaning.py`.
 
-* suppression ;
-* imputation ;
-* conservation ;
-* conservation avec indicateur.
+### Traitement des catégories
 
-## Tests
+La règle `traiter_categories_vides` examine les colonnes disponibles parmi `categories`, `categories_tags` et `food_groups_tags`.
 
-Les règles de nettoyage font l'objet de tests automatisés avec **pytest**.
+* Les chaînes vides ou composées uniquement d'espaces sont remplacées par `pd.NA`.
+* Les valeurs renseignées sont conservées.
+* Les colonnes absentes sont ignorées.
+* Les catégories manquantes ne sont pas reconstruites artificiellement.
 
-La suite de tests couvre notamment :
+Cette approche permet d'appliquer la règle à des DataFrames dont le schéma varie selon les données disponibles, sans provoquer d'erreur lorsqu'une colonne de catégories est absente.
 
-* les règles normales de nettoyage ;
-* les valeurs manquantes ;
-* les valeurs aberrantes ;
-* les cas limites ;
-* les cas problématiques identifiés lors des précédents travaux sur les données ;
-* la non-modification des données d'entrée lors des transformations.
+### Contrat des règles de nettoyage
 
-L'objectif est de garantir que les transformations restent reproductibles et que les règles métier ne régressent pas lors des évolutions du projet.
+Chaque règle suit le contrat suivant :
+
+```python
+regle(df) -> (DataFrame, CompteRendu)
+```
+
+Les règles :
+
+* travaillent sur une copie du DataFrame d'entrée ;
+* retournent un DataFrame nettoyé et un objet `CompteRendu` ;
+* fournissent des indicateurs sur les lignes touchées et les opérations réalisées ;
+* doivent être idempotentes : appliquer deux fois la même règle ne doit pas modifier davantage les données déjà nettoyées.
+
+Le nombre de lignes touchées correspond au nombre de lignes distinctes concernées par au moins une opération de la règle. Les détails permettent de distinguer les différents types d'opérations.
+
+Le pipeline `nettoyer()` applique les règles dans l'ordre défini et retourne le DataFrame final ainsi que le journal des comptes rendus.
+
+### Exécution des tests
+
+Depuis la racine du projet, dans l'environnement Python du projet :
+
+```bash
+python -m pytest -v
+```
+
+La suite de tests validée pour cette version comporte **43 tests réussis**.
+
+Les tests couvrent notamment :
+
+* le comportement des règles de nettoyage ;
+* la préservation du DataFrame d'entrée ;
+* l'idempotence du pipeline ;
+* le traitement des doublons et des index non uniques ;
+* le calcul des comptes rendus ;
+* la gestion des colonnes de catégories absentes ;
+* la génération reproductible du rapport de nettoyage.
+
+### Périmètre et limites
+
+Le pipeline traite la qualité structurelle et métier des données en appliquant des règles déterministes. Il ne réalise pas d'imputation statistique, de normalisation pour l'apprentissage automatique ou de sélection de variables. Ces opérations relèvent des étapes de préparation spécifiques aux modèles.
+
+Les corrections ne sont appliquées que lorsqu'elles sont suffisamment justifiées par les règles définies. Les valeurs douteuses qui ne peuvent pas être corrigées de manière fiable sont invalidées plutôt que remplacées arbitrairement.
+
 
 ## Rapport avant / après
 
