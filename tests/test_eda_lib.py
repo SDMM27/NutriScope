@@ -161,3 +161,128 @@ def test_energie_calculee():
     df = pd.DataFrame({"carbohydrates_100g": [50.0, 1.0], "proteins_100g": [20.0, 1.0], "fat_100g": [10.0, None]})
     assert eda_lib.energie_calculee(df).iloc[0] == 370.0
     assert pd.isna(eda_lib.energie_calculee(df).iloc[1])
+
+
+# ---------------------------------------------------------------------------
+# 3. Corrélations
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def correles() -> pd.DataFrame:
+    """40 produits : `lineaire` = 2x + 1 (Pearson = 1), `monotone` = x³ (Spearman = 1, Pearson < 1),
+    `inverse` décroissante, `constante` sans variation, `rare` presque vide."""
+    x = [float(i) for i in range(1, 41)]
+    return pd.DataFrame({
+        "score": x,
+        "lineaire": [2 * v + 1 for v in x],
+        "monotone": [v ** 3 for v in x],
+        "inverse": [-v for v in x],
+        "constante": [5.0] * 40,
+        "rare": [1.0, 2.0, 3.0] + [None] * 37,
+    })
+
+
+def test_correlations_nutriscore_pearson_et_spearman(correles):
+    res = eda_lib.correlations_nutriscore(correles, ["lineaire", "monotone"], "score")
+    assert res.loc["lineaire", "pearson"] == pytest.approx(1.0)       # relation linéaire
+    assert res.loc["monotone", "spearman"] == pytest.approx(1.0)      # relation monotone
+    assert res.loc["monotone", "pearson"] < 0.95                      # mais pas linéaire
+    assert res.loc["lineaire", "n"] == 40
+
+
+def test_correlations_nutriscore_tri_et_seuil(correles):
+    res = eda_lib.correlations_nutriscore(correles, ["monotone", "inverse", "rare", "constante"], "score")
+    assert "rare" not in res.index                                    # 3 paires < min_n
+    assert res.loc["inverse", "spearman"] == pytest.approx(-1.0)
+    assert pd.isna(res.loc["constante", "spearman"])                  # corrélation non définie
+    abs_spearman = res["spearman"].abs().dropna()
+    assert abs_spearman.is_monotonic_decreasing                       # tri par |Spearman|
+
+
+def test_paires_redondantes_sel_sodium():
+    sel = [float(i) for i in range(1, 41)]
+    df = pd.DataFrame({"salt_100g": sel, "sodium_100g": [v / 2.5 for v in sel],
+                       "sugars_100g": [(i * 7) % 11 for i in range(40)]})
+    paires = eda_lib.paires_redondantes(df.corr(method="spearman"), seuil=0.8)
+    assert len(paires) == 1                                           # la paire n'apparaît qu'une fois
+    assert {paires.loc[0, "a"], paires.loc[0, "b"]} == {"salt_100g", "sodium_100g"}
+    assert paires.loc[0, "correlation"] == pytest.approx(1.0)
+
+
+def test_paires_redondantes_aucune():
+    matrice = pd.DataFrame([[1.0, 0.3], [0.3, 1.0]], index=["a", "b"], columns=["a", "b"])
+    res = eda_lib.paires_redondantes(matrice, seuil=0.8)
+    assert res.empty and list(res.columns) == ["a", "b", "correlation"]
+
+
+def test_correlations_par_rayon_simpson():
+    """Globalement la corrélation est positive, mais elle est négative dans chaque rayon."""
+    petit = pd.DataFrame({"pnns_groups_1": "Petit", "x": [float(i) for i in range(40)]})
+    petit["score"] = 10 - petit["x"] * 0.1
+    grand = pd.DataFrame({"pnns_groups_1": "Grand", "x": [float(i) for i in range(100, 140)]})
+    grand["score"] = 30 - (grand["x"] - 100) * 0.1
+    mini = pd.DataFrame({"pnns_groups_1": "Mini", "x": [1.0, 2.0], "score": [1.0, 2.0]})
+    df = pd.concat([petit, grand, mini], ignore_index=True)
+    par_rayon = eda_lib.correlations_par_rayon(df, "x", "score")
+    assert set(par_rayon.index) == {"Petit", "Grand"}                 # Mini : 2 paires, écarté
+    assert par_rayon["spearman"].tolist() == pytest.approx([-1.0, -1.0])
+    assert par_rayon.loc["Grand", "n"] == 40
+    globale = eda_lib.correlations_nutriscore(df, ["x"], "score").loc["x", "spearman"]
+    assert globale > 0                                                # le signe s'inverse
+
+# ---------------------------------------------------------------------------
+# 4. Extrêmes restants
+# ---------------------------------------------------------------------------
+
+def test_zscore_robuste_valeur_connue():
+    z = eda_lib.zscore_robuste(pd.Series([1.0, 2.0, 3.0, 4.0, 100.0, None]))
+    # médiane 3, MAD 1 : le 100 est à 0,6745 × 97 = 65,43 ; la médiane elle-même à 0
+    assert z.iloc[4] == pytest.approx(0.6745 * 97)
+    assert z.iloc[2] == 0.0
+    assert pd.isna(z.iloc[5])                                         # le manquant reste manquant
+
+
+def test_zscore_robuste_mad_nulle():
+    z = eda_lib.zscore_robuste(pd.Series([0.0, 0.0, 0.0, 0.0, 5.0]))
+    assert z.isna().all()                                             # MAD = 0 : pas de division par zéro
+
+
+@pytest.fixture
+def avec_intrus() -> pd.DataFrame:
+    """Deux rayons de 30 produits ; un intrus (77 g de sel) dans les boissons, une valeur banale chez les snacks."""
+    boissons = pd.DataFrame({"code": [f"b{i}" for i in range(30)], "product_name": "boisson",
+                             "pnns_groups_1": "Beverages",
+                             "salt_100g": [0.01 * (i % 5 + 1) for i in range(29)] + [77.0]})
+    snacks = pd.DataFrame({"code": [f"s{i}" for i in range(30)], "product_name": "snack",
+                           "pnns_groups_1": "Salty snacks",
+                           "salt_100g": [1.0 + 0.1 * (i % 5) for i in range(30)]})
+    return pd.concat([boissons, snacks], ignore_index=True)
+
+
+def test_extremes_restants_detecte_l_intrus(avec_intrus):
+    res = eda_lib.extremes_restants(avec_intrus, ["salt_100g"])
+    assert res["code"].tolist() == ["b29"]
+    assert res.loc[0, "valeur"] == 77.0
+    assert res.loc[0, "rayon"] == "Beverages"
+    assert res.loc[0, "mediane_rayon"] == pytest.approx(0.03)
+    assert res.loc[0, "z"] > 3.5
+
+
+def test_extremes_restants_compare_au_rayon_pas_au_perimetre(avec_intrus):
+    # 1,4 g de sel est banal chez les snacks mais serait extrême parmi les boissons
+    avec_intrus.loc[30, "salt_100g"] = 1.4
+    res = eda_lib.extremes_restants(avec_intrus, ["salt_100g"])
+    assert "s0" not in res["code"].tolist()
+
+
+def test_extremes_restants_vide_bien_forme(avec_intrus):
+    res = eda_lib.extremes_restants(avec_intrus, ["salt_100g"], seuil=1e6)
+    assert res.empty
+    assert list(res.columns) == ["code", "product_name", "rayon", "nutriment", "valeur", "mediane_rayon", "z"]
+
+
+def test_extremes_restants_trie_par_z_absolu(avec_intrus):
+    avec_intrus.loc[0, "salt_100g"] = 5.0
+    res = eda_lib.extremes_restants(avec_intrus, ["salt_100g"])
+    assert res["code"].tolist() == ["b29", "b0"]                      # 77 g avant 5 g
+    assert res["z"].abs().is_monotonic_decreasing

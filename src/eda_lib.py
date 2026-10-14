@@ -207,19 +207,68 @@ def energie_calculee(df: pd.DataFrame) -> pd.Series:
 # 3. Corrélations
 # ============================================================
 
+def _pearson_spearman(x: pd.Series, y: pd.Series) -> tuple[float, float]:
+    """(Pearson, Spearman) de deux séries sans manquants ; NaN si l'une est constante."""
+    if x.nunique() < 2 or y.nunique() < 2:
+        return np.nan, np.nan   # corrélation non définie : scipy renverrait NaN avec un avertissement
+    return float(stats.pearsonr(x, y)[0]), float(stats.spearmanr(x, y)[0])
+
+
 def correlations_nutriscore(df: pd.DataFrame, colonnes: list[str], cible: str, min_n: int = 30) -> pd.DataFrame:
-    """Pearson et Spearman de chaque nutriment avec la cible, effectifs, tri par |Spearman|."""
-    raise NotImplementedError
+    """Pearson et Spearman de chaque nutriment avec la cible, effectifs, tri par |Spearman|.
+
+    Pour chaque colonne, seuls les produits qui ont à la fois la colonne et la cible
+    comptent (`n` = nombre de paires complètes) ; la corrélation de deux colonnes
+    n'est donc pas calculée sur les mêmes produits. Sous `min_n` paires, le nutriment
+    est écarté.
+
+    - Pearson mesure la liaison linéaire, sensible aux valeurs extrêmes ;
+    - Spearman mesure la liaison monotone (corrélation des rangs), robuste aux extrêmes.
+    Spearman est le défaut, Pearson sert de comparaison : un grand écart entre les
+    deux signale une relation courbe ou tirée par quelques extrêmes.
+    """
+    lignes = []
+    for colonne in colonnes:
+        paires = df[[colonne, cible]].dropna()
+        if len(paires) < min_n:
+            continue
+        pearson, spearman = _pearson_spearman(paires[colonne], paires[cible])
+        lignes.append({"nutriment": colonne, "n": len(paires), "pearson": pearson, "spearman": spearman})
+    table = pd.DataFrame(lignes, columns=["nutriment", "n", "pearson", "spearman"]).set_index("nutriment")
+    return table.reindex(table["spearman"].abs().sort_values(ascending=False).index)
 
 
 def paires_redondantes(matrice: pd.DataFrame, seuil: float = 0.8) -> pd.DataFrame:
-    """Paires de colonnes dont la corrélation dépasse `seuil` en valeur absolue."""
-    raise NotImplementedError
+    """Paires de colonnes dont la corrélation dépasse `seuil` en valeur absolue.
+
+    On ne lit que le triangle supérieur de la matrice (`k=1` exclut la diagonale,
+    qui vaut toujours 1) : chaque paire apparaît une seule fois. Tri par |corrélation|.
+    """
+    haut = np.triu(np.ones(matrice.shape, dtype=bool), k=1)
+    paires = matrice.where(haut).stack().rename("correlation").reset_index()
+    paires.columns = ["a", "b", "correlation"]
+    paires = paires[paires["correlation"].abs() >= seuil]
+    ordre = paires["correlation"].abs().sort_values(ascending=False).index
+    return paires.loc[ordre].reset_index(drop=True)
 
 
 def correlations_par_rayon(df: pd.DataFrame, colonne: str, cible: str, min_n: int = 30) -> pd.DataFrame:
-    """Spearman entre `colonne` et `cible` dans chaque rayon d'au moins `min_n` paires."""
-    raise NotImplementedError
+    """Spearman entre `colonne` et `cible` dans chaque rayon d'au moins `min_n` paires.
+
+    Un rayon avec moins de `min_n` paires complètes est absent du résultat : c'est
+    voulu, on ne baisse pas le seuil. Sert à comparer à la corrélation globale :
+    si elle change de signe ou d'ampleur d'un rayon à l'autre, la valeur globale
+    mélange des populations différentes (paradoxe de Simpson). Tri par Spearman décroissant.
+    """
+    lignes = []
+    for rayon, groupe in df.groupby(RAYON, observed=True):
+        paires = groupe[[colonne, cible]].dropna()
+        if len(paires) < min_n:
+            continue
+        lignes.append({"rayon": rayon, "n": len(paires),
+                       "spearman": _pearson_spearman(paires[colonne], paires[cible])[1]})
+    table = pd.DataFrame(lignes, columns=["rayon", "n", "spearman"]).set_index("rayon")
+    return table.sort_values("spearman", ascending=False)
 
 
 # ============================================================
@@ -227,13 +276,46 @@ def correlations_par_rayon(df: pd.DataFrame, colonne: str, cible: str, min_n: in
 # ============================================================
 
 def zscore_robuste(s: pd.Series) -> pd.Series:
-    """Écart à la médiane en nombre de MAD (0,6745 × (x − médiane) / MAD)."""
-    raise NotImplementedError
+    """Écart à la médiane en nombre de MAD (0,6745 × (x − médiane) / MAD).
+
+    Médiane et MAD (médiane des écarts absolus à la médiane) ne sont pas tirées
+    par les extrêmes, contrairement à la moyenne et à l'écart-type du z-score
+    classique. Le facteur 0,6745 met l'échelle en équivalent d'écarts-types pour
+    une loi normale, d'où le seuil usuel de 3,5.
+    Les manquants restent manquants. Si la MAD vaut 0 (plus de la moitié des
+    valeurs sont identiques, par exemple 0 g de lipides dans les boissons), le
+    z-score n'est pas défini : on renvoie NaN, pas une valeur infinie.
+    """
+    x = s.astype("float64")
+    mad = stats.median_abs_deviation(x.dropna())
+    if not mad > 0:   # MAD nulle ou série vide (comparaison fausse avec NaN aussi)
+        return pd.Series(np.nan, index=s.index)
+    return 0.6745 * (x - x.median()) / mad
 
 
 def extremes_restants(df: pd.DataFrame, colonnes: list[str], seuil: float = 3.5) -> pd.DataFrame:
-    """Valeurs à plus de `seuil` MAD de la médiane de leur rayon, en format long, triées par |z|."""
-    raise NotImplementedError
+    """Valeurs à plus de `seuil` MAD de la médiane de leur rayon, en format long, triées par |z|.
+
+    Une ligne par (produit, nutriment) extrême : code, nom, rayon, nutriment, valeur,
+    médiane du rayon et `z`. On compare un produit à son rayon, pas à tout le
+    périmètre : 60 g de sucres est banal dans les snacks sucrés, extrême dans les
+    viandes. Les groupes à MAD nulle ne sont pas jugés (voir `zscore_robuste`).
+    Aucun extrême : un tableau vide, avec les mêmes colonnes.
+    """
+    colonnes_sortie = ["code", "product_name", "rayon", "nutriment", "valeur", "mediane_rayon", "z"]
+    morceaux = []
+    for colonne in colonnes:
+        par_rayon = df.groupby(RAYON, observed=True)[colonne]
+        z = par_rayon.transform(zscore_robuste)
+        mediane = par_rayon.transform("median")
+        extremes = z.abs() > seuil          # False pour les NaN : manquants et groupes à MAD nulle
+        morceaux.append(pd.DataFrame({
+            "code": df.loc[extremes, "code"], "product_name": df.loc[extremes, "product_name"],
+            "rayon": df.loc[extremes, RAYON], "nutriment": colonne, "valeur": df.loc[extremes, colonne],
+            "mediane_rayon": mediane[extremes], "z": z[extremes],
+        }))
+    resultat = pd.concat(morceaux, ignore_index=True).reindex(columns=colonnes_sortie)
+    return resultat.sort_values("z", key=abs, ascending=False, kind="stable").reset_index(drop=True)
 
 
 # ============================================================
