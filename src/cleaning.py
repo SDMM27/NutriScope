@@ -109,25 +109,36 @@ def _compte_rendu(
     apres: pd.DataFrame,
     masques: dict[str, pd.Series],
 ) -> CompteRendu:
-    """Construit un compte rendu à partir des masques de modifications."""
+    """Construit un compte rendu à partir des masques de modifications.
 
-    touchees = pd.Series(False, index=avant.index)
+    Les masques sont associés aux lignes par leur position dans le
+    DataFrame, indépendamment des valeurs de l'index.
+    """
 
-    for masque in masques.values():
-        touchees = touchees | masque.reindex(
-            avant.index,
-            fill_value=False,
-        )
+    touchees = [False] * len(avant)
+    details = {}
+
+    for nom, masque in masques.items():
+        if len(masque) != len(avant):
+            raise ValueError(
+                f"Le masque {nom!r} contient {len(masque)} éléments, "
+                f"mais le DataFrame initial contient {len(avant)} lignes."
+            )
+
+        # Les valeurs manquantes dans un masque sont considérées comme False.
+        valeurs = masque.fillna(False).to_numpy(dtype=bool)
+
+        for position, valeur in enumerate(valeurs):
+            touchees[position] = touchees[position] or valeur
+
+        details[nom] = int(valeurs.sum())
 
     return CompteRendu(
         regle=regle,
         lignes_avant=len(avant),
         lignes_apres=len(apres),
-        lignes_touchees=int(touchees.sum()),
-        details={
-            nom: int(masque.sum())
-            for nom, masque in masques.items()
-        },
+        lignes_touchees=sum(touchees),
+        details=details,
     )
 
 
@@ -235,7 +246,17 @@ def dedupliquer_codes(
     modifiée lorsque `last_modified_t` est disponible.
     """
 
+    # Identifie les lignes par leur position, indépendamment de l'index.
+    colonne_position = "__position_initiale__"
+
+    if colonne_position in df.columns:
+        raise ValueError(
+            f"La colonne temporaire {colonne_position!r} "
+            "existe déjà dans le DataFrame."
+        )
+
     res = df.copy()
+    res[colonne_position] = range(len(res))
 
     codes_absents = res["code"].isna()
 
@@ -249,9 +270,7 @@ def dedupliquer_codes(
     if "last_modified_t" in res.columns:
         sort_columns.append("last_modified_t")
 
-    ascending = [True] + [False] * (
-        len(sort_columns) - 1
-    )
+    ascending = [True] + [False] * (len(sort_columns) - 1)
 
     res = (
         res.sort_values(
@@ -265,22 +284,41 @@ def dedupliquer_codes(
         )
     )
 
-    lignes_supprimees = ~df.index.isin(
-        res.index
-    )
+    positions_conservees = set(res[colonne_position])
+    lignes_supprimees = [
+        position not in positions_conservees
+        for position in range(len(df))
+    ]
 
-    doublons_supprimes = (
-        lignes_supprimees
-        & df["code"].notna()
-    )
+    codes_absents_par_position = [
+        bool(valeur)
+        for valeur in df["code"].isna()
+    ]
+
+    doublons_supprimes = [
+        supprimee and not code_absent
+        for supprimee, code_absent in zip(
+            lignes_supprimees,
+            codes_absents_par_position,
+        )
+    ]
+
+    # Retire la colonne technique et restaure l'index d'origine.
+    res = res.drop(columns=colonne_position)
 
     return res, _compte_rendu(
         "dedupliquer_codes",
         df,
         res,
         {
-            "codes_absents": codes_absents,
-            "doublons_supprimes": doublons_supprimes,
+            "codes_absents": pd.Series(
+                codes_absents_par_position,
+                index=df.index,
+            ),
+            "doublons_supprimes": pd.Series(
+                doublons_supprimes,
+                index=df.index,
+            ),
         },
     )
 
@@ -289,43 +327,22 @@ def dedupliquer_codes(
 # Règle 3 - normaliser_unites
 # ============================================================
 
-def normaliser_unites(
-    df: pd.DataFrame,
-) -> tuple[pd.DataFrame, CompteRendu]:
-    """Aligne les unités kcal/kJ et sel/sodium.
-
-    Énergie :
-    - si les kcal sont absentes et les kJ présents, les kcal sont
-      calculées à partir des kJ ;
-    - si le rapport kJ/kcal est hors de l'intervalle attendu,
-      les kcal sont recalculées à partir des kJ ;
-    - les kJ nuls ou négatifs ne servent pas de référence.
-
-    Sel / sodium :
-    - le sel absent est dérivé du sodium ;
-    - le sodium absent est dérivé du sel ;
-    - en cas d'incohérence, le sodium est recalculé à partir du sel.
-
-    Les valeurs ne sont pas bornées ici : cette opération est réalisée
-    par `borner_nutriments`.
-    """
-
+def normaliser_unites(df):
     res = df.copy()
 
     kcal = res["energy-kcal_100g"]
     kj = res["energy_100g"]
 
+    # Les valeurs en kJ doivent être plausibles pour servir de référence.
+    kj_utilisables = kj.gt(0) & kj.le(KCAL_MAX * KJ_PAR_KCAL)
+
     depuis_kj = kj / KJ_PAR_KCAL
 
-    kcal_derivees = (
-        kcal.isna()
-        & kj.notna()
-    )
-
+    kcal_derivees = kcal.isna() & kj_utilisables
     rapport = kj / kcal
 
     hors_rapport = (
-        (kj > 0)
+        kj_utilisables
         & kcal.notna()
         & ~rapport.between(
             RAPPORT_KJ_KCAL_MIN,
@@ -345,46 +362,29 @@ def normaliser_unites(
 
     res["energy-kcal_100g"] = nouvelles_kcal
 
+    # Réconciliation sel / sodium.
     sel = res["salt_100g"]
     sodium = res["sodium_100g"]
 
-    sel_derive = (
-        sel.isna()
-        & sodium.notna()
-    )
+    # Une valeur manquante ne peut être dérivée que depuis une valeur non négative.
+    sel_derive = sel.isna() & sodium.notna() & sodium.ge(0)
+    sodium_derive = sodium.isna() & sel.notna() & sel.ge(0)
 
-    sodium_derive = (
-        sodium.isna()
-        & sel.notna()
-    )
+    sel = sel.mask(sel_derive, sodium * SEL_PAR_SODIUM)
+    sodium = sodium.mask(sodium_derive, sel / SEL_PAR_SODIUM)
 
-    sel = sel.mask(
-        sel_derive,
-        sodium * SEL_PAR_SODIUM,
-    )
-
-    sodium = sodium.mask(
-        sodium_derive,
-        sel / SEL_PAR_SODIUM,
-    )
+    # Ne comparer les valeurs que lorsqu'elles sont toutes deux présentes
+    # et non négatives.
+    valeurs_valides = sel.notna() & sodium.notna() & sel.ge(0) & sodium.ge(0)
 
     incoherent = (
-        (sel - sodium * SEL_PAR_SODIUM).abs()
-        > TOLERANCE_SEL_SODIUM
+        valeurs_valides
+        & (sel - sodium * SEL_PAR_SODIUM).abs().gt(TOLERANCE_SEL_SODIUM)
     )
 
-    nouveau_sodium = sodium.mask(
-        incoherent,
-        sel / SEL_PAR_SODIUM,
-    )
+    nouveau_sodium = sodium.mask(incoherent, sel / SEL_PAR_SODIUM)
 
-    sodium_recalcule = (
-        incoherent
-        & _a_change(
-            sodium,
-            nouveau_sodium,
-        )
-    )
+    sodium_recalcule = incoherent & _a_change(sodium, nouveau_sodium)
 
     res["salt_100g"] = sel
     res["sodium_100g"] = nouveau_sodium
@@ -394,7 +394,7 @@ def normaliser_unites(
         df,
         res,
         {
-            "kcal_derivees": kcal_derivees,
+            "kcal_derivees": kcal_derivees & _a_change(kcal, nouvelles_kcal),
             "kcal_recalculees": kcal_recalculees,
             "sel_derive": sel_derive,
             "sodium_derive": sodium_derive,
@@ -687,7 +687,6 @@ def lire_brut(
         low_memory=False,
     )
 
-
 REGLES = [
     typer_colonnes,
     dedupliquer_codes,
@@ -698,19 +697,16 @@ REGLES = [
     strategie_manquants,
 ]
 
-
 def nettoyer(
     brut: pd.DataFrame,
     regles=None,
 ) -> tuple[pd.DataFrame, list[CompteRendu]]:
     """Applique les règles dans l'ordre et retourne le résultat et le journal."""
 
-    df = brut
+    df = brut.copy()
     journal = []
 
-    for regle in (
-        regles if regles is not None else REGLES
-    ):
+    for regle in regles if regles is not None else REGLES:
         df, compte_rendu = regle(df)
         journal.append(compte_rendu)
 

@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from src.cleaning import _compte_rendu
 
 from src.cleaning import (
     KJ_PAR_KCAL,
@@ -223,6 +224,34 @@ def test_dedupliquer_codes_idempotente(codes_dupliques):
     )
 
     assert cr.lignes_touchees == 0
+
+def test_dedupliquer_codes_gere_les_index_dupliques():
+    df = pd.DataFrame(
+        {
+            "code": ["A", "B", "A", None],
+            "name": [
+                "Produit A",
+                "Produit B",
+                "Produit A doublon",
+                "Sans code",
+            ],
+            "completeness": [50.0, 80.0, 90.0, 70.0],
+        },
+        index=[0, 0, 1, 1],
+    )
+
+    resultat, cr = dedupliquer_codes(df)
+
+    assert resultat["code"].tolist() == ["A", "B"]
+    assert resultat["name"].tolist() == ["Produit A doublon", "Produit B"]
+
+    assert cr.lignes_avant == 4
+    assert cr.lignes_apres == 2
+    assert cr.lignes_touchees == 2
+    assert cr.details == {
+        "codes_absents": 1,
+        "doublons_supprimes": 1,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -847,3 +876,174 @@ def test_nettoyer_ne_modifie_pas_l_entree(
         donnees_pipeline,
         copie,
     )
+
+def test_normaliser_unites_kcal_manquantes_et_kj_nuls_ou_negatifs():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [None, None, None],
+        "energy_100g": [0.0, -100.0, None],
+        "salt_100g": [None, None, None],
+        "sodium_100g": [None, None, None],
+    })
+
+    resultat, compte_rendu = normaliser_unites(df)
+
+    assert resultat["energy-kcal_100g"].isna().all()
+    assert compte_rendu.details["kcal_derivees"] == 0
+
+
+def test_normaliser_unites_kj_invalides_ne_remplacent_pas_les_kcal():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [100.0, 200.0],
+        "energy_100g": [0.0, -100.0],
+        "salt_100g": [None, None],
+        "sodium_100g": [None, None],
+    })
+
+    resultat, compte_rendu = normaliser_unites(df)
+
+    assert resultat["energy-kcal_100g"].tolist() == [100.0, 200.0]
+    assert compte_rendu.details["kcal_recalculees"] == 0
+
+
+def test_normaliser_unites_kcal_derivees_depuis_kj_valides():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [None],
+        "energy_100g": [418.4],
+        "salt_100g": [None],
+        "sodium_100g": [None],
+    })
+
+    resultat, compte_rendu = normaliser_unites(df)
+
+    assert resultat.loc[0, "energy-kcal_100g"] == pytest.approx(100.0)
+    assert compte_rendu.details["kcal_derivees"] == 1
+
+
+def test_normaliser_unites_idempotente_apres_derivation():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [None],
+        "energy_100g": [418.4],
+        "salt_100g": [None],
+        "sodium_100g": [None],
+    })
+
+    resultat_1, _ = normaliser_unites(df)
+    resultat_2, compte_rendu_2 = normaliser_unites(resultat_1)
+
+    pd.testing.assert_frame_equal(resultat_1, resultat_2)
+    assert compte_rendu_2.lignes_touchees == 0
+
+def test_normaliser_unites_kj_hors_bornes_ne_derive_pas_les_kcal():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [None],
+        "energy_100g": [74000.0],
+        "salt_100g": [None],
+        "sodium_100g": [None],
+    })
+
+    resultat, compte_rendu = normaliser_unites(df)
+
+    assert pd.isna(resultat.loc[0, "energy-kcal_100g"])
+    assert resultat.loc[0, "energy_100g"] == 74000.0
+    assert compte_rendu.details["kcal_derivees"] == 0
+
+
+def test_normaliser_unites_kj_hors_bornes_ne_remplace_pas_les_kcal():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [100.0],
+        "energy_100g": [74000.0],
+        "salt_100g": [None],
+        "sodium_100g": [None],
+    })
+
+    resultat, compte_rendu = normaliser_unites(df)
+
+    assert resultat.loc[0, "energy-kcal_100g"] == 100.0
+    assert resultat.loc[0, "energy_100g"] == 74000.0
+    assert compte_rendu.details["kcal_recalculees"] == 0
+
+def test_normaliser_unites_sel_negatif_ne_corrige_pas_le_sodium():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [100.0],
+        "energy_100g": [418.4],
+        "salt_100g": [-1.0],
+        "sodium_100g": [0.4],
+    })
+
+    resultat, compte_rendu = normaliser_unites(df)
+
+    assert resultat.loc[0, "salt_100g"] == -1.0
+    assert resultat.loc[0, "sodium_100g"] == 0.4
+    assert compte_rendu.details["sodium_recalcule"] == 0
+
+
+def test_normaliser_unites_sodium_negatif_ne_declenche_pas_de_correction():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [100.0],
+        "energy_100g": [418.4],
+        "salt_100g": [0.5],
+        "sodium_100g": [-0.4],
+    })
+
+    resultat, compte_rendu = normaliser_unites(df)
+
+    assert resultat.loc[0, "salt_100g"] == 0.5
+    assert resultat.loc[0, "sodium_100g"] == -0.4
+    assert compte_rendu.details["sodium_recalcule"] == 0
+
+
+def test_normaliser_unites_incoherence_sel_sodium_corrigee():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [100.0],
+        "energy_100g": [418.4],
+        "salt_100g": [0.5],
+        "sodium_100g": [0.4],
+    })
+
+    resultat, compte_rendu = normaliser_unites(df)
+
+    assert resultat.loc[0, "salt_100g"] == 0.5
+    assert resultat.loc[0, "sodium_100g"] == 0.2
+    assert compte_rendu.details["sodium_recalcule"] == 1
+
+def test_normaliser_unites_idempotente_sel_sodium():
+    df = pd.DataFrame({
+        "energy-kcal_100g": [100.0, 100.0, None, 100.0],
+        "energy_100g": [418.4, 418.4, 836.8, 418.4],
+        "salt_100g": [0.5, None, None, -1.0],
+        "sodium_100g": [0.4, 0.2, 0.4, 0.4],
+    })
+
+    resultat_1, _ = normaliser_unites(df)
+    resultat_2, _ = normaliser_unites(resultat_1)
+
+    pd.testing.assert_frame_equal(resultat_1, resultat_2)
+
+def test_compte_rendu_compte_une_ligne_une_seule_fois():
+    avant = pd.DataFrame({
+        "a": [1, 2, 3],
+        "b": [10, 20, 30],
+    })
+
+    apres = avant.copy()
+    apres.loc[0, "a"] = 100
+    apres.loc[0, "b"] = 1000
+    apres.loc[2, "a"] = 300
+
+    masques = {
+        "correction_a": pd.Series([True, False, True]),
+        "correction_b": pd.Series([True, False, False]),
+    }
+
+    rapport = _compte_rendu(
+        "test",
+        avant,
+        apres,
+        masques,
+    )
+
+    assert rapport.lignes_touchees == 2
+    assert rapport.details == {
+        "correction_a": 2,
+        "correction_b": 1,
+    }
