@@ -877,6 +877,31 @@ def test_nettoyer_ne_modifie_pas_l_entree(
         copie,
     )
 
+def test_nettoyer_conserve_un_compte_rendu_par_regle(
+    donnees_pipeline,
+):
+    resultat, journal = nettoyer(
+        donnees_pipeline,
+        regles=[],
+    )
+
+    pd.testing.assert_frame_equal(
+        resultat,
+        donnees_pipeline,
+    )
+    assert journal == []
+
+def test_nettoyer_est_idempotent(
+    donnees_pipeline,
+):
+    resultat_1, _ = nettoyer(donnees_pipeline, REGLES)
+    resultat_2, _ = nettoyer(resultat_1, REGLES)
+
+    pd.testing.assert_frame_equal(
+        resultat_2,
+        resultat_1,
+    )
+
 def test_normaliser_unites_kcal_manquantes_et_kj_nuls_ou_negatifs():
     df = pd.DataFrame({
         "energy-kcal_100g": [None, None, None],
