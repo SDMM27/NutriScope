@@ -162,6 +162,22 @@ Cette organisation permet de réaliser le nettoyage sur une base commune avant d
 
 Elle évite notamment de nettoyer plusieurs fois les mêmes données et limite les risques d'incohérence entre les différentes tables.
 
+Le pipeline TP9 est intégré à cette chaîne : DuckDB projette les champs utiles et filtre les produits français, puis `src/cleaning.py` applique les règles avant la production des cinq Parquets destinés à PostgreSQL. Le rapport avant/après est produit à partir de ce même traitement. Les étapes de lancement et les décisions de mapping sont décrites dans [la documentation du pipeline TP9](docs/data/pipeline_tp9.md).
+
+Pour préparer les Parquets et le rapport depuis la racine du dépôt :
+
+```powershell
+python src/extract_perimeter.py
+```
+
+Le chargement PostgreSQL appelle également cette préparation avant l'insertion :
+
+```powershell
+python src/load_database.py
+```
+
+Cette dernière commande utilise la base définie dans `src/config/settings.py`. Le traitement complet de la source et son chargement en base restent à exécuter pour valider les volumes de production.
+
 ---
 
 # Nettoyage des données
@@ -200,6 +216,8 @@ Deux fiches peuvent correspondre au même produit tout en présentant des niveau
 Lorsqu'un doublon est identifié, la fiche la plus complète est privilégiée.
 
 Les identifiants qui ne permettent pas d'assurer une identification fiable ne sont pas conservés comme clé d'unicité artificielle.
+
+Avant la déduplication, les codes sont convertis en chaînes, débarrassés des caractères NUL et des espaces en bordure. Les espaces internes restent inchangés. Si cette normalisation rend deux codes identiques, la fiche la plus complète est conservée afin que les cinq Parquets partagent les mêmes clés.
 
 ## Tests
 
@@ -350,7 +368,7 @@ Il permet notamment de comprendre pourquoi certaines décisions techniques ont �
 
 # État du projet
 
-**Dernière mise à jour : 7 octobre 2026**
+**Dernière mise à jour : 15 octobre 2026**
 
 ## Réalisé
 
@@ -366,15 +384,15 @@ Il permet notamment de comprendre pourquoi certaines décisions techniques ont �
 * mise en place de tests automatisés ;
 * conception de la structure relationnelle ;
 * préparation de PostgreSQL ;
-* évolution du pipeline vers un nettoyage commun avant le découpage des données.
+* intégration des règles TP9 au pipeline qui prépare les Parquets PostgreSQL ;
+* génération du rapport avant/après à partir du même traitement ;
+* tests unitaires et d'intégration du nettoyage et du mapping SQL.
 
 ## En cours
 
-* finalisation du pipeline de nettoyage ;
-* production du jeu de données propre ;
-* préparation des données destinées aux différentes tables ;
-* chargement de la base ;
-* contrôles de cohérence après chargement.
+* exécution complète du pipeline sur `data/food.parquet` ;
+* génération des Parquets et du rapport sur le jeu complet ;
+* chargement PostgreSQL et contrôles de cohérence sur les volumes réels.
 
 ## À venir
 
