@@ -1,35 +1,62 @@
 # NutriScope
 
-**Version : 0.0.001**
+## Présentation
 
-## Description
+NutriScope est un projet de service d'aide au choix alimentaire développé dans le cadre de la formation **Développeur en Intelligence Artificielle**.
 
-**NutriScope** est un projet de service d'aide au choix alimentaire développé dans le cadre de la formation **Développeur en Intelligence Artificielle**.
+L'objectif est de permettre à un utilisateur d'obtenir rapidement des informations utiles sur un produit alimentaire, au-delà du simple affichage d'un score nutritionnel.
 
-L'objectif est de permettre à un utilisateur de scanner un produit alimentaire en magasin afin d'obtenir :
+À terme, NutriScope doit permettre notamment :
 
-* une identification du produit ;
-* une explication de sa qualité nutritionnelle ;
-* son Nutri-Score et les informations nutritionnelles associées ;
-* des alternatives alimentaires plus adaptées ;
-* à terme, un assistant conversationnel permettant d'interroger les données alimentaires.
+* d'identifier un produit à partir de son code-barres ;
+* d'afficher ses informations nutritionnelles ;
+* d'expliquer sa qualité nutritionnelle ;
+* de présenter son Nutri-Score ;
+* de proposer des produits de substitution ;
+* de répondre aux questions de l'utilisateur à l'aide d'un assistant basé sur un système RAG.
 
-Le projet s'appuie principalement sur les données ouvertes de **Open Food Facts**.
+Le projet s'appuie principalement sur les données ouvertes d'**Open Food Facts**.
 
-## Collaborateurs
+---
 
-* **Sacha Don**
+## Équipe
+
 * **Clément Welsch**
+* **Sacha Don**
 
-Les responsabilités sont réparties entre les travaux liés à l'extraction et à l'analyse des données, et ceux liés à la base de données, au développement Python, à l'architecture et à l'intégration.
+La répartition du travail s'organise principalement autour de deux axes :
+
+* extraction et préparation des données sources ;
+* traitement des données, base de données et organisation technique.
+
+Les décisions ayant un impact sur l'ensemble du projet sont prises collectivement.
+
+---
+
+## Périmètre actuel
+
+Le catalogue Open Food Facts étant très volumineux, NutriScope ne cherche pas à traiter l'ensemble des produits disponibles.
+
+Le périmètre actuel se concentre sur six grands rayons :
+
+1. boissons ;
+2. produits laitiers ;
+3. céréales et petit-déjeuner ;
+4. biscuits et snacks ;
+5. plats préparés et conserves ;
+6. sauces et condiments.
+
+Les catégories Open Food Facts ne correspondant pas directement à ces rayons, leur utilisation fait l'objet d'un travail de validation à partir des données réelles.
+
+---
 
 ## Technologies
 
 ### Langage
 
-* Python 3.12.10
+* Python 3.12
 
-### Traitement et stockage des données
+### Données
 
 * Pandas
 * Parquet
@@ -37,173 +64,165 @@ Les responsabilités sont réparties entre les travaux liés à l'extraction et 
 * PostgreSQL
 * SQL
 
-### Développement et qualité
+### Qualité et tests
 
 * pytest
-* Git / GitHub
-* environnement virtuel Python (`.venv`)
+* Git
+* GitHub
+* environnement virtuel Python
 
-### IA — à venir
+### Intelligence artificielle
 
-Le projet prévoit également l'intégration progressive de briques d'intelligence artificielle, notamment :
+Les briques d'intelligence artificielle sont intégrées progressivement au projet.
 
-* reconnaissance de produits ;
-* traitement et exploitation des informations nutritionnelles ;
-* système de recommandation/substitution ;
-* assistant conversationnel basé sur une architecture **RAG**.
+Les fonctionnalités prévues comprennent notamment :
 
-Ces composants ne font pas encore partie de l'architecture fonctionnelle finale présentée dans ce README.
+* analyse et exploitation des données nutritionnelles ;
+* recommandation et substitution de produits ;
+* reconnaissance automatique de produits ;
+* système RAG ;
+* assistant conversationnel.
 
-## Source des données
+Ces fonctionnalités ne constituent pas encore le cœur de l'architecture actuelle. Le projet se concentre d'abord sur la construction d'une base de données fiable.
 
-Les données utilisées proviennent principalement d'**Open Food Facts** :
+---
 
-* [Open Food Facts — Data](https://world.openfoodfacts.org/data)
+# Données
 
-Les données brutes sont transformées en plusieurs fichiers Parquet avant leur intégration dans la base de données.
+## Source
 
-Les principaux jeux de données utilisés sont :
+Les données utilisées proviennent principalement d'Open Food Facts.
 
-* `brands.parquet`
-* `categories.parquet`
-* `products.parquet`
-* `products_categories.parquet`
-* `nutrients.parquet`
+Les données brutes sont trop volumineuses pour être traitées comme un simple fichier CSV en mémoire. Le format **Parquet** et **DuckDB** sont donc utilisés pour faciliter leur exploration et leur traitement.
 
-## Pipeline de données
+La source principale est :
 
-Le projet utilise actuellement un pipeline **ETL** permettant de transformer les données Open Food Facts et de les charger dans PostgreSQL.
+* [Open Food Facts](https://world.openfoodfacts.org/)
 
-### Étapes principales
+## Volumétrie
 
-1. Extraction des données Open Food Facts.
-2. Transformation et préparation des données au format Parquet.
-3. Contrôle de la présence et de la structure des fichiers.
-4. Nettoyage et validation des données.
-5. Lecture des fichiers Parquet avec DuckDB.
-6. Chargement des données dans PostgreSQL.
-7. Vérification finale de la volumétrie et de l'intégrité des données.
-8. Mesure du temps d'exécution des différentes étapes.
+Le périmètre France représente actuellement environ **1,25 million de produits**.
 
-### Volumétrie actuelle
+Les principaux jeux de données préparés pour le projet sont :
 
-Le pipeline traite actuellement environ :
+| Donnée                          | Volume approximatif |
+| ------------------------------- | ------------------: |
+| Marques                         |              79 577 |
+| Catégories                      |              37 442 |
+| Produits                        |           1 247 309 |
+| Relations produits / catégories |           3 939 635 |
+| Nutriments                      |           1 247 309 |
 
-| Donnée                        |    Volume |
-| ----------------------------- | --------: |
-| Marques                       |    79 577 |
-| Catégories                    |    37 442 |
-| Produits                      | 1 247 309 |
-| Relations produits/catégories | 3 939 635 |
-| Nutriments                    | 1 247 309 |
+Les volumes peuvent évoluer au fil des traitements et des règles de nettoyage.
 
-Le fichier source `nutrients.parquet` contient davantage de lignes que la table finale en raison de doublons sur les codes produits. Les données sont donc dédoublonnées avant leur intégration.
+---
 
-## Pipeline de nettoyage des données
+# Pipeline de données
 
-Le module `src/cleaning.py` fournit un pipeline de nettoyage reproductible pour préparer les données Open Food Facts avant leur exploitation dans les étapes suivantes du projet NutriScope.
+L'architecture du pipeline a évolué au cours du projet.
 
-### Objectifs
+L'organisation actuellement retenue est :
 
-* Normaliser les types et les unités des données.
-* Dédupliquer les produits à partir de leur code.
-* Détecter et traiter les valeurs nutritionnelles invalides ou incohérentes.
-* Normaliser les catégories vides.
-* Conserver les valeurs manquantes lorsqu'aucune correction fiable n'est possible.
-* Produire un journal des transformations effectuées.
-
-### Ordre des règles
-
-Le pipeline applique les règles suivantes dans cet ordre :
-
-1. `typer_colonnes` : normalisation des types de colonnes.
-2. `dedupliquer_codes` : traitement des produits en doublon.
-3. `normaliser_unites` : harmonisation des unités et des valeurs nutritionnelles.
-4. `borner_nutriments` : invalidation des valeurs nutritionnelles hors limites définies.
-5. `corriger_energie` : correction des valeurs énergétiques lorsqu'un calcul fiable est possible.
-6. `traiter_categories_vides` : remplacement des chaînes de catégories vides par des valeurs manquantes.
-7. `strategie_manquants` : conservation des valeurs manquantes sans imputation artificielle.
-
-L'ordre est défini dans `REGLES` dans `src/cleaning.py`.
-
-### Traitement des catégories
-
-La règle `traiter_categories_vides` examine les colonnes disponibles parmi `categories`, `categories_tags` et `food_groups_tags`.
-
-* Les chaînes vides ou composées uniquement d'espaces sont remplacées par `pd.NA`.
-* Les valeurs renseignées sont conservées.
-* Les colonnes absentes sont ignorées.
-* Les catégories manquantes ne sont pas reconstruites artificiellement.
-
-Cette approche permet d'appliquer la règle à des DataFrames dont le schéma varie selon les données disponibles, sans provoquer d'erreur lorsqu'une colonne de catégories est absente.
-
-### Contrat des règles de nettoyage
-
-Chaque règle suit le contrat suivant :
-
-```python
-regle(df) -> (DataFrame, CompteRendu)
+```text
+Open Food Facts
+       │
+       ▼
+Extraction du périmètre France
+       │
+       ▼
+Nettoyage et validation
+       │
+       ▼
+Jeu de données propre
+       │
+       ▼
+Découpage des données
+       │
+       ▼
+Préparation des tables
+       │
+       ▼
+PostgreSQL
+       │
+       ├──────────────┐
+       ▼              ▼
+   Analyse       Fonctionnalités IA
+                      │
+              ┌───────┴────────┐
+              ▼                ▼
+        Substitution          RAG
+              │                │
+              └───────┬────────┘
+                      ▼
+                 Application
+                 NutriScope
 ```
 
-Les règles :
+Cette organisation permet de réaliser le nettoyage sur une base commune avant de créer les différents jeux de données nécessaires à la base.
 
-* travaillent sur une copie du DataFrame d'entrée ;
-* retournent un DataFrame nettoyé et un objet `CompteRendu` ;
-* fournissent des indicateurs sur les lignes touchées et les opérations réalisées ;
-* doivent être idempotentes : appliquer deux fois la même règle ne doit pas modifier davantage les données déjà nettoyées.
+Elle évite notamment de nettoyer plusieurs fois les mêmes données et limite les risques d'incohérence entre les différentes tables.
 
-Le nombre de lignes touchées correspond au nombre de lignes distinctes concernées par au moins une opération de la règle. Les détails permettent de distinguer les différents types d'opérations.
+---
 
-Le pipeline `nettoyer()` applique les règles dans l'ordre défini et retourne le DataFrame final ainsi que le journal des comptes rendus.
+# Nettoyage des données
 
-### Exécution des tests
+Le profiling du dataset a montré que les données Open Food Facts contiennent de nombreuses anomalies.
 
-Depuis la racine du projet, dans l'environnement Python du projet :
+Nous avons notamment rencontré :
 
-```bash
-python -m pytest -v
-```
+* des valeurs nutritionnelles négatives ;
+* des valeurs supérieures aux bornes attendues ;
+* des incohérences sur les valeurs énergétiques ;
+* des valeurs manquantes ;
+* des doublons ;
+* des catégories vides ;
+* des fiches produits plus ou moins complètes.
 
-La suite de tests validée pour cette version comporte **43 tests réussis**.
+## Principe de nettoyage
 
-Les tests couvrent notamment :
+Une anomalie sur une donnée ne signifie pas nécessairement que le produit entier doit être supprimé.
 
-* le comportement des règles de nettoyage ;
-* la préservation du DataFrame d'entrée ;
-* l'idempotence du pipeline ;
-* le traitement des doublons et des index non uniques ;
-* le calcul des comptes rendus ;
-* la gestion des colonnes de catégories absentes ;
-* la génération reproductible du rapport de nettoyage.
+Le nettoyage est donc réalisé **règle par règle**.
 
-### Périmètre et limites
+Selon le cas, une règle peut :
 
-Le pipeline traite la qualité structurelle et métier des données en appliquant des règles déterministes. Il ne réalise pas d'imputation statistique, de normalisation pour l'apprentissage automatique ou de sélection de variables. Ces opérations relèvent des étapes de préparation spécifiques aux modèles.
+* corriger une valeur lorsqu'une correction fiable est possible ;
+* supprimer uniquement une valeur incorrecte ;
+* conserver le produit malgré une donnée manquante ;
+* supprimer le produit lorsqu'une information essentielle est trop incertaine.
 
-Les corrections ne sont appliquées que lorsqu'elles sont suffisamment justifiées par les règles définies. Les valeurs douteuses qui ne peuvent pas être corrigées de manière fiable sont invalidées plutôt que remplacées arbitrairement.
+Cette approche permet de conserver autant de données exploitables que possible.
 
+## Doublons
 
-## Rapport avant / après
+Deux fiches peuvent correspondre au même produit tout en présentant des niveaux de complétude différents.
 
-Un rapport reproductible permet de mesurer l'impact du nettoyage des données.
+Lorsqu'un doublon est identifié, la fiche la plus complète est privilégiée.
 
-Il permet notamment de suivre :
+Les identifiants qui ne permettent pas d'assurer une identification fiable ne sont pas conservés comme clé d'unicité artificielle.
 
-* le nombre de lignes avant traitement ;
-* le nombre de colonnes ;
-* le nombre de valeurs manquantes ;
-* le nombre de lignes modifiées par règle ;
-* le nombre de lignes supprimées ;
-* l'impact cumulé des différentes règles ;
-* la volumétrie finale.
+## Tests
 
-Cela permet de rendre les choix de nettoyage mesurables et traçables.
+Les règles de nettoyage sont accompagnées de tests automatisés avec `pytest`.
 
-## Base de données
+Les tests permettent notamment de vérifier :
 
-Les données finales sont stockées dans une base **PostgreSQL**.
+* les cas normaux ;
+* les valeurs manquantes ;
+* les valeurs aberrantes ;
+* les cas limites ;
+* les cas particuliers rencontrés pendant le profiling ;
+* le comportement des règles de nettoyage.
 
-Les principales tables sont :
+L'objectif est de rendre le nettoyage reproductible et de limiter les régressions lors des évolutions du projet.
+
+---
+
+# Base de données
+
+Les données propres sont destinées à être organisées dans une base **PostgreSQL**.
+
+La structure est progressivement séparée en plusieurs ensembles :
 
 * `brands`
 * `categories`
@@ -211,197 +230,202 @@ Les principales tables sont :
 * `products_categories`
 * `nutrients`
 
-Les relations entre les tables sont gérées par des clés étrangères.
+Cette organisation permet de séparer les informations relatives aux produits, aux marques, aux catégories et aux données nutritionnelles.
 
-L'ordre de chargement respecte les dépendances entre les tables :
+Les relations entre les différentes entités sont assurées par des clés et des contraintes d'intégrité adaptées au modèle relationnel.
 
-1. `brands`
-2. `categories`
-3. `products`
-4. `products_categories`
-5. `nutrients`
+---
 
-Avant un nouveau chargement complet, les anciennes données sont supprimées afin de garantir un état cohérent de la base.
+# Machine Learning et RAG
 
-## Architecture du projet
+Le machine learning et le RAG constituent les prochaines grandes étapes du projet.
+
+Cependant, ils ne doivent pas être construits sur une donnée insuffisamment maîtrisée.
+
+La priorité actuelle est donc de stabiliser :
+
+1. l'extraction ;
+2. le nettoyage ;
+3. le jeu de données propre ;
+4. la préparation des données ;
+5. la base PostgreSQL ;
+6. les contrôles de cohérence.
+
+Une fois cette chaîne stabilisée, elle servira de socle aux fonctionnalités d'intelligence artificielle.
+
+## Nutri-Score
+
+Le Nutri-Score est considéré comme une information de référence du projet.
+
+Il ne doit pas être utilisé automatiquement comme variable d'entrée des futurs modèles lorsqu'il constitue directement ou indirectement la réponse recherchée.
+
+Cette précaution vise notamment à éviter les phénomènes de fuite d'information dans les expérimentations de machine learning.
+
+---
+
+# Organisation du projet
+
+La structure du dépôt évolue avec le développement du projet.
+
+Les principaux répertoires sont actuellement organisés autour de :
 
 ```text
 NutriScope/
 │
-├── .venv/
-│
 ├── data/
-│   └── extracts/
-│       ├── brands.parquet
-│       ├── categories.parquet
-│       ├── products.parquet
-│       ├── products_categories.parquet
-│       └── nutrients.parquet
 │
 ├── docs/
-│   └── journal.md
 │
 ├── notebooks/
-│   └── first_notebook.ipynb
+│
+├── sql/
 │
 ├── src/
-│   │
-│   ├── config/
-│   │   ├── __init__.py
-│   │   └── settings.py
-│   │
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   └── timer.py
-│   │
-│   ├── database/
-│   │   ├── __init__.py
-│   │   ├── connection.py
-│   │   └── cleanup.py
-│   │
-│   ├── validation/
-│   │   ├── __init__.py
-│   │   └── checks.py
-│   │
-│   ├── etl/
-│   │   ├── __init__.py
-│   │   ├── brands.py
-│   │   ├── categories.py
-│   │   ├── products.py
-│   │   ├── products_categories.py
-│   │   └── nutrients.py
-│   │
-│   └── load_database.py
 │
 ├── tests/
-│   └── ...
 │
-├── README.md
-└── requirements.txt
+├── CONTRIBUTING.md
+├── PROJECT_LOG.md
+└── README.md
 ```
 
-## Organisation du code
+## `data/`
 
-### `src/config/`
+Contient les données utilisées par le projet.
 
-Centralise la configuration du projet.
+Les données sources volumineuses et les fichiers générés localement ne sont pas nécessairement versionnés dans Git.
 
-`settings.py` contient notamment les paramètres nécessaires à la connexion et au fonctionnement du pipeline.
+## `docs/`
 
-### `src/utils/`
+Contient la documentation du projet.
 
-Contient les utilitaires génériques du projet.
+Le journal de bord et les documents de suivi permettent de conserver les décisions et l'évolution du projet.
 
-`timer.py` fournit les fonctions permettant de mesurer les temps d'exécution des différentes étapes du pipeline.
+## `notebooks/`
 
-### `src/database/`
+Contient les notebooks utilisés pour l'exploration et l'analyse des données.
 
-Regroupe les fonctionnalités liées à PostgreSQL :
+## `sql/`
 
-* création et gestion des connexions ;
-* nettoyage de la base ;
-* opérations nécessaires au chargement des données.
+Contient les éléments SQL liés à la base de données et aux contrôles associés.
 
-### `src/validation/`
+## `src/`
 
-Contient les contrôles permettant de vérifier la cohérence des données et de la base après traitement.
+Contient le code Python du projet :
 
-### `src/etl/`
+* traitement des données ;
+* nettoyage ;
+* validation ;
+* accès à la base ;
+* pipeline ETL ;
+* fonctions utilitaires.
 
-Contient les traitements spécifiques à chaque type de donnée :
+## `tests/`
 
-* marques ;
-* catégories ;
-* produits ;
-* relations produits/catégories ;
-* nutriments.
+Contient les tests automatisés du projet.
 
-Chaque module est responsable de la préparation et du chargement de son propre jeu de données.
+---
 
-### `src/load_database.py`
+# Documentation du projet
 
-Ce script constitue le **point d'entrée principal du pipeline de chargement**.
+Deux documents jouent des rôles différents dans le suivi du projet.
 
-Il orchestre notamment :
+### `journal.md`
 
-1. la vérification des fichiers d'entrée ;
-2. la connexion à DuckDB ;
-3. la connexion à PostgreSQL ;
-4. le nettoyage de la base ;
-5. le chargement des différentes tables ;
-6. les contrôles finaux ;
-7. la mesure du temps total d'exécution.
+Le journal de bord décrit l'évolution du projet au fil des semaines :
 
-Le script a remplacé l'ancien `load_parquet.py`, dont le nom était devenu trompeur : le pipeline ne se contente pas de charger des fichiers Parquet, il utilise Parquet comme source d'un véritable processus ETL vers PostgreSQL.
+* travaux réalisés ;
+* répartition du travail ;
+* problèmes rencontrés ;
+* décisions prises ;
+* apprentissages.
 
-## Architecture cible
+### `PROJECT_LOG.md`
 
-L'architecture actuelle constitue la base technique du projet.
+Le journal technique conserve principalement l'historique des décisions structurantes et des changements d'architecture.
 
-```text
-                 Open Food Facts
-                        │
-                        ▼
-                Données brutes
-                        │
-                        ▼
-                Extraction / ETL
-                        │
-                        ▼
-                     Parquet
-                        │
-                        ▼
-                    DuckDB
-                        │
-             Transformation /
-                validation
-                        │
-                        ▼
-                   PostgreSQL
-                        │
-             ┌──────────┼──────────┐
-             ▼          ▼          ▼
-          Analyse    Substitution   RAG
-             │          │          │
-             └──────────┼──────────┘
-                        ▼
-                  Application
-                  NutriScope
-```
+Il permet notamment de comprendre pourquoi certaines décisions techniques ont été prises et comment le pipeline actuel a été construit.
 
-PostgreSQL constitue le stockage principal des données produits. Les futures fonctionnalités d'IA pourront exploiter cette base ainsi que des sources documentaires dédiées au système RAG.
+---
 
-## Liens utiles
+# État du projet
 
+**Dernière mise à jour : 7 octobre 2026**
+
+## Réalisé
+
+* exploration des données Open Food Facts ;
+* choix du format Parquet ;
+* mise en place de DuckDB pour l'exploration ;
+* définition du périmètre France ;
+* définition d'un périmètre de six rayons ;
+* profiling des données ;
+* identification des principales anomalies ;
+* conception des règles de nettoyage ;
+* implémentation progressive du nettoyage ;
+* mise en place de tests automatisés ;
+* conception de la structure relationnelle ;
+* préparation de PostgreSQL ;
+* évolution du pipeline vers un nettoyage commun avant le découpage des données.
+
+## En cours
+
+* finalisation du pipeline de nettoyage ;
+* production du jeu de données propre ;
+* préparation des données destinées aux différentes tables ;
+* chargement de la base ;
+* contrôles de cohérence après chargement.
+
+## À venir
+
+* stabilisation complète du pipeline de données ;
+* validation de la base ;
+* exploitation avancée des données nutritionnelles ;
+* fonctionnalité de substitution de produits ;
+* machine learning ;
+* reconnaissance automatique des produits ;
+* architecture RAG ;
+* assistant conversationnel ;
+* intégration des différentes briques dans l'application finale.
+
+---
+
+# Principes du projet
+
+NutriScope suit progressivement plusieurs principes structurants.
+
+### La qualité des données avant les modèles
+
+Les modèles d'intelligence artificielle doivent reposer sur des données suffisamment fiables et comprises.
+
+### Une anomalie doit être traitée au niveau approprié
+
+Lorsqu'une seule information est incorrecte, le produit entier ne doit pas être supprimé sans raison.
+
+### Les transformations doivent être explicites
+
+Les règles de nettoyage et de transformation doivent être compréhensibles, testables et reproductibles.
+
+### La source et la base applicative sont deux choses différentes
+
+Open Food Facts constitue la source de données. Sa structure n'a pas vocation à être reproduite telle quelle dans la base de NutriScope.
+
+### Les décisions techniques doivent rester traçables
+
+Les choix importants et leur justification sont conservés dans `PROJECT_LOG.md`.
+
+---
+
+# Liens
+
+* [Dépôt GitHub NutriScope](https://github.com/SDMM27/NutriScope)
 * [Open Food Facts](https://world.openfoodfacts.org/)
-* [Open Food Facts — Data](https://world.openfoodfacts.org/data)
-* [Open Food Facts — Wiki](https://wiki.openfoodfacts.org/FR:Accueil)
-* [Open Food Facts Python API](https://github.com/openfoodfacts/openfoodfacts-python)
+* [Open Food Facts — Wiki](https://wiki.openfoodfacts.org/)
 
-## État du projet
+---
 
-### Réalisé
+## Licence et données
 
-* [x] Exploration des données Open Food Facts
-* [x] Extraction des données nécessaires
-* [x] Conversion et stockage intermédiaire au format Parquet
-* [x] Mise en place de DuckDB
-* [x] Mise en place de PostgreSQL
-* [x] Pipeline ETL
-* [x] Séparation du code par responsabilité
-* [x] Nettoyage des données
-* [x] Gestion explicite des valeurs manquantes
-* [x] Contrôles de validation
-* [x] Tests automatisés avec pytest
-* [x] Rapport avant / après du nettoyage
-* [x] Mesure des temps d'exécution
-* [x] Chargement des données dans PostgreSQL
+Les conditions d'utilisation et de redistribution des données Open Food Facts doivent être respectées conformément aux conditions applicables à la source.
 
-### À venir
-
-* [ ] Exploitation avancée des données nutritionnelles
-* [ ] Fonctionnalité de substitution de produits
-* [ ] Reconnaissance automatique des produits
-* [ ] Mise en place de l'architecture RAG
-* [ ] Assistant conversationnel NutriScope
-* [ ] Intégration des différentes briques dans l'application finale
+Le projet doit également tenir compte des contraintes réglementaires et de protection des données applicables aux futures fonctionnalités de l'application.

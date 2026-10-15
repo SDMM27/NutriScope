@@ -1,384 +1,340 @@
-# Journal de développement NutriScope
+# Journal de bord — NutriScope
 
-Ce journal retrace les principales étapes du développement de NutriScope : choix techniques, préparation des données, mise en place du pipeline ETL, organisation du code, nettoyage des données et tests automatisés.
+Ce journal sert à garder une trace de l'évolution de NutriScope au fil du projet.
 
-Les entrées sont classées chronologiquement. Les contributeurs sont identifiés à partir des commits, des issues et des pull requests du dépôt GitHub.
-
-* **Clément Welsch (`clement-welsch`)** : développement Python, architecture, intégration, nettoyage des données et tests.
-* **Sacha Don (`SDMM27`)** : extraction et analyse des données, travaux sur la structure du projet et contribution au pipeline de nettoyage.
-* **Binôme** : travaux dont la réalisation est collective ou pour lesquels l'attribution individuelle ne peut pas être établie avec certitude.
-
-Une issue décrit un objectif de travail ; une pull request documente une proposition de modification ; un commit enregistre un changement. Ces éléments ne sont pas interchangeables et leur statut doit être pris en compte dans la lecture de cet historique.
+L'objectif n'est pas de refaire la documentation technique. On y note plutôt ce que nous avons fait, comment nous nous sommes réparti le travail, les problèmes rencontrés, les solutions trouvées et les décisions qui ont fait évoluer le projet.
 
 ---
 
-## 29 juillet 2026 — Choix du format des données Open Food Facts
+# Juillet — Démarrage
 
-**Contributeur : binôme — décision technique**
+## Semaine du 29 juillet
 
-### Contexte
+### Ce qu'on fait
 
-Le projet nécessite de traiter un volume important de données issues d'Open Food Facts. Le format retenu doit permettre de stocker les données efficacement et de faciliter leur traitement avec Python et des outils SQL.
+Le projet NutriScope commence avec la constitution de l'équipe et la découverte du sujet.
 
-### Options étudiées
+Nous partons sur l'idée d'une application capable de donner rapidement des informations sur un produit alimentaire, mais aussi d'aller plus loin qu'un simple Nutri-Score : explication du score, comparaison avec d'autres produits, substitution et, plus tard, assistant basé sur un RAG.
 
-Trois formats sont envisagés :
+Pour commencer, nous devons surtout comprendre les données Open Food Facts et mettre en place le dépôt du projet.
 
-* **CSV** : simple à lire et à manipuler, mais potentiellement coûteux en espace de stockage et en temps de traitement sur de gros volumes. Il représente également mal les structures imbriquées.
-* **JSONL** : permet de stocker un objet JSON par ligne et de représenter des structures complexes, mais peut nécessiter de parcourir et de décoder de nombreux enregistrements lors de traitements volumineux.
-* **Parquet** : format binaire orienté colonnes, qui offre une compression efficace et permet de ne lire que les colonnes nécessaires à une opération.
+### Répartition
+
+* **Clément** : mise en place du dépôt, premières réflexions sur l'architecture et exploration technique.
+* **Sacha** : exploration des données Open Food Facts et premières recherches sur les formats disponibles.
+
+### Ce qui nous pose problème
+
+Le dataset est beaucoup plus important que ce que nous avions imaginé. Il ne s'agit pas simplement d'un CSV que l'on peut charger tranquillement avec pandas.
+
+Nous devons donc rapidement réfléchir à une manière de travailler avec beaucoup de données sans essayer de tout charger en mémoire.
+
+### Ce qu'on décide
+
+Nous allons travailler avec le format Parquet et utiliser DuckDB pour pouvoir interroger les données directement.
+
+C'est un premier choix important : plutôt que de réduire immédiatement les données simplement parce qu'elles sont volumineuses, nous cherchons d'abord une manière de les exploiter correctement.
+
+---
+
+# Août — Comprendre les données
+
+## Semaine suivante
+
+### Ce qu'on fait
+
+Nous passons beaucoup de temps à explorer le contenu du dataset.
+
+Au début, nous pensions surtout chercher les colonnes dont nous aurions besoin. En réalité, nous découvrons progressivement que certaines informations sont beaucoup moins simples qu'elles n'en ont l'air.
+
+Les nutriments sont notamment regroupés dans des structures particulières et certaines informations existent sous plusieurs formes.
+
+### Répartition
+
+* **Sacha** continue principalement l'exploration et l'extraction des données.
+* **Clément** travaille davantage sur la façon dont les données pourront être exploitées ensuite par la base et les futures fonctionnalités.
+
+### Problème rencontré
+
+Une difficulté apparaît assez vite : il est facile de sélectionner des colonnes simplement parce qu'elles semblent intéressantes, mais beaucoup plus difficile de savoir si elles seront réellement utiles au projet.
+
+Nous commençons donc à regarder les fonctionnalités une par une pour éviter de conserver énormément de données sans raison.
+
+### Ce qu'on apprend
+
+Le projet va finalement être autant un travail de **compréhension et de préparation des données** qu'un projet d'IA.
+
+C'est un point qui n'était pas forcément aussi évident au début.
+
+---
+
+# Fin août — Définir le périmètre
+
+## Semaine du 25 août
+
+### Ce qu'on fait
+
+Nous essayons maintenant de répondre à une question simple : **sur quels produits NutriScope doit-il réellement travailler ?**
+
+Le catalogue Open Food Facts est trop large pour essayer de tout couvrir.
+
+Après exploration, nous retenons six grands rayons comme base du projet :
+
+* boissons ;
+* produits laitiers ;
+* céréales et petit-déjeuner ;
+* biscuits et snacks ;
+* plats préparés et conserves ;
+* sauces et condiments.
+
+Ce choix doit nous permettre d'avoir des produits suffisamment différents tout en gardant un projet raisonnable.
+
+### Répartition
+
+À ce stade, la séparation des tâches commence à être plus claire :
+
+* **Sacha** prend principalement en charge le travail d'extraction et de manipulation du dataset ;
+* **Clément** prend davantage en charge la partie structure du projet, base de données, nettoyage et organisation technique.
+
+Cette répartition n'est pas totalement rigide : nous continuons à discuter ensemble des décisions qui ont un impact sur l'ensemble du projet.
+
+### Problème
+
+Les catégories Open Food Facts ne correspondent pas directement à nos six rayons.
+
+Il faut donc éviter de faire un mapping arbitraire.
 
 ### Décision
 
-Le format Parquet est retenu pour les données préparées du projet.
-
-### Justification
-
-Parquet est adapté aux analyses de données volumineuses et s'intègre bien à pandas et à DuckDB. Sa structure orientée colonnes permet de limiter les lectures aux champs nécessaires.
-
-Ce choix est cohérent avec l'objectif de construire un pipeline de préparation et de chargement des données vers une base PostgreSQL.
+Nous gardons les six rayons comme objectif, mais nous voulons valider leur contenu à partir des données réelles : quantité de produits disponibles, qualité des informations nutritionnelles, images disponibles et chevauchement entre catégories.
 
 ---
 
-## Étape suivante — Exploration et préparation des données
+# Semaine suivante — Le profiling change notre vision
 
-**Période : été 2026 — attribution individuelle à confirmer à partir de l'historique détaillé des commits**
+### Ce qu'on fait
 
-### Objectif
+Nous commençons à mesurer réellement la qualité des données.
 
-Identifier les données Open Food Facts utiles à NutriScope et préparer des jeux de données exploitables par les traitements Python et la base relationnelle.
+Le périmètre France représente environ **1,25 million de produits**.
 
-### Évolutions du projet
+Nous regardons notamment les valeurs manquantes, les doublons, les valeurs aberrantes et la disponibilité des informations dont nous aurons besoin plus tard.
 
-Le dépôt organise les données préparées en plusieurs ensembles métier :
+### Ce qui nous surprend
 
-* marques ;
-* catégories ;
-* produits ;
-* relations entre produits et catégories ;
-* nutriments.
+Nous trouvons des valeurs impossibles dans plusieurs nutriments : valeurs négatives, valeurs supérieures à 100 g pour 100 g de produit, incohérences entre les différentes valeurs d'énergie, etc.
 
-Les données sont transformées en fichiers Parquet avant leur chargement dans PostgreSQL.
+Nous découvrons également que certaines informations que nous pensions pouvoir utiliser facilement sont en réalité très incomplètes.
 
-### Organisation retenue
+### Pourquoi c'est important
 
-La séparation des données en ensembles métier facilite leur exploitation et leur intégration dans des tables relationnelles distinctes.
+Cela change notre façon de voir la suite du projet.
 
-Cette organisation permet notamment de représenter les relations entre produits et catégories sans devoir conserver toutes les informations dans une seule table.
+Au départ, nous pensions pouvoir rapidement passer de l'extraction au machine learning.
 
-### État documenté
-
-Le README du dépôt décrit un pipeline ETL utilisant Python, pandas, Parquet, DuckDB et PostgreSQL. Il indique également les étapes de validation des données et de contrôle de la base après chargement.
-
-Les dates précises de mise en place de chaque composant devront être confirmées par l'historique complet des commits.
+Nous comprenons maintenant qu'il faut d'abord construire une donnée suffisamment fiable pour que les modèles aient un sens.
 
 ---
 
-## 2 septembre 2026 — Contrôles SQL de la base de données
+# Début septembre — Jalon J1
 
-**Contributeur : SDMM27 — issue #18**
+## Semaine du 1er septembre
 
-### Objectif
+### Ce qu'on fait
 
-Formaliser les commandes SQL permettant de contrôler les données après leur intégration dans la base.
+Nous finalisons le premier jalon du projet.
 
-### Enjeu technique
+Le dépôt commence à prendre sa structure définitive et nous avons maintenant une meilleure vision de ce que nous voulons faire avec les données.
 
-Le chargement des fichiers ne suffit pas à garantir la cohérence de la base. Il faut également pouvoir vérifier les volumes, les relations entre les tables et la présence éventuelle d'anomalies.
+Nous commençons également à formaliser nos choix dans les différents documents plutôt que de les garder uniquement dans nos discussions.
 
-### Apport au projet
+### Répartition
 
-Cette étape s'inscrit dans la démarche de validation du pipeline ETL : les transformations doivent être suivies de contrôles permettant de détecter les incohérences avant l'exploitation des données par les fonctionnalités applicatives.
+* **Clément** : architecture, organisation du dépôt et réflexion sur la future base.
+* **Sacha** : données et extraction.
+* **Ensemble** : validation du périmètre et des grandes fonctionnalités.
 
----
+### Ce qu'on retient
 
-## 9 septembre 2026 — Évolution fonctionnelle : substitution de produits
+Nous décidons notamment de ne pas utiliser directement le Nutri-Score comme variable d'entrée des futurs modèles.
 
-**Contributeur : SDMM27 — issue #25**
+Il doit rester une référence ou une cible, et non une information permettant de donner indirectement la réponse au modèle.
 
-### Objectif
-
-Étudier la possibilité de scanner une liste de courses complète et de proposer des produits de substitution pour chaque article.
-
-### Intérêt fonctionnel
-
-Cette fonctionnalité étend l'objectif initial d'analyse d'un produit isolé à une utilisation plus large, orientée vers les choix alimentaires.
-
-Elle suppose de disposer de données produits suffisamment structurées et fiables pour comparer les caractéristiques nutritionnelles et identifier des alternatives pertinentes.
-
-### État
-
-L'issue documente un objectif fonctionnel. Elle ne suffit pas, à elle seule, à établir que la fonctionnalité est implémentée.
+Cette décision est importante car elle évite de construire un modèle qui semblerait performant uniquement parce qu'on lui donne déjà une partie de la réponse.
 
 ---
 
-## 17 septembre 2026 — Structuration des travaux du TP9
+# Septembre — Structurer le projet
 
-**Contributeur principal : Clément Welsch — issues #33, #35, #36 et #37**
+## Semaine du 8 septembre
 
-Le 17 septembre, plusieurs issues sont ouvertes pour décomposer le travail de nettoyage des données en tâches indépendantes et vérifiables.
+### Ce qu'on fait
 
-Cette organisation distingue quatre objectifs complémentaires.
+Nous passons progressivement de l'exploration à la conception du projet.
 
-### Issue #33 — Création de `src/cleaning.py`
+Il faut maintenant réfléchir à la manière dont les données vont circuler entre les différentes parties de NutriScope.
 
-**Responsable principal : Clément Welsch**
+On commence notamment à réfléchir à la séparation entre les produits, les marques, les catégories et les informations nutritionnelles.
 
-L'objectif est de regrouper les règles de nettoyage dans un module Python dédié.
+### Problème
 
-Les règles prévues concernent notamment :
+Le fichier Open Food Facts est pratique pour stocker beaucoup d'informations, mais il n'est pas forcément adapté tel quel à la base de données de notre application.
 
-* la normalisation des unités ;
-* le bornage des valeurs nutritionnelles ;
-* le contrôle des valeurs énergétiques ;
-* la déduplication des codes-barres ;
-* le traitement des catégories vides.
+Certaines informations sont répétées et certaines colonnes contiennent plusieurs valeurs.
 
-Chaque règle doit être implémentée sous forme de fonction documentée, testable indépendamment et ne modifiant pas directement les données reçues en entrée.
+### Solution
 
-La définition précise du comportement attendu pour les valeurs aberrantes doit précéder leur implémentation.
+Nous décidons de transformer progressivement ces données avant de les charger en base.
 
-### Issue #35 — Tests automatisés avec pytest
-
-**Responsable principal : Clément Welsch**
-
-L'objectif est de vérifier le comportement de chaque règle de nettoyage, notamment sur les cas particuliers identifiés lors des précédents travaux.
-
-Les tests doivent couvrir :
-
-* les cas nominaux ;
-* les valeurs manquantes ;
-* les valeurs limites ;
-* les données aberrantes ou incohérentes ;
-* la préservation des données d'entrée ;
-* les cas particuliers identifiés lors de l'analyse des données.
-
-La répartition initiale prévoit également une contribution de Sacha Don aux tests concernant les doublons, les catégories et les cas particuliers.
-
-### Issue #36 — Rapport avant/après du nettoyage
-
-**Responsable principal : Clément Welsch**
-
-L'objectif est de produire un rapport mesurant l'impact des règles de nettoyage.
-
-Les indicateurs envisagés comprennent :
-
-* la volumétrie avant et après traitement ;
-* le nombre de lignes touchées par règle ;
-* le nombre de lignes supprimées ;
-* l'impact cumulé des transformations ;
-* le nombre de valeurs manquantes.
-
-Ce rapport doit rendre les transformations observables et faciliter la validation des résultats.
-
-### Issue #37 — Intégration du nettoyage au chargement de la base
-
-**Responsable principal : Clément Welsch**
-
-L'objectif est de relier le pipeline de nettoyage au chargement de la base de données.
-
-Le principe consiste à faire passer les données par les règles de nettoyage avant leur intégration, afin d'éviter de charger directement des données brutes non contrôlées.
-
-Cette intégration doit préserver la cohérence du pipeline existant et permettre de vérifier les données après chargement.
+L'objectif n'est pas de reproduire exactement le fichier Open Food Facts, mais de construire une structure qui correspond mieux à notre projet.
 
 ---
 
-## 17 septembre 2026 — Préparation de l'assistant RAG
+# Semaine du 15 septembre — Jalon J2
 
-**Contributeur principal : Clément Welsch — issue #29**
+### Ce qu'on fait
 
-### Objectif
+Nous travaillons sur le cadrage du projet et sur le backlog.
 
-Étudier la création de modèles et de systèmes RAG personnalisés avec LM Studio afin de faciliter la relecture et l'exploitation de documents techniques.
+Nous commençons à avoir une vision plus concrète de la suite : nettoyage des données, base, machine learning, RAG puis application.
 
-### Intérêt pour le projet
+### Répartition
 
-Cette piste prépare une future fonctionnalité d'assistance conversationnelle s'appuyant sur des documents ou des données de référence.
+La répartition des tâches devient progressivement plus naturelle.
 
-Elle constitue un axe distinct du nettoyage des données : le pipeline ETL prépare les données structurées, tandis qu'une architecture RAG vise à retrouver des informations pertinentes dans un corpus documentaire.
+**Sacha** reste principalement concentré sur l'extraction et les données sources.
 
-### État
+**Clément** travaille davantage sur le traitement des données, la base et la coordination des différentes briques.
 
-L'issue formalise une intention de développement. Elle ne constitue pas une preuve que l'assistant RAG est déjà intégré à l'application finale.
+Cette organisation permet d'avancer en parallèle plutôt que de travailler systématiquement sur les mêmes fichiers.
 
----
+### Difficulté
 
-## 17 septembre 2026 — Mise en place d'une piste d'intégration continue
+Nous constatons que certaines décisions prises au début doivent être réexaminées lorsque nous regardons les données de plus près.
 
-**Contributeur : Clément Welsch — pull request #39**
-
-Une pull request intitulée `Create python-app.yml` est ouverte pour travailler sur l'automatisation des vérifications d'un projet Python.
-
-### Objectif
-
-Automatiser l'exécution de contrôles du code afin de détecter les régressions plus tôt dans le cycle de développement.
-
-### État
-
-La pull request apparaît encore ouverte dans le dépôt et porte le libellé `invalid`. Elle doit donc être considérée comme une tentative d'intégration continue, et non comme une automatisation validée.
+C'est parfois frustrant, mais cela évite de construire trop tôt quelque chose sur de mauvaises hypothèses.
 
 ---
 
-## 24 septembre 2026 — Mise en place du contrat commun de nettoyage
+# Fin septembre — Préparer le nettoyage
 
-**Contributeur principal : Sacha Don — pull request #41**
+## Semaine du 22 septembre
 
-### Contexte
+### Ce qu'on fait
 
-Les règles de nettoyage doivent partager une interface commune afin de pouvoir être exécutées dans un ordre défini et de produire des résultats comparables.
+Nous préparons le travail de nettoyage des données.
 
-### Modifications documentées
+Nous savons maintenant que nous ne pouvons pas simplement supprimer toutes les lignes contenant une anomalie.
 
-La pull request introduit le squelette du module `src/cleaning.py`, avec notamment :
+Un produit peut être parfaitement exploitable même si une seule de ses informations nutritionnelles est incorrecte ou absente.
 
-* la structure `CompteRendu` ;
-* des constantes communes ;
-* la fonction `typer_colonnes` ;
-* la fonction `lire_brut()` ;
-* la fonction `nettoyer()` ;
-* la liste `REGLES`.
+### Décision
 
-Elle ajoute également une configuration de tests via `tests/conftest.py` et des tests dans `tests/test_cleaning.py`.
+Nous décidons donc de raisonner **règle par règle**.
 
-Le premier point de contrôle couvre les types, la pureté des fonctions et l'idempotence. La pull request annonce cinq tests réussis.
+Lorsqu'une valeur est manifestement fausse mais que le produit reste intéressant, nous préférons corriger ou supprimer uniquement cette valeur plutôt que supprimer tout le produit.
 
-### Contrat retenu
+Lorsqu'une erreur peut être corrigée de manière fiable, nous la corrigeons.
 
-Les règles doivent être exécutables indépendamment et intégrables dans une séquence commune. La liste `REGLES` centralise leur ordre d'application.
+Et lorsqu'une information essentielle est trop incertaine pour être corrigée, le produit peut finalement être écarté.
 
-L'ordre prévu comprend la normalisation des types, le traitement des textes, les doublons, les unités, les bornes nutritionnelles, l'énergie, les catégories et les valeurs manquantes.
-
-### Validation
-
-La pull request #41 est fusionnée dans `develop` le 24 septembre 2026 par Clément Welsch.
-
-Cette fusion constitue une étape structurante du TP9 : elle établit le contrat commun sur lequel les règles de nettoyage peuvent être développées et testées.
+Cette stratégie est directement liée à ce que nous avons observé pendant le profiling.
 
 ---
 
-## 29 septembre 2026 — Réexamen du champ des catégories Open Food Facts
+# Fin septembre / début octobre — TP9
 
-**Contributeur : SDMM27 — issue #46**
+## Semaine du 29 septembre
 
-### Contexte
+### Ce qu'on fait
 
-Le champ `categories_tags` est remis en question au profit du champ `food_tag_groups`.
+Nous passons réellement à l'implémentation du nettoyage.
 
-### Objectif
+C'est une étape importante parce que nous devons maintenant transformer les décisions prises précédemment en règles concrètes et vérifiables.
 
-Évaluer le champ le plus approprié pour représenter les catégories ou groupes alimentaires utilisés par NutriScope.
+Nous ajoutons également des tests pour vérifier que les règles fonctionnent dans les cas normaux, mais aussi dans les cas un peu tordus que nous avons rencontrés pendant l'exploration.
 
-### Enjeu technique
+### Problèmes rencontrés
 
-Le choix du champ source influence la cohérence des catégories, les transformations nécessaires et la compatibilité avec les règles de nettoyage.
+Certains cas sont moins simples qu'ils en ont l'air.
 
-Il est important de distinguer les catégories descriptives des groupes alimentaires normalisés, car ils ne répondent pas nécessairement au même besoin métier.
+Par exemple, une valeur aberrante ne signifie pas forcément que tout le produit est mauvais. Il faut déterminer si le problème vient d'une seule donnée, d'une unité mal interprétée ou d'un produit réellement inexploitable.
 
-### État
+Nous avons également rencontré des problèmes de doublons : deux fiches peuvent correspondre au même produit, mais certaines fiches sont plus complètes que d'autres.
 
-L'issue est ouverte et placée dans le backlog. Le changement de champ constitue donc une proposition à examiner, et non une décision dont l'application serait confirmée.
+### Solution
 
----
+Nous décidons de privilégier la fiche la plus complète lorsqu'il s'agit simplement d'un doublon.
 
-## 30 septembre 2026 — Mutualisation des dépendances Python
+Pour certains codes internes qui ne permettent pas d'identifier correctement le produit, nous préférons ne pas les conserver plutôt que de créer une fausse unicité.
 
-**Contributeur : SDMM27 — issue #47**
-
-### Objectif
-
-Créer un fichier `requirements.txt` afin de partager une liste commune de dépendances entre les environnements de développement.
-
-### Enjeu
-
-Une liste de dépendances commune réduit les différences entre les environnements des contributeurs et facilite la reproduction des tests.
-
-Elle contribue également à simplifier l'installation du projet pour un nouvel intervenant.
-
-### État
-
-L'issue documente ce besoin. La réalisation effective doit être confirmée par les commits correspondants.
+Ces choix permettent ensuite à la base de garder une structure cohérente.
 
 ---
 
-## 14 octobre 2026 — Finalisation du nettoyage des catégories et du rapport
+# Semaine du 6 octobre — Repenser le chemin des données
 
-**Contributeur : Clément Welsch — pull request #52**
+### Ce qu'on comprend
 
-### Contexte
+Une nouvelle question apparaît alors que nous avançons dans le TP9 :
 
-Les dernières évolutions du TP9 portent sur le traitement des catégories, la génération des comptes rendus et la validation du pipeline complet.
+**à quel moment doit-on découper les données en plusieurs fichiers ?**
 
-La pull request #52, intitulée `TP9: finalize category cleaning and report generation`, rassemble ces travaux sur la branche `Klement/feat/9_3_categories`.
+Au début, nous pensions pouvoir extraire directement plusieurs fichiers depuis le Parquet puis les nettoyer séparément.
 
-### Modifications documentées
+En avançant, cela paraît moins intéressant.
 
-Les changements annoncés couvrent :
+Nous préférons maintenant avoir une chaîne plus claire :
 
-* le traitement des catégories vides dans les colonnes disponibles ;
-* la prise en charge de DataFrames dont certaines colonnes de catégories sont absentes ;
-* la restauration de la génération du rapport ;
-* l'amélioration de la compatibilité des comptes rendus ;
-* la validation du pipeline de nettoyage.
+**Open Food Facts → extraction France → nettoyage → données propres → découpage → chargement en base**
 
-### Gestion des catégories
+Cela permet de faire le nettoyage sur une base commune avant de créer les différentes tables nécessaires à la base de données.
 
-La règle de traitement des catégories doit fonctionner même lorsque le schéma d'entrée ne contient pas toutes les colonnes attendues.
+### Pourquoi ce changement
 
-Cette adaptation permet d'appliquer le nettoyage à des DataFrames de structures différentes sans provoquer d'erreur uniquement parce qu'une colonne de catégories est absente.
+Cette organisation évite de nettoyer plusieurs fois les mêmes données et surtout de risquer d'avoir des incohérences entre les différents fichiers.
 
-### Tests et validation
-
-La pull request annonce :
-
-* **43 tests réussis** ;
-* la vérification des transformations attendues ;
-* la vérification de l'idempotence du pipeline ;
-* la couverture de la génération du rapport par des tests automatisés.
-
-La commande de validation documentée est :
-
-```bash
-python -m pytest -v
-```
-
-### Commits associés
-
-La pull request réunit quatre commits :
-
-* `346fc21` — `fix issue with _compte_rendu and doubloons` ;
-* `eefb23a` — `update tp9 notebook` ;
-* `9d78bf8` — `add new test nettoyer` ;
-* `77d940e` — `fix: restore report generation and handle optional category columns`.
-
-Ces changements couvrent les corrections des comptes rendus et des doublons, la mise à jour du notebook, l'ajout d'un test d'intégration du nettoyage et la correction du rapport.
-
-### État au 14 octobre 2026
-
-La pull request #52 est ouverte dans le dépôt public. Les tests annoncés sont réussis, mais la fusion dans `develop` ne doit pas être considérée comme acquise tant que GitHub ne confirme pas sa réalisation.
+Le fichier propre intermédiaire devient donc une étape importante du pipeline, même s'il ne s'agit pas forcément d'un fichier définitif du projet.
 
 ---
 
-## Synthèse de l'évolution du projet
+# Semaine du 6 octobre — Aujourd'hui
 
-Les travaux documentés montrent une progression en plusieurs étapes :
+### Où nous en sommes
 
-1. **Choix du stockage** : adoption de Parquet pour les données préparées.
-2. **Préparation des données** : organisation des jeux de données métier et mise en place du pipeline ETL.
-3. **Contrôles de la base** : formalisation des vérifications SQL.
-4. **Structuration du TP9** : décomposition du nettoyage en règles, tests, rapport et intégration.
-5. **Contrat commun** : définition de l'interface des règles et de leur ordre d'exécution.
-6. **Qualité des données** : prise en charge des unités, des bornes, des doublons, de l'énergie, des catégories et des valeurs manquantes.
-7. **Validation automatisée** : développement des tests et du rapport de nettoyage.
-8. **Évolutions fonctionnelles à venir** : substitution de produits, reconnaissance et assistant conversationnel RAG.
+Nous sommes encore dans la partie data du projet.
 
-## Points restant à documenter ou à confirmer
+La base commence à avoir une structure claire, avec une séparation entre les produits, les marques, les catégories et les nutriments.
 
-* Les dates et auteurs des premières étapes d'extraction et de préparation des données, à partir de l'historique complet des commits.
-* L'état final de l'intégration du nettoyage au chargement de la base, correspondant à l'issue #37.
-* Le statut final de l'issue #33 et des tests associés à l'issue #35.
-* La décision définitive concernant le champ `food_tag_groups`.
-* L'état de la mutualisation des dépendances Python.
-* Le résultat final de la pull request #52 et la synchronisation de `develop`.
-* La mise en place effective de l'intégration continue proposée dans la pull request #39.
+Mais nous n'avons pas encore fini de stabiliser toute la chaîne de données.
 
-Ce journal doit être enrichi à chaque étape significative en privilégiant les faits vérifiables : date, contributeur, modification, justification et résultat des validations.
+C'est probablement la partie du projet qui nous aura demandé le plus de réflexion jusqu'ici, alors qu'elle est assez peu visible lorsqu'on imagine simplement l'application finale.
+
+### Ce qui reste à faire
+
+La priorité est maintenant de terminer proprement le pipeline :
+
+1. récupérer le périmètre France ;
+2. appliquer le nettoyage ;
+3. produire le jeu de données propre ;
+4. préparer les données nécessaires à la base ;
+5. charger la base ;
+6. vérifier que les résultats sont cohérents.
+
+Ensuite seulement, nous pourrons réellement nous concentrer sur les modèles et les fonctionnalités IA.
+
+---
+
+# Bilan provisoire
+
+Après plusieurs semaines, NutriScope est assez différent de l'idée que nous avions au départ.
+
+Nous pensions surtout construire une application autour de la nutrition et de l'IA.
+
+Pour l'instant, une grande partie du travail consiste à comprendre les données, se mettre d'accord sur ce qu'on veut réellement garder et trouver une manière fiable de les faire circuler dans le projet.
+
+Ce n'est pas forcément la partie la plus spectaculaire, mais elle conditionne tout ce qui viendra ensuite.
+
+Et surtout, nous avons déjà appris quelque chose d'important : **une bonne idée d'IA ne suffit pas si les données sur lesquelles elle repose ne sont pas maîtrisées.**
+
+La suite du projet permettra de voir si tout ce travail de préparation nous fait réellement gagner du temps lorsque nous commencerons le machine learning et le RAG.

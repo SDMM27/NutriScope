@@ -546,9 +546,9 @@ def categories_vides() -> pd.DataFrame:
             "000003",
             "000004",
         ],
-        "categories": [
-            "Snacks",
-            "",
+        "food_groups_tags": [
+            ["en:sugary-snacks"],
+            [],
             "   ",
             None,
         ],
@@ -560,10 +560,10 @@ def test_traiter_categories_vides(categories_vides):
         categories_vides
     )
 
-    assert resultat["categories"].iloc[0] == "Snacks"
-    assert pd.isna(resultat["categories"].iloc[1])
-    assert pd.isna(resultat["categories"].iloc[2])
-    assert pd.isna(resultat["categories"].iloc[3])
+    assert resultat["food_groups_tags"].iloc[0] == ["en:sugary-snacks"]
+    assert pd.isna(resultat["food_groups_tags"].iloc[1])
+    assert pd.isna(resultat["food_groups_tags"].iloc[2])
+    assert pd.isna(resultat["food_groups_tags"].iloc[3])
 
     assert isinstance(cr, CompteRendu)
     assert cr.regle == "traiter_categories_vides"
@@ -727,11 +727,11 @@ def donnees_pipeline() -> pd.DataFrame:
             "000001",
             "000003",
         ],
-        "categories": [
-            "Snacks",
-            "",
-            "   ",
-            "Beverages",
+        "food_groups_tags": [
+            ["en:sugary-snacks"],
+            [],
+            [],
+            ["en:beverages"],
         ],
         "nova_group": [
             2.0,
@@ -855,11 +855,11 @@ def test_nettoyer_applique_les_transformations(
         "000003",
     ]
 
-    assert resultat["categories"].iloc[0] == "Snacks"
+    assert resultat["food_groups_tags"].iloc[0] == ["en:sugary-snacks"]
     assert pd.isna(
-        resultat["categories"].iloc[1]
+        resultat["food_groups_tags"].iloc[1]
     )
-    assert resultat["categories"].iloc[2] == "Beverages"
+    assert resultat["food_groups_tags"].iloc[2] == ["en:beverages"]
 
 
 def test_nettoyer_ne_modifie_pas_l_entree(

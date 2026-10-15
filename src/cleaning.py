@@ -14,6 +14,7 @@ sa propre sortie doit donc donner zéro ligne touchée.
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 
@@ -617,31 +618,29 @@ def corriger_energie(
 def traiter_categories_vides(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Remplace les catégories vides par des valeurs manquantes."""
+    """Remplace les groupes d'aliments vides par des valeurs manquantes.
+
+    Dans le Parquet, `food_groups_tags` est une liste : une catégorie vide
+    est une liste vide (`[]`), pas une chaîne vide. Les chaînes vides ou
+    blanches sont aussi traitées, au cas où la colonne arrive en texte.
+    """
 
     res = df.copy()
     masques = {}
 
-    colonnes_categories = [
-        colonne
-        for colonne in (
-            "categories",
-            "categories_tags",
-            "food_groups_tags",
-        )
-        if colonne in res.columns
-    ]
+    def _est_vide(valeur) -> bool:
+        if isinstance(valeur, str):
+            return valeur.strip() == ""
+        if isinstance(valeur, (list, tuple, np.ndarray)):
+            return len(valeur) == 0
+        return False
 
-    for colonne in colonnes_categories:
-        valeurs = res[colonne].astype("string")
+    categories_vides = res["food_groups_tags"].map(_est_vide).astype(bool)
 
-        categories_vides = (
-            res[colonne].notna()
-            & valeurs.str.strip().eq("").fillna(False)
-        )
-
-        res[colonne] = res[colonne].mask(categories_vides, pd.NA)
-        masques[f"{colonne}_vides"] = categories_vides
+    res.loc[
+        categories_vides,
+        "food_groups_tags",
+    ] = pd.NA
 
     return res, _compte_rendu(
         "traiter_categories_vides",
@@ -687,7 +686,13 @@ def strategie_manquants(
 def lire_brut(
     chemin: str | Path,
 ) -> pd.DataFrame:
-    """Lit un export CSV Open Food Facts en conservant `code` en texte."""
+    """Lit l'extrait brut (Parquet de `extract_perimeter.py` ou export CSV
+    Open Food Facts) en conservant `code` en texte."""
+
+    if Path(chemin).suffix == ".parquet":
+        brut = pd.read_parquet(chemin)
+        brut["code"] = brut["code"].astype("string")
+        return brut
 
     return pd.read_csv(
         chemin,

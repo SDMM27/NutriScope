@@ -36,7 +36,7 @@ con.execute(f"""
 
         list_extract(brands_tags, 1) AS brand_name,
 
-        categories_tags,
+        food_groups_tags,
 
         nutriscore_grade,
         nutriscore_score,
@@ -106,9 +106,9 @@ con.execute(f"""
 
 con.execute(f"""
     COPY (
-        SELECT DISTINCT unnest(categories_tags) AS tag
+        SELECT DISTINCT unnest(food_groups_tags) AS tag
         FROM scope
-        WHERE categories_tags IS NOT NULL
+        WHERE food_groups_tags IS NOT NULL
     ) TO '{OUTPUT_DIR}/categories.parquet' (FORMAT PARQUET)
 """)
 
@@ -116,9 +116,9 @@ con.execute(f"""
     COPY (
         SELECT
             code,
-            unnest(categories_tags) AS tag
+            unnest(food_groups_tags) AS tag
         FROM scope
-        WHERE categories_tags IS NOT NULL
+        WHERE food_groups_tags IS NOT NULL
     ) TO '{OUTPUT_DIR}/products_categories.parquet' (FORMAT PARQUET)
 """)
 
