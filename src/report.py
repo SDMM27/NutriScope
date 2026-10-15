@@ -144,17 +144,46 @@ def generer_rapport(avant: pd.DataFrame, apres: pd.DataFrame, journal: list[Comp
     s.append(_tableau(["colonne", "avant", "après"], lignes) + "\n")
 
     s.append("## Produits par rayon après nettoyage\n")
-    if "pnns_groups_1" not in apres.columns or not apres["pnns_groups_1"].notna().any():
-        s.append(
-            "Indisponible : `pnns_groups_1` est absent ou entièrement manquant "
-            "dans les données préparées.\n"
-        )
-    else:
+    pnns_disponible = (
+        "pnns_groups_1" in apres.columns
+        and apres["pnns_groups_1"].notna().any()
+    )
+    if pnns_disponible:
         rayons = apres["pnns_groups_1"].fillna("(vide)").value_counts()
         rayons = rayons.sort_index().sort_values(ascending=False, kind="stable")
         s.append(_tableau(["rayon", "produits", "part"], [
             [rayon, _nombre(n), _pct(n, len(apres))] for rayon, n in rayons.items()
         ]) + "\n")
+    elif "food_groups_tags" in apres.columns:
+        groupes = apres[["code", "food_groups_tags"]].explode("food_groups_tags")
+        groupes = groupes.loc[
+            groupes["food_groups_tags"].map(
+                lambda valeur: isinstance(valeur, str) and bool(valeur.strip())
+            )
+        ]
+        if groupes.empty:
+            s.append(
+                "Indisponible : ni `pnns_groups_1` ni groupe exploitable dans "
+                "`food_groups_tags` ne sont présents après nettoyage.\n"
+            )
+        else:
+            s.append(
+                "Les rayons PNNS (`pnns_groups_1`) sont absents. La répartition "
+                "ci-dessous utilise les groupes Open Food Facts (`food_groups_tags`). "
+                "Un produit pouvant avoir plusieurs groupes, les parts ne s'additionnent "
+                "pas nécessairement à 100 %.\n"
+            )
+            comptes = groupes.groupby("food_groups_tags")["code"].nunique()
+            comptes = comptes.sort_index().sort_values(ascending=False, kind="stable")
+            s.append(_tableau(["groupe Open Food Facts", "produits", "part des produits"], [
+                [groupe, _nombre(n), _pct(n, len(apres))]
+                for groupe, n in comptes.items()
+            ]) + "\n")
+    else:
+        s.append(
+            "Indisponible : `pnns_groups_1` est absent ou entièrement manquant "
+            "dans les données préparées.\n"
+        )
 
     s.append("## Colonnes ajoutées et retirées\n")
     ajoutees = [c for c in apres.columns if c not in avant.columns]

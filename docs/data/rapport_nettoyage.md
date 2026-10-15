@@ -61,7 +61,66 @@ Lignes en anomalie, mêmes définitions que le diagnostic de la démo 3.2.1.
 
 ## Produits par rayon après nettoyage
 
-Indisponible : `pnns_groups_1` est absent ou entièrement manquant dans les données préparées.
+Les rayons PNNS (`pnns_groups_1`) sont absents. La répartition ci-dessous utilise les groupes Open Food Facts (`food_groups_tags`). Un produit pouvant avoir plusieurs groupes, les parts ne s'additionnent pas nécessairement à 100 %.
+
+| groupe Open Food Facts | produits | part des produits |
+|---|---|---|
+| en:sugary-snacks | 118 574 | 9.3 % |
+| en:fish-meat-eggs | 99 311 | 7.8 % |
+| en:milk-and-dairy-products | 64 043 | 5.0 % |
+| en:cereals-and-potatoes | 58 540 | 4.6 % |
+| en:sweets | 52 066 | 4.1 % |
+| en:beverages | 47 595 | 3.7 % |
+| en:biscuits-and-cakes | 44 976 | 3.5 % |
+| en:fruits-and-vegetables | 40 817 | 3.2 % |
+| en:fats-and-sauces | 39 826 | 3.1 % |
+| en:composite-foods | 39 497 | 3.1 % |
+| en:meat | 36 038 | 2.8 % |
+| en:processed-meat | 35 170 | 2.8 % |
+| en:cheese | 32 488 | 2.6 % |
+| en:salty-snacks | 30 940 | 2.4 % |
+| en:one-dish-meals | 30 745 | 2.4 % |
+| en:dressings-and-sauces | 26 723 | 2.1 % |
+| en:cereals | 25 747 | 2.0 % |
+| en:fish-and-seafood | 22 436 | 1.8 % |
+| en:poultry | 22 204 | 1.7 % |
+| en:alcoholic-beverages | 18 012 | 1.4 % |
+| en:vegetables | 17 226 | 1.4 % |
+| en:unsweetened-beverages | 15 709 | 1.2 % |
+| en:sweetened-beverages | 14 917 | 1.2 % |
+| en:milk-and-yogurt | 14 770 | 1.2 % |
+| en:bread | 13 916 | 1.1 % |
+| en:meat-other-than-poultry | 13 834 | 1.1 % |
+| en:chocolate-products | 13 799 | 1.1 % |
+| en:fruits | 13 628 | 1.1 % |
+| en:fats | 13 103 | 1.0 % |
+| en:fatty-fish | 11 874 | 0.9 % |
+| en:appetizers | 11 818 | 0.9 % |
+| en:salty-and-fatty-products | 11 777 | 0.9 % |
+| en:dairy-desserts | 8 402 | 0.7 % |
+| en:ice-cream | 8 383 | 0.7 % |
+| en:pastries | 7 733 | 0.6 % |
+| en:nuts | 7 345 | 0.6 % |
+| en:breakfast-cereals | 7 340 | 0.6 % |
+| en:dried-fruits | 6 450 | 0.5 % |
+| en:teas-and-herbal-teas-and-coffees | 6 373 | 0.5 % |
+| en:legumes | 6 235 | 0.5 % |
+| en:pizza-pies-and-quiches | 5 576 | 0.4 % |
+| en:potatoes | 4 360 | 0.3 % |
+| en:fruit-juices | 3 585 | 0.3 % |
+| en:soups | 3 243 | 0.3 % |
+| en:eggs | 3 240 | 0.3 % |
+| en:sandwiches | 3 176 | 0.2 % |
+| en:baby-foods-and-milks | 2 549 | 0.2 % |
+| en:plant-based-milk-substitutes | 2 526 | 0.2 % |
+| en:artificially-sweetened-beverages | 2 241 | 0.2 % |
+| en:baby-foods | 2 004 | 0.2 % |
+| en:offals | 1 902 | 0.1 % |
+| en:lean-fish | 1 374 | 0.1 % |
+| en:waters-and-flavored-waters | 1 343 | 0.1 % |
+| en:fruit-nectars | 901 | 0.1 % |
+| en:vegetable-margarines | 739 | 0.1 % |
+| en:baby-milks | 545 | 0.0 % |
 
 ## Colonnes ajoutées et retirées
 
