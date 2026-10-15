@@ -626,6 +626,7 @@ def traiter_categories_vides(
     """
 
     res = df.copy()
+    masques = {}
 
     def _est_vide(valeur) -> bool:
         if isinstance(valeur, str):
@@ -645,10 +646,9 @@ def traiter_categories_vides(
         "traiter_categories_vides",
         df,
         res,
-        {
-            "categories_vides": categories_vides,
-        },
+        masques,
     )
+
 
 
 # ============================================================
