@@ -47,6 +47,18 @@ def test_generer_rapport_reproductible(mini, tmp_path):
     for regle in journal:
         assert f"`{regle.regle}`" in premier
 
+
+def test_rapport_utilise_groupes_off_quand_pnns_indisponible(mini, tmp_path):
+    mini["pnns_groups_1"] = pd.NA
+    propre, journal = nettoyer(mini)
+
+    rapport = generer_rapport(mini, propre, journal, tmp_path / "r.md")
+
+    assert "La répartition ci-dessous utilise les groupes Open Food Facts" in rapport
+    assert "Un produit pouvant avoir plusieurs groupes" in rapport
+    assert "en:milk-and-dairy-products | 1 | 33.3 %" in rapport
+    assert "(vide) | 3 | 100.0 %" not in rapport
+
 def test_compte_rendu_gere_les_index_dupliques():
     avant = pd.DataFrame(
         {
