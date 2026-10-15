@@ -86,6 +86,28 @@ def test_typer_colonnes_valeurs_illisibles(brut):
     assert cr.lignes_avant == cr.lignes_apres == 3
 
 
+def test_typer_colonnes_supprime_nul_des_codes_avant_deduplication():
+    donnees = pd.DataFrame({"code": ["0001\x00", "0001"]})
+
+    resultat, compte_rendu = typer_colonnes(donnees)
+
+    assert resultat["code"].tolist() == ["0001", "0001"]
+    assert compte_rendu.details["codes_normalises"] == 1
+    assert compte_rendu.lignes_touchees == 1
+
+
+def test_typer_colonnes_supprime_espaces_de_bordure_et_vide_devient_manquant():
+    donnees = pd.DataFrame({"code": [" 0001 ", "   ", "00 01"]})
+
+    resultat, compte_rendu = typer_colonnes(donnees)
+
+    assert resultat["code"].iloc[0] == "0001"
+    assert pd.isna(resultat["code"].iloc[1])
+    assert resultat["code"].iloc[2] == "00 01"
+    assert compte_rendu.details["codes_espaces_normalises"] == 2
+    assert compte_rendu.lignes_touchees == 2
+
+
 def test_typer_colonnes_ne_modifie_pas_l_entree(brut):
     copie = brut.copy()
 
@@ -201,6 +223,19 @@ def test_dedupliquer_codes_garde_le_plus_recent_en_cas_degalite():
 
     assert len(resultat) == 1
     assert resultat.iloc[0]["name"] == "Nouvelle version"
+
+
+def test_dedupliquer_codes_garde_la_premiere_ligne_si_toutes_les_cles_sont_egales():
+    donnees = pd.DataFrame({
+        "code": ["000001", "000001"],
+        "name": ["Première fiche", "Seconde fiche"],
+        "completeness": [90.0, 90.0],
+        "last_modified_t": [2000, 2000],
+    })
+
+    resultat, _ = dedupliquer_codes(donnees)
+
+    assert resultat.iloc[0]["name"] == "Première fiche"
 
 
 def test_dedupliquer_codes_ne_modifie_pas_l_entree(codes_dupliques):
@@ -531,6 +566,21 @@ def test_corriger_energie(energie_invalide):
         "incoherentes_recalculees": 1,
         "incoherentes_invalidees": 0,
     }
+
+
+def test_corriger_energie_sans_classification_applique_449():
+    donnees = pd.DataFrame({
+        "energy-kcal_100g": [100.0],
+        "energy_100g": [418.4],
+        "carbohydrates_100g": [20.0],
+        "proteins_100g": [10.0],
+        "fat_100g": [10.0],
+    })
+
+    resultat, compte_rendu = corriger_energie(donnees)
+
+    assert resultat.loc[0, "energy-kcal_100g"] == pytest.approx(210.0)
+    assert compte_rendu.details["incoherentes_recalculees"] == 1
 
 
 # ---------------------------------------------------------------------------

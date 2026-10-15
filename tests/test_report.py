@@ -3,7 +3,7 @@ from datetime import date
 import pandas as pd
 import pytest
 
-from src.cleaning import nettoyer
+from src.cleaning import nettoyer, _compte_rendu
 from src.report import diagnostiquer, generer_rapport
 
 
@@ -46,3 +46,76 @@ def test_generer_rapport_reproductible(mini, tmp_path):
     assert "© Open Food Facts contributors" in premier
     for regle in journal:
         assert f"`{regle.regle}`" in premier
+
+def test_compte_rendu_gere_les_index_dupliques():
+    avant = pd.DataFrame(
+        {
+            "a": [1, 2, 3],
+            "b": [10, 20, 30],
+        },
+        index=[0, 0, 1],
+    )
+
+    apres = avant.copy()
+    apres.iloc[0, 0] = 100
+    apres.iloc[2, 1] = 300
+
+    masques = {
+        "correction_a": pd.Series(
+            [True, False, False],
+            index=avant.index,
+        ),
+        "correction_b": pd.Series(
+            [False, False, True],
+            index=avant.index,
+        ),
+    }
+
+    rapport = _compte_rendu("test", avant, apres, masques)
+
+    assert rapport.lignes_touchees == 2
+    assert rapport.details == {
+        "correction_a": 1,
+        "correction_b": 1,
+    }
+
+def test_compte_rendu_agrege_les_masques_par_position():
+    avant = pd.DataFrame(
+        {
+            "a": [1, 2, 3],
+            "b": [10, 20, 30],
+        },
+        index=[10, 10, 20],
+    )
+
+    apres = avant.copy()
+
+    masques = {
+        "correction_a": pd.Series(
+            [True, False, False],
+            index=[100, 200, 300],
+        ),
+        "correction_b": pd.Series(
+            [True, False, True],
+            index=[400, 500, 600],
+        ),
+    }
+
+    rapport = _compte_rendu("test", avant, apres, masques)
+
+    assert rapport.lignes_touchees == 2
+    assert rapport.details == {
+        "correction_a": 1,
+        "correction_b": 2,
+    }
+    
+def test_compte_rendu_refuse_un_masque_de_mauvaise_longueur():
+    avant = pd.DataFrame({"a": [1, 2, 3]})
+    apres = avant.copy()
+
+    masques = {
+        "correction_a": pd.Series([True, False]),
+    }
+
+    with pytest.raises(ValueError, match="contient 2 éléments"):
+        _compte_rendu("test", avant, apres, masques)

@@ -323,6 +323,77 @@ La priorité est maintenant de terminer proprement le pipeline :
 
 Ensuite seulement, nous pourrons réellement nous concentrer sur les modèles et les fonctionnalités IA.
 
+## 14–15 octobre 2026 — Finalisation et fusion du TP9
+
+**Contributeur principal : Clément Welsch — PR #52**
+
+### Contexte
+
+Cette étape clôture les derniers travaux de nettoyage des données du TP9. Elle porte sur le traitement des catégories, la génération des comptes rendus et la validation du pipeline de nettoyage.
+
+### Modifications réalisées
+
+Les changements apportés comprennent :
+
+* la gestion des catégories vides dans les colonnes disponibles ;
+* la prise en charge des DataFrames dont certaines colonnes de catégories sont absentes ;
+* la correction de la génération des rapports de nettoyage ;
+* la correction de problèmes liés aux comptes rendus et aux doublons ;
+* la mise à jour du notebook TP9 ;
+* l'ajout de tests pour valider le pipeline complet.
+
+### Validation
+
+La suite de tests automatisés a été exécutée avec la commande suivante :
+
+```bash
+python -m pytest -v
+```
+
+**Résultat : 43 tests réussis.**
+
+Les tests couvrent notamment le comportement des règles de nettoyage, l'idempotence du pipeline, la gestion des doublons, le calcul des comptes rendus et la génération du rapport.
+
+### Fusion
+
+La pull request #52, intitulée `TP9: finalize category cleaning and report generation`, a été fusionnée le 15 octobre 2026.
+
+Cette fusion intègre les modifications de la branche `Klement/feat/9_3_categories` dans la branche cible du projet et clôture cette étape de développement du TP9.
+
+### Résultat
+
+Le pipeline de nettoyage dispose désormais de règles organisées, d'un mécanisme de suivi des transformations et d'une suite de tests automatisés permettant d'en vérifier le comportement.
+
+Les travaux de nettoyage sont ainsi intégrés au développement commun du projet. Toute évolution ultérieure devra préserver les garanties établies par les tests et maintenir la cohérence entre le code, la documentation et les données produites.
+
+## 15 octobre 2026 — Branchement du nettoyage TP9 au pipeline ETL
+
+**Branche : `9_4_integration_pipeline_nettoyage`**
+
+### Contexte
+
+Les règles TP9 et le rapport avant/après existaient, mais le chemin qui préparait les cinq fichiers Parquet pour PostgreSQL ne les appelait pas. Le rapport dépendait également d'un fichier intermédiaire qui n'était pas produit par l'extraction courante.
+
+### Modifications réalisées
+
+* DuckDB projette les champs nécessaires et filtre le périmètre France en une lecture de la source.
+* Une préparation commune applique `nettoyer()` avant de construire les tables produits, marques, catégories, relations et nutriments.
+* Les cinq Parquets et le rapport sont produits à partir du même résultat de nettoyage; le chargement appelle cette préparation avant l'insertion.
+* Les noms de nutriments sont convertis explicitement vers le schéma SQL et les protections d'intégrité du chargeur sont conservées.
+* Les codes sont normalisés avant déduplication : conversion en texte, retrait des NUL et des espaces en bordure. Les espaces internes sont conservés. Le rapport indique les codes normalisés.
+* En l'absence de `pnns_groups_1`, aucune catégorie alcoolisée n'est supposée et le contrôle énergétique 4/4/9 s'applique.
+
+### Validation
+
+La commande `& ".\.venv\Scripts\python.exe" -m pytest -q` a réussi avec **49 tests**. Les tests couvrent les règles de nettoyage, le filtrage France sur un fichier synthétique, la propagation des corrections, la déduplication après normalisation et la cohérence des relations.
+
+Le traitement complet des 7,7 Go et le chargement PostgreSQL n'ont pas été exécutés. Les volumes de production restent donc à valider.
+
+### Résultat
+
+La branche fournit une chaîne reproductible depuis le Parquet source jusqu'aux cinq fichiers attendus par le chargeur, ainsi que la documentation de lancement dans `docs/data/pipeline_tp9.md`.
+
+
 ---
 
 # Bilan provisoire

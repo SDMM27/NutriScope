@@ -166,7 +166,8 @@ def typer_colonnes(
 ) -> tuple[pd.DataFrame, CompteRendu]:
     """Convertit les colonnes vers les types attendus.
 
-    - `code` est conservé en texte ;
+    - `code` est conservé en texte, les caractères NUL et espaces de bordure
+      sont retirés avant la déduplication ;
     - les colonnes nutritionnelles et réelles sont converties en float ;
     - les compteurs sont convertis en entiers nullable ;
     - les valeurs numériques illisibles deviennent NA.
@@ -174,7 +175,16 @@ def typer_colonnes(
 
     res = df.copy()
 
-    res["code"] = res["code"].astype("string")
+    codes = res["code"].astype("string")
+    codes_normalises = codes.str.contains("\x00", regex=False, na=False)
+    codes_sans_nul = codes.str.replace("\x00", "", regex=False)
+    codes_sans_espaces = codes_sans_nul.str.strip()
+    espaces_normalises = (
+        codes_sans_nul.notna()
+        & codes_sans_espaces.ne(codes_sans_nul).fillna(False)
+    )
+    codes_vide = codes_sans_espaces.eq("").fillna(False)
+    res["code"] = codes_sans_espaces.mask(codes_vide, pd.NA)
 
     valeurs_non_numeriques = pd.Series(
         False,
@@ -223,13 +233,21 @@ def typer_colonnes(
             ~valeurs_non_entieres
         ).astype("Int64")
 
+    masques = {
+        "valeurs_non_numeriques": valeurs_non_numeriques,
+    }
+    # Le détail reste absent des rapports historiques lorsqu'aucun code ne
+    # nécessite cette normalisation.
+    if codes_normalises.any():
+        masques["codes_normalises"] = codes_normalises
+    if espaces_normalises.any():
+        masques["codes_espaces_normalises"] = espaces_normalises
+
     return res, _compte_rendu(
         "typer_colonnes",
         df,
         res,
-        {
-            "valeurs_non_numeriques": valeurs_non_numeriques,
-        },
+        masques,
     )
 
 
@@ -278,6 +296,7 @@ def dedupliquer_codes(
             sort_columns,
             ascending=ascending,
             na_position="last",
+            kind="stable",
         )
         .drop_duplicates(
             subset="code",
@@ -521,12 +540,12 @@ def corriger_energie(
         )
     )
 
-    alcool = (
-        res["pnns_groups_1"]
-        .eq(RAYON_ALCOOL)
-        .fillna(False)
-        .astype(bool)
+    # Le schéma OFF utilisé par NutriScope ne garantit pas ce champ. En son
+    # absence, aucune ligne n'est présumée alcoolisée et le contrôle s'applique.
+    groupes_pnns = res.get(
+        "pnns_groups_1", pd.Series(pd.NA, index=res.index, dtype="string")
     )
+    alcool = groupes_pnns.eq(RAYON_ALCOOL).fillna(False).astype(bool)
 
     macro_positif = (
         res[
@@ -618,29 +637,26 @@ def corriger_energie(
 def traiter_categories_vides(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
-    """Remplace les groupes d'aliments vides par des valeurs manquantes.
-
-    Dans le Parquet, `food_groups_tags` est une liste : une catégorie vide
-    est une liste vide (`[]`), pas une chaîne vide. Les chaînes vides ou
-    blanches sont aussi traitées, au cas où la colonne arrive en texte.
-    """
-
+    """Remplace les catégories vides par pd.NA."""
     res = df.copy()
     masques = {}
 
-    def _est_vide(valeur) -> bool:
-        if isinstance(valeur, str):
-            return valeur.strip() == ""
-        if isinstance(valeur, (list, tuple, np.ndarray)):
-            return len(valeur) == 0
-        return False
+    categories_vides = res["food_groups_tags"].map(
+        lambda valeur: (
+            isinstance(valeur, str) and not valeur.strip()
+        ) or (
+            isinstance(valeur, (list, tuple, np.ndarray))
+            and len(valeur) == 0
+        )
+    ).astype(bool)
 
-    categories_vides = res["food_groups_tags"].map(_est_vide).astype(bool)
+    # Une valeur déjà manquante n'est pas une modification.
+    categories_a_remplacer = (
+        categories_vides & res["food_groups_tags"].notna()
+    )
 
-    res.loc[
-        categories_vides,
-        "food_groups_tags",
-    ] = pd.NA
+    res.loc[categories_a_remplacer, "food_groups_tags"] = pd.NA
+    masques["categories_vides"] = categories_a_remplacer
 
     return res, _compte_rendu(
         "traiter_categories_vides",
@@ -648,7 +664,6 @@ def traiter_categories_vides(
         res,
         masques,
     )
-
 
 
 # ============================================================

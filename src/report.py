@@ -3,7 +3,7 @@
 Usage, depuis la racine du dépôt :
 
     python -m src.report
-    python -m src.report --source data/extracts/france_brut.parquet --sortie docs/data/rapport_nettoyage.md
+    python -m src.report --source data/food.parquet --sortie docs/data/rapport_nettoyage.md
 
 Le rapport est généré, jamais édité à la main. Seule la date d'en-tête
 change d'une exécution à l'autre.
@@ -15,16 +15,22 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.cleaning import (
-    KCAL_MAX, NUTRIMENT_MAX_G, SEL_PAR_SODIUM, TOLERANCE_SEL_SODIUM, TOLERANCE_SOUS_TOTAL_G,
-    COLONNES_0_100, CompteRendu, calcul_energie_449, lire_brut, nettoyer, typer_colonnes,
-)
+try:
+    from src.cleaning import (
+        KCAL_MAX, NUTRIMENT_MAX_G, SEL_PAR_SODIUM, TOLERANCE_SEL_SODIUM, TOLERANCE_SOUS_TOTAL_G,
+        COLONNES_0_100, CompteRendu, calcul_energie_449, typer_colonnes,
+    )
+except ModuleNotFoundError:  # exécution historique depuis le répertoire src/
+    from cleaning import (
+        KCAL_MAX, NUTRIMENT_MAX_G, SEL_PAR_SODIUM, TOLERANCE_SEL_SODIUM, TOLERANCE_SOUS_TOTAL_G,
+        COLONNES_0_100, CompteRendu, calcul_energie_449, typer_colonnes,
+    )
 
-SOURCE_PAR_DEFAUT = Path("data/extracts/france_brut.parquet")  # produit par src/extract_perimeter.py
+SOURCE_PAR_DEFAUT = Path("data/food.parquet")
 SORTIE_PAR_DEFAUT = Path("docs/data/rapport_nettoyage.md")
 
 COLONNES_CLES = [
-    "product_name", "brands", "food_groups_tags", "pnns_groups_1", "nutriscore_grade",
+    "product_name", "brands_tags", "food_groups_tags", "pnns_groups_1", "nutriscore_grade",
     "energy-kcal_100g", "fat_100g", "saturated-fat_100g", "carbohydrates_100g",
     "sugars_100g", "fiber_100g", "proteins_100g", "salt_100g",
 ]
@@ -158,15 +164,17 @@ def generer_rapport(avant: pd.DataFrame, apres: pd.DataFrame, journal: list[Comp
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Nettoie l'extrait brut et génère le rapport avant / après.")
-    parser.add_argument("--source", type=Path, default=SOURCE_PAR_DEFAUT)
+    parser = argparse.ArgumentParser(description="Prépare le pipeline TP9 et son rapport avant / après.")
+    parser.add_argument("--source", type=Path, default=Path("data/food.parquet"))
     parser.add_argument("--sortie", type=Path, default=SORTIE_PAR_DEFAUT)
     args = parser.parse_args()
+    try:
+        from src.etl_pipeline import preparer_pipeline
+    except ModuleNotFoundError:
+        from etl_pipeline import preparer_pipeline
 
-    brut = lire_brut(args.source)
-    propre, journal = nettoyer(brut)
-    generer_rapport(brut, propre, journal, args.sortie, source=args.source.as_posix())
-    print(f"{_nombre(len(brut))} lignes lues, {_nombre(len(propre))} gardées -> {args.sortie.as_posix()}")
+    brut, propre, _, _ = preparer_pipeline(args.source, rapport=args.sortie)
+    print(f"{_nombre(len(brut))} lignes France, {_nombre(len(propre))} produits gardés -> {args.sortie.as_posix()}")
 
 
 if __name__ == "__main__":
