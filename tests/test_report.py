@@ -47,6 +47,19 @@ def test_generer_rapport_reproductible(mini, tmp_path):
     for regle in journal:
         assert f"`{regle.regle}`" in premier
 
+
+def test_rapport_signale_rayons_indisponibles(mini, tmp_path):
+    mini["pnns_groups_1"] = pd.NA
+    propre, journal = nettoyer(mini)
+
+    rapport = generer_rapport(mini, propre, journal, tmp_path / "r.md")
+
+    assert (
+        "Indisponible : `pnns_groups_1` est absent ou entièrement manquant "
+        "dans les données préparées."
+    ) in rapport
+    assert "(vide) | 3 | 100.0 %" not in rapport
+
 def test_compte_rendu_gere_les_index_dupliques():
     avant = pd.DataFrame(
         {

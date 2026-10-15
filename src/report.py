@@ -144,11 +144,17 @@ def generer_rapport(avant: pd.DataFrame, apres: pd.DataFrame, journal: list[Comp
     s.append(_tableau(["colonne", "avant", "après"], lignes) + "\n")
 
     s.append("## Produits par rayon après nettoyage\n")
-    rayons = apres["pnns_groups_1"].fillna("(vide)").value_counts()
-    rayons = rayons.sort_index().sort_values(ascending=False, kind="stable")
-    s.append(_tableau(["rayon", "produits", "part"], [
-        [rayon, _nombre(n), _pct(n, len(apres))] for rayon, n in rayons.items()
-    ]) + "\n")
+    if "pnns_groups_1" not in apres.columns or not apres["pnns_groups_1"].notna().any():
+        s.append(
+            "Indisponible : `pnns_groups_1` est absent ou entièrement manquant "
+            "dans les données préparées.\n"
+        )
+    else:
+        rayons = apres["pnns_groups_1"].fillna("(vide)").value_counts()
+        rayons = rayons.sort_index().sort_values(ascending=False, kind="stable")
+        s.append(_tableau(["rayon", "produits", "part"], [
+            [rayon, _nombre(n), _pct(n, len(apres))] for rayon, n in rayons.items()
+        ]) + "\n")
 
     s.append("## Colonnes ajoutées et retirées\n")
     ajoutees = [c for c in apres.columns if c not in avant.columns]
