@@ -7,10 +7,18 @@ from etl.products_categories import insert_products_categories
 from etl.nutrients import insert_nutrients
 from utils.timer import timer, elapsed
 from validation.checks import check_input_files, final_check
+try:
+    from src.etl_pipeline import preparer_pipeline
+except ModuleNotFoundError:
+    from etl_pipeline import preparer_pipeline
 
 
 def main():
     total_start = timer()
+
+    print("Préparation des Parquets depuis food.parquet avec le nettoyage TP9...")
+    brut, propre, journal, _ = preparer_pipeline()
+    print(f"Nettoyage terminé : {len(brut):,} lignes France, {len(propre):,} produits conservés.")
 
     print()
     print("=" * 60)
