@@ -6,7 +6,7 @@ from etl.products import insert_products
 from etl.products_categories import insert_products_categories
 from etl.nutrients import insert_nutrients
 from utils.timer import timer, elapsed
-from validation.checks import check_input_files, final_check
+from validation.checks import check_input_files, check_product_codes_unique, final_check
 try:
     from src.etl_pipeline import preparer_pipeline
 except ModuleNotFoundError:
@@ -46,6 +46,9 @@ def main():
     print("Connexion réussie.")
 
     try:
+
+        print("\nVérification des codes produits avant le vidage de la base...")
+        check_product_codes_unique(connection)
 
         # ----------------------------------------------------
         # 3. Nettoyage

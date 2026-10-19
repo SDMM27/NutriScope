@@ -36,4 +36,18 @@ Les contrôles de plages SQL et la conversion des valeurs non finies en valeurs 
 
 ## Validation
 
-Les tests unitaires et le test d'intégration utilisent de petits jeux synthétiques. Un échantillon de 1 000 lignes françaises du Parquet réel a aussi été passé dans le pipeline, dans un répertoire temporaire. Le traitement complet du fichier source et l'import PostgreSQL sont des étapes distinctes; ils ne sont pas inclus dans les tests.
+Les 54 tests unitaires et d'intégration passent. Ils utilisent principalement de petits jeux synthétiques. Le 15 octobre 2026, le pipeline complet a aussi été exécuté sur `data/food.parquet` : DuckDB a extrait 1 273 567 lignes françaises, puis le nettoyage a conservé 1 273 539 produits. Les cinq Parquets et le rapport ont été générés.
+
+Les Parquets ont été contrôlés après génération : aucune clé produit, marque ou catégorie dupliquée, et aucun lien orphelin dans les relations produits-catégories, les nutriments ou les marques. La source ne fournit pas `pnns_groups_1`; le rapport présente donc la répartition multi-catégorie d'Open Food Facts à partir de `food_groups_tags`.
+
+Le 19 octobre 2026, les cinq Parquets ont été chargés dans PostgreSQL 17. Les volumes sont conformes aux fichiers générés :
+
+| Table | Lignes |
+|---|---:|
+| `brands` | 104 862 |
+| `categories` | 56 |
+| `products` | 1 273 539 |
+| `products_categories` | 1 149 684 |
+| `nutrients` | 1 273 539 |
+
+Le chargeur vérifie maintenant que le Parquet `products` ne contient aucun code nul, vide ou dupliqué **avant** de vider les tables PostgreSQL. Les contrôles directs dans PostgreSQL n'ont détecté aucun doublon de clé, aucune clé étrangère orpheline et aucune valeur nutritionnelle hors bornes. La requête TP4 « produits sans catégorie » en compte 713 835 (56,1 %), ce qui correspond aux produits sans `food_groups_tags` dans le rapport. La requête de complétude par rayon a été mise à jour avec les groupes `food_groups_tags` retenus pour les six rayons. Les boissons alcoolisées sont exclues du rayon « Boissons » pour cet indicateur ; les produits multi-groupes peuvent être comptés dans plusieurs rayons, les volumes ne sont donc pas exclusifs. L'exécution sur la base rechargée renvoie les six rayons : 47 595 boissons (70,3 % avec Nutri-Score), 64 043 produits laitiers (84,9 %), 58 540 céréales et petit-déjeuner (82,7 %), 149 514 biscuits et snacks (81,0 %), 42 740 plats préparés et conserves (89,7 %) et 39 826 sauces et condiments (79,0 %).

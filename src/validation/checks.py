@@ -1,5 +1,11 @@
-from config.settings import INPUT_DIR, REQUIRED_FILES, POSTGRES_DB_ALIAS
-from utils.timer import timer, print_duration
+from pathlib import Path
+
+try:
+    from src.config.settings import INPUT_DIR, REQUIRED_FILES, POSTGRES_DB_ALIAS
+    from src.utils.timer import timer, print_duration
+except ModuleNotFoundError:  # exécution de src/load_database.py
+    from config.settings import INPUT_DIR, REQUIRED_FILES, POSTGRES_DB_ALIAS
+    from utils.timer import timer, print_duration
 
 
 def check_input_files():
@@ -22,6 +28,44 @@ def check_input_files():
         raise FileNotFoundError(
             "Certains fichiers Parquet sont absents."
         )
+
+
+def check_product_codes_unique(connection, parquet_path: str | Path | None = None):
+    """Refuse l'import si le Parquet produits contient une clé invalide ou dupliquée.
+
+    Ce contrôle doit être exécuté avant `clear_database` afin qu'un fichier
+    incohérent ne puisse pas vider les tables avant d'être rejeté.
+    """
+    parquet_path = Path(parquet_path or INPUT_DIR / "products.parquet")
+    chemin_sql = str(parquet_path.resolve()).replace("'", "''")
+
+    codes_invalides, lignes_dupliquees = connection.execute(
+        f"""
+        SELECT
+            COUNT(*) FILTER (
+                WHERE code IS NULL OR TRIM(code) = ''
+            ),
+            COUNT(code) - COUNT(DISTINCT code)
+        FROM read_parquet('{chemin_sql}')
+        """
+    ).fetchone()
+
+    erreurs = []
+    if codes_invalides:
+        nom = "code nul ou vide" if codes_invalides == 1 else "codes nuls ou vides"
+        erreurs.append(f"{codes_invalides} {nom}")
+    if lignes_dupliquees:
+        nom = "ligne en doublon" if lignes_dupliquees == 1 else "lignes en doublon"
+        erreurs.append(f"{lignes_dupliquees} {nom}")
+
+    if erreurs:
+        raise ValueError(
+            "Chargement annulé avant le vidage de la base : "
+            + "; ".join(erreurs)
+            + "."
+        )
+
+    print("Les codes produits sont présents et uniques.")
 
 
 def inspect_parquet(connection, parquet_path):
