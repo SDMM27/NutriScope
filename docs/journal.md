@@ -393,6 +393,24 @@ Le traitement complet des 7,7 Go et le chargement PostgreSQL n'ont pas été ex�
 
 La branche fournit une chaîne reproductible depuis le Parquet source jusqu'aux cinq fichiers attendus par le chargeur, ainsi que la documentation de lancement dans `docs/data/pipeline_tp9.md`.
 
+## 15–19 octobre 2026 — Validation du pipeline complet TP9
+
+### Exécution sur le jeu complet
+
+Le pipeline a été exécuté sur `data/food.parquet`. DuckDB a projeté **1 273 567 lignes françaises** ; après nettoyage et suppression de 28 doublons, **1 273 539 produits** ont été conservés. Les cinq Parquets destinés au chargeur et le rapport avant/après ont été produits.
+
+Les Parquets ont été contrôlés : les produits, nutriments, marques, catégories et relations n'ont pas de clés dupliquées. Aucun lien orphelin n'a été détecté entre les produits et les marques, les produits et les catégories, ou les produits et leurs nutriments.
+
+La source actuelle ne fournit pas `pnns_groups_1`. Pour conserver une analyse utile, le rapport utilise `food_groups_tags` ; les produits pouvant avoir plusieurs groupes, les pourcentages ne sont pas exclusifs et ne s'additionnent pas nécessairement à 100 %.
+
+### Tests et chargement PostgreSQL
+
+Le 19 octobre, la suite complète a réussi : **54 tests passés**, dont les nouveaux cas qui refusent les codes produits dupliqués, nuls ou vides avant le vidage de la base. L'environnement `.venv` du dépôt référence un interpréteur Python qui n'est plus présent ; les tests ont été lancés avec un Python 3.12 disponible et les dépendances déjà installées dans `.venv\Lib\site-packages`.
+
+Le 19 octobre, les cinq Parquets ont été chargés dans PostgreSQL 17 après remplacement du jeu précédent. Les tables contiennent 104 862 marques, 56 groupes alimentaires, 1 273 539 produits, 1 149 684 relations produits-groupes et 1 273 539 lignes de nutriments.
+
+Les contrôles directs n'ont révélé ni doublons de clés, ni clés étrangères orphelines, ni valeurs nutritionnelles hors bornes. Les cinq requêtes du notebook TP4 ont été rejouées. La requête « produits sans catégorie » en compte 713 835 (56,1 %), cohérent avec le rapport. La requête de complétude par rayon a ensuite été actualisée pour utiliser les groupes `food_groups_tags` retenus pour les six rayons. Les boissons alcoolisées en sont exclues, même si un produit porte également un tag de boisson ; un produit multi-groupes peut compter dans plusieurs rayons. L'exécution sur PostgreSQL renvoie les six rayons : 47 595 boissons (70,3 % avec Nutri-Score), 64 043 produits laitiers (84,9 %), 58 540 céréales et petit-déjeuner (82,7 %), 149 514 biscuits et snacks (81,0 %), 42 740 plats préparés et conserves (89,7 %) et 39 826 sauces et condiments (79,0 %).
+
 
 ---
 

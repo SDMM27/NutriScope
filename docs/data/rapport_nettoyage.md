@@ -1,6 +1,6 @@
 # Rapport de nettoyage NutriScope
 
-- Généré le 2026-10-15 par `python -m src.report` — ne pas éditer à la main
+- Généré le 2026-10-19 par `python -m src.report` — ne pas éditer à la main
 - Source : `data/food.parquet`
 - Données : Open Food Facts, © Open Food Facts contributors — licence ODbL
 
@@ -9,7 +9,7 @@
 |  | avant | après | écart |
 |---|---|---|---|
 | lignes | 1 273 567 | 1 273 539 | -28 |
-| colonnes | 22 | 22 | 0 |
+| colonnes | 24 | 24 | 0 |
 | codes distincts | 1 273 539 | 1 273 539 | 0 |
 
 ## Lignes touchées par règle

@@ -176,7 +176,7 @@ Le chargement PostgreSQL appelle également cette préparation avant l'insertion
 python src/load_database.py
 ```
 
-Cette dernière commande utilise la base définie dans `src/config/settings.py`. Le traitement complet de la source et son chargement en base restent à exécuter pour valider les volumes de production.
+Cette dernière commande utilise la base définie dans `src/config/settings.py`. Le traitement complet de `data/food.parquet` a été exécuté le 15 octobre 2026 : 1 273 567 lignes françaises ont été projetées et 1 273 539 produits ont été conservés après nettoyage. Le 19 octobre, ces données ont été chargées dans PostgreSQL. Les volumes des cinq tables et les contrôles d'intégrité sont documentés dans `docs/data/pipeline_tp9.md`.
 
 ---
 
@@ -368,7 +368,7 @@ Il permet notamment de comprendre pourquoi certaines décisions techniques ont �
 
 # État du projet
 
-**Dernière mise à jour : 15 octobre 2026**
+**Dernière mise à jour : 19 octobre 2026**
 
 ## Réalisé
 
@@ -386,18 +386,13 @@ Il permet notamment de comprendre pourquoi certaines décisions techniques ont �
 * préparation de PostgreSQL ;
 * intégration des règles TP9 au pipeline qui prépare les Parquets PostgreSQL ;
 * génération du rapport avant/après à partir du même traitement ;
-* tests unitaires et d'intégration du nettoyage et du mapping SQL.
-
-## En cours
-
-* exécution complète du pipeline sur `data/food.parquet` ;
-* génération des Parquets et du rapport sur le jeu complet ;
-* chargement PostgreSQL et contrôles de cohérence sur les volumes réels.
+* tests unitaires et d'intégration du nettoyage et du mapping SQL ;
+* validation du pipeline complet et chargement des Parquets nettoyés dans PostgreSQL ;
+* actualisation de la requête TP4 de complétude par rayon selon les groupes `food_groups_tags` retenus.
 
 ## À venir
 
 * stabilisation complète du pipeline de données ;
-* validation de la base ;
 * exploitation avancée des données nutritionnelles ;
 * fonctionnalité de substitution de produits ;
 * machine learning ;
