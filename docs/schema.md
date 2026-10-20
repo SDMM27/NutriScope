@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Quatre entités demandées par le sujet + une table de liaison pour `categories_tags` (multi-valué) :
+Quatre entités demandées par le sujet + une table de liaison pour `food_groups_tags` (multi-valué) :
 
 ```text
         brands                     categories
@@ -31,7 +31,7 @@ Quatre entités demandées par le sujet + une table de liaison pour `categories_
 ```
 
 - `products` → `brands` : plusieurs produits pour une marque (1..N), une marque par produit
-- `products` ↔ `categories` : many-to-many via `products_categories`, parce que `categories_tags` est une
+- `products` ↔ `categories` : many-to-many via `products_categories`, parce que `food_groups_tags` est une
   liste dans la source.
 - `products` → `nutrients` : relation 1-1 (une ligne de nutriments par produit), séparée de `products`
   pour isoler les colonnes nutritionnelles typées/contraintes du reste des métadonnées.
@@ -62,19 +62,19 @@ Une ligne par valeur distincte de `brands_tags[1]` (dédupliquée par constructi
 | Colonne parquet | Colonne (base) | Type | Contrainte |
 |---|---|---|---|
 | — | `id` | `INTEGER` | **PK** |
-| `categories_tags` (un élément) | `tag` | `VARCHAR` | **UNIQUE**, NOT NULL |
+| `food_groups_tags` (un élément) | `tag` | `VARCHAR` | **UNIQUE**, NOT NULL |
 
-Une ligne par tag distinct de `categories_tags` (ex. `en:dairies`).
+Une ligne par groupe alimentaire distinct de `food_groups_tags` (ex. `en:milk-and-dairy-products`). Ces groupes sont plus généraux que les catégories commerciales détaillées d'Open Food Facts (`categories_tags`).
 
 ### `products_categories` (liaison)
 
 | Colonne parquet | Colonne (base) | Type | Contrainte |
 |---|---|---|---|
 | `code` | `code` | `VARCHAR` | FK → `products(code)` |
-| `categories_tags` (un élément, résolu vers `categories.id`) | `category_id` | `INTEGER` | FK → `categories(id)` |
+| `food_groups_tags` (un élément, résolu vers `categories.id`) | `category_id` | `INTEGER` | FK → `categories(id)` |
 
 **PK** composite `(code, category_id)`. Une ligne par (produit, catégorie) — porte la multi-valuation de
-`categories_tags`.
+`food_groups_tags`.
 
 ### `nutrients`
 
