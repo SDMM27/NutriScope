@@ -323,5 +323,40 @@ def extremes_restants(df: pd.DataFrame, colonnes: list[str], seuil: float = 3.5)
 # ============================================================
 
 def comparer_deux_groupes(a: pd.Series, b: pd.Series) -> pd.Series:
-    """Médianes, d de Cohen et test de Mann-Whitney entre deux groupes."""
-    raise NotImplementedError
+    """Compare une variable numérique entre deux groupes : médianes, d de Cohen, Mann-Whitney.
+
+    Trois mesures complémentaires, calculées sur les valeurs présentes :
+
+    - `diff_medianes` (médiane de `a` − médiane de `b`) : l'écart réel, dans l'unité
+      de la variable, robuste aux extrêmes ;
+    - `d_cohen` : l'écart des moyennes rapporté à l'écart-type regroupé des deux
+      groupes. Taille d'effet sans unité (≈ 0,2 petit, 0,5 moyen, 0,8 grand),
+      qui ne gonfle pas avec l'effectif ;
+    - `U` et `p_value` : test de Mann-Whitney bilatéral, non paramétrique (sur les
+      rangs), adapté aux distributions asymétriques des nutriments. La p-value
+      devient minuscule dès que `n` est grand : on la lit toujours à côté du d.
+
+    Un groupe vide, ou un écart-type regroupé nul (les deux groupes constants),
+    donne `d_cohen` et le test à NaN plutôt qu'une division par zéro ou une erreur.
+    Test exploratoire : la rigueur inférentielle (corrections, hypothèses) est vue au 3.4.
+    """
+    a, b = a.dropna(), b.dropna()
+    na, nb = len(a), len(b)
+    if na == 0 or nb == 0:
+        return pd.Series({"n_a": na, "n_b": nb, "mediane_a": np.nan, "mediane_b": np.nan,
+                          "diff_medianes": np.nan, "d_cohen": np.nan, "U": np.nan, "p_value": np.nan})
+    if na + nb > 2:
+        var_regroupee = ((na - 1) * a.var(ddof=1) + (nb - 1) * b.var(ddof=1)) / (na + nb - 2)
+        ecart_type = np.sqrt(var_regroupee)
+    else:
+        ecart_type = 0.0
+    d = float((a.mean() - b.mean()) / ecart_type) if ecart_type > 0 else np.nan
+    if a.nunique() < 2 and b.nunique() < 2 and a.iloc[0] == b.iloc[0]:
+        u, p = np.nan, np.nan        # deux groupes constants et identiques : rien à départager
+    else:
+        u, p = stats.mannwhitneyu(a, b, alternative="two-sided")
+    return pd.Series({
+        "n_a": na, "n_b": nb,
+        "mediane_a": a.median(), "mediane_b": b.median(), "diff_medianes": a.median() - b.median(),
+        "d_cohen": d, "U": float(u), "p_value": float(p),
+    })

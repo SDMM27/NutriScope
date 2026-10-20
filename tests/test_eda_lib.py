@@ -286,3 +286,38 @@ def test_extremes_restants_trie_par_z_absolu(avec_intrus):
     res = eda_lib.extremes_restants(avec_intrus, ["salt_100g"])
     assert res["code"].tolist() == ["b29", "b0"]                      # 77 g avant 5 g
     assert res["z"].abs().is_monotonic_decreasing
+
+
+# ---------------------------------------------------------------------------
+# 5. Hypothèses
+# ---------------------------------------------------------------------------
+
+def test_comparer_deux_groupes_valeurs_connues():
+    # a décalé de +10 par rapport à b, même dispersion : d de Cohen connu
+    a = pd.Series([10.0, 12.0, 14.0, 16.0, 18.0])
+    b = pd.Series([0.0, 2.0, 4.0, 6.0, 8.0])
+    res = eda_lib.comparer_deux_groupes(a, b)
+    assert res["n_a"] == 5 and res["n_b"] == 5
+    assert res["diff_medianes"] == 10.0                              # médianes 14 et 4
+    ecart_type = a.std(ddof=1)                                       # dispersion identique dans les deux groupes
+    assert res["d_cohen"] == pytest.approx(10.0 / ecart_type)
+    assert res["p_value"] < 0.05                                     # deux groupes nettement disjoints
+
+
+def test_comparer_deux_groupes_ignore_les_manquants():
+    res = eda_lib.comparer_deux_groupes(pd.Series([1.0, 2.0, 3.0, None]), pd.Series([1.0, 2.0, 3.0]))
+    assert res["n_a"] == 3                                           # le NaN n'est pas compté
+    assert res["d_cohen"] == pytest.approx(0.0)                      # groupes identiques : effet nul
+
+
+def test_comparer_deux_groupes_groupe_vide():
+    res = eda_lib.comparer_deux_groupes(pd.Series([1.0, 2.0]), pd.Series([], dtype="float64"))
+    assert res["n_b"] == 0
+    assert pd.isna(res["d_cohen"]) and pd.isna(res["p_value"])       # rien à comparer, pas d'erreur
+
+
+def test_comparer_deux_groupes_dispersion_nulle():
+    # les deux groupes sont constants : l'écart-type regroupé est nul, le d n'est pas défini
+    res = eda_lib.comparer_deux_groupes(pd.Series([5.0, 5.0, 5.0]), pd.Series([2.0, 2.0, 2.0]))
+    assert res["diff_medianes"] == 3.0
+    assert pd.isna(res["d_cohen"])
