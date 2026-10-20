@@ -2,7 +2,7 @@
 
 > Document de référence du projet, cité jusqu'au jury (BC02). Produit au TP 10 (30/09/2025).
 > Source : Open Food Facts, © Open Food Facts contributors — ODbL.
-> Détail et figures : `notebooks/eda_reference.ipynb` · registre : `docs/data/registre_hypotheses.csv`.
+> Détail et figures : `notebooks/eda_reference.ipynb` · registre : `docs/data/registre_hypotheses.md`.
 
 ## Contexte
 
