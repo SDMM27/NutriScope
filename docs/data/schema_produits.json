@@ -1,0 +1,114 @@
+{
+  "jeu": "produits",
+  "licence": "© Open Food Facts contributors — ODbL 1.0 (https://opendatacommons.org/licenses/odbl/1-0/)",
+  "partition": "rayon (food group OFF de niveau 1, slug ; 'unknown' si absent)",
+  "compression": "ZSTD",
+  "lignes": 1273539,
+  "colonnes": [
+    {
+      "nom": "code",
+      "type": "VARCHAR",
+      "justification": "code-barres : texte, garde les zéros de tête"
+    },
+    {
+      "nom": "product_name",
+      "type": "VARCHAR",
+      "justification": "nom affiché (français si disponible)"
+    },
+    {
+      "nom": "brand",
+      "type": "VARCHAR",
+      "justification": "première marque, pour les agrégats par marque"
+    },
+    {
+      "nom": "sous_rayon",
+      "type": "VARCHAR",
+      "justification": "food group de niveau 2 (ex. breakfast-cereals)"
+    },
+    {
+      "nom": "nutriscore_grade",
+      "type": "VARCHAR",
+      "justification": "a-e, unknown, not-applicable : catégoriel"
+    },
+    {
+      "nom": "nutriscore_score",
+      "type": "SMALLINT",
+      "justification": "entier de -15 à 40"
+    },
+    {
+      "nom": "nova_group",
+      "type": "TINYINT",
+      "justification": "entier de 1 à 4"
+    },
+    {
+      "nom": "additives_n",
+      "type": "SMALLINT",
+      "justification": "compteur, quelques dizaines au plus"
+    },
+    {
+      "nom": "completeness",
+      "type": "FLOAT",
+      "justification": "ratio 0-1, la précision simple suffit"
+    },
+    {
+      "nom": "created_t",
+      "type": "TIMESTAMP",
+      "justification": "epoch Unix converti en date lisible"
+    },
+    {
+      "nom": "last_modified_t",
+      "type": "TIMESTAMP",
+      "justification": "epoch Unix converti en date lisible"
+    },
+    {
+      "nom": "energy-kcal_100g",
+      "type": "FLOAT",
+      "justification": "kcal/100 g, 0-900 : FLOAT suffit (7 chiffres)"
+    },
+    {
+      "nom": "energy_100g",
+      "type": "FLOAT",
+      "justification": "kJ/100 g"
+    },
+    {
+      "nom": "fat_100g",
+      "type": "FLOAT",
+      "justification": "g/100 g, 0-100"
+    },
+    {
+      "nom": "saturated-fat_100g",
+      "type": "FLOAT",
+      "justification": "g/100 g, 0-100"
+    },
+    {
+      "nom": "carbohydrates_100g",
+      "type": "FLOAT",
+      "justification": "g/100 g, 0-100"
+    },
+    {
+      "nom": "sugars_100g",
+      "type": "FLOAT",
+      "justification": "g/100 g, 0-100"
+    },
+    {
+      "nom": "fiber_100g",
+      "type": "FLOAT",
+      "justification": "g/100 g, 0-100"
+    },
+    {
+      "nom": "proteins_100g",
+      "type": "FLOAT",
+      "justification": "g/100 g, 0-100"
+    },
+    {
+      "nom": "salt_100g",
+      "type": "FLOAT",
+      "justification": "g/100 g, 0-100"
+    },
+    {
+      "nom": "sodium_100g",
+      "type": "FLOAT",
+      "justification": "g/100 g, 0-40"
+    }
+  ]
+}
