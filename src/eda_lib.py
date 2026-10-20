@@ -354,7 +354,7 @@ def comparer_deux_groupes(a: pd.Series, b: pd.Series) -> pd.Series:
     if a.nunique() < 2 and b.nunique() < 2 and a.iloc[0] == b.iloc[0]:
         u, p = np.nan, np.nan        # deux groupes constants et identiques : rien à départager
     else:
-        u, p = stats.mannwhitneyu(a, b, alternative="two-sided")
+        u, p = stats.mannwhitneyu(a, b, alternative="two-sided", method="asymptotic")
     return pd.Series({
         "n_a": na, "n_b": nb,
         "mediane_a": a.median(), "mediane_b": b.median(), "diff_medianes": a.median() - b.median(),
