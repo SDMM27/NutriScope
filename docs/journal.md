@@ -436,3 +436,7 @@ En outre, l'objectif est d'intégrer les données dans un framework SQL (DuckDB 
 **Fait** : EDA de référence complète (`notebooks/eda_reference.ipynb`), fonctions de calcul testées dans `src/eda_lib.py` (34 tests verts), synthèse d'une page et registre d'hypothèses dans `docs/data/`.
 **Décidé** : features du TP 14 (saturés, énergie, lipides, sucres, sel, glucides ; sodium retiré ; rayon donné au modèle) ; deux nouveaux drapeaux pour le nettoyage du TP 9 ; sort du rayon `unknown` (20,5 %) renvoyé au TP 12. Tout lien nutriment ↔ score est relu par rayon (paradoxe de Simpson).
 **Bloqué** : travail sur le nettoyage minimal faute du TP 9 ; les rayons `pnns_groups_1` de l'échantillon devront être retrouvés dans le Parquet complet via `food_groups_tags` (TP 12).
+## Parquet & DuckDB — TP 12 (20/10)
+**Fait** : nettoyé → Parquet ZSTD partitionné par rayon (12 partitions, 1 273 539 lignes, 48 Mo contre 239 Mo en CSV) ; cinq contrôles rejoués en DuckDB ; benchmark pandas / SQLite / DuckDB ; `docs/architecture.md` ; export `features_nutriscore_20261020.parquet` (461 698 lignes) ; 16 tests.
+**Décidé** : rayon = food group OFF de niveau 1 (`pnns_groups_1` est vide dans `food.parquet`) ; `unknown` reste une partition (56 %) ; base du benchmark = SQLite construite depuis le CSV nettoyé (PostgreSQL n'était pas démarré).
+**Bloqué** : rien ; 319 sucres > glucides et 339 saturés > lipides (tolérance 0,5 g du TP 9) restent listés dans le contrôle 4, à trancher au TP 9.
