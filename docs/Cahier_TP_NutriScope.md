@@ -12,7 +12,7 @@ Deux règles simples dès maintenant : tout le travail vit dans un dépôt Git p
 
 “ “
 
-Utopios® Tous droits réservés 2
+2
 
 ## La commande (scénario)
 
@@ -28,7 +28,7 @@ Le scénario est fictif, les données et les problèmes sont réels. Vous rencon
 
 “ “
 
-Utopios® Tous droits réservés 3
+3
 
 # Les données : Open Food Facts
 
@@ -50,19 +50,19 @@ Licences à respecter: ODbL pour la base, CC-BY-SA pour les images. Concrètemen
 
 “
 
-Utopios® Tous droits réservés 4
+4
 
 ## Ce que vous allez construire
 
 Le produit final assemble des briques que vous développerez au fil des modules : Socle data — une base propre (PostgreSQL puis fichiers Parquet), alimentée par un pipeline de nettoyage reproductible, avec une analyse exploratoire documentée et des tableaux de bord lisibles par un non-technicien. Modèles — prédiction du Nutri-Score d'un produit à partir de ses caractéristiques, segmentation du catalogue, moteur de substitution (« proposer mieux »), et un classifieur d'images entraîné avec Keras sur les photos du bucket. Assistant — un chatbot RAG qui répond aux questions des utilisateurs en s'appuyant sur le catalogue et sur des sources publiques de référence en nutrition ; en option, des agents pour les tâches répétitives. Industrialisation — une API FastAPI qui expose les modèles, une petite application de démonstration, le tout conteneurisé, déployé sur le cloud avec CI/CD et supervisé. Conformité — registre RGPD, analyse de biais, positionnement AI Act, accessibilité RGAA. Livré en même temps que le reste, pas après.
 
-Utopios® Tous droits réservés 5
+5
 
 ## Organisation
 
 Équipes de 2 à 3. Les équipes sont constituées demain et ne bougent plus — sauf cas de force majeure, comme en entreprise. Le rythme est celui du planning de la promotion. Les séances marquées « TP PROJET FIL ROUGE » sont encadrées par le formateur du module en cours: c'est lui qui fixe l'objectif de la séance et valide l'incrément. Entre deux séances, rien n'interdit d'avancer. Chaque phase se conclut par un jalon livré: un tag Git, un document court, et cinq minutes de démonstration au groupe. On montre ce qui tourne, pas des slides. Outils imposés: Python 3.12, Git (dépôt d'équipe), DuckDB/PostgreSQL, scikit-learn, TensorFlow/Keras, FastAPI, Docker. Le reste — éditeur, librairies complémentaires — est libre, à condition de le justifier dans le README. Langue: code et noms de variables en anglais, documentation et soutenances en français.
 
-Utopios® Tous droits réservés 6
+6
 
 # Calendrier — phases 1 et 2 (été → septembre)
 
@@ -82,7 +82,7 @@ La phase 2 se traite comme une vraie mission de cadrage : entretiens avec le « 
 
 “ “
 
-Utopios® Tous droits réservés 7
+7
 
 # Calendrier — phases 3 et 4 (septembre → début novembre)
 
@@ -104,7 +104,7 @@ Chaque modèle est livré avec ses métriques, sa validation croisée et deux pa
 
 “ “
 
-Utopios® Tous droits réservés 8
+8
 
 # Calendrier — phases 5 et 6 (novembre → décembre)
 
@@ -126,7 +126,7 @@ Séances Phase Ce qu'on attend
 
 28/12 – 29/12 (autonomie) P6 — fin stabilisation en autonomie, revue de code croisée — jalon J6
 
-Utopios® Tous droits réservés 9
+9
 
 # Calendrier — phase 7, stage et dernière ligne droite
 
@@ -146,7 +146,7 @@ Séances Phase Ce qu'on attend
 
 09/03 → 11/03 Certification soutenances devant le jury
 
-Utopios® Tous droits réservés 10
+10
 
 # Jalons et livrables
 
@@ -168,7 +168,7 @@ J7 14/01 produit final + documentation + soutenance blanche
 
 Chaque jalon se démontre : cinq minutes devant le groupe, sur ce qui tourne réellement. “ “
 
-Utopios® Tous droits réservés 11
+11
 
 ## Comment lire ce cahier
 
@@ -182,7 +182,7 @@ Numérotation : TP 1 à TP 31. Les blocs de plusieurs jours (autonomie de décem
 
 “ “
 
-Utopios® Tous droits réservés 12
+12
 
 ## TP 1 — Démarrage · mer 29/07 (A. Abarji, journée)
 
@@ -212,7 +212,7 @@ Le dump complet fait plusieurs gigaoctets : filtrer à la source (colonnes, pays
 
 “ “
 
-Utopios® Tous droits réservés 13
+13
 
 ## TP 2 — Profiling & périmètre · lun 25/08 (A. Abarji, journée)
 
@@ -238,7 +238,7 @@ complétude minimal par produit.
 
 Un périmètre trop large en août se paie en janvier. Le formateur joue le client : il pousse à couper. “ “
 
-Utopios® Tous droits réservés 14
+14
 
 ## TP 3 — Le dépôt au propre · jeu 27/08 (A. Abarji, ½ j après « Git »)
 
@@ -262,7 +262,7 @@ en issues.
 
 À committer: dépôt restructuré, CONTRIBUTING.md, premières PR fusionnées, issues ouvertes.
 
-Utopios® Tous droits réservés 15
+15
 
 ## TP 4 — La base NutriScope · mar 01/09 (A. Abarji, ½ j après « SQL »)
 
@@ -286,7 +286,7 @@ Nutri-Score par rayon, doublons restants.
 
 À committer: DDL + script de chargement + requêtes de contrôle + tag v0.1. Jalon J1 atteint.
 
-Utopios® Tous droits réservés 16
+16
 
 ## TP 5 — Parties prenantes & personas · lun 07/09 (G. Grenade, ½ j après 2.2)
 
@@ -308,7 +308,7 @@ diabétique, étudiant petit budget. Objectifs, freins, situation d'usage.
 
 À committer: docs/cadrage/parties_prenantes.md, personas, trame + compte-rendu d'entretien.
 
-Utopios® Tous droits réservés 17
+17
 
 ## TP 6 — Opportunité & concurrence · mer 09/09 (G. Grenade, ½ j après 2.3)
 
@@ -332,7 +332,7 @@ ou différemment, pour qui.
 
 Interdiction d'écrire « grâce à l'IA » dans la proposition de valeur : dire ce que ça change pour l'utilisateur. “ “
 
-Utopios® Tous droits réservés 18
+18
 
 ## TP 7 — KPI, coûts & ROI · mar 15/09 (S. Zaghdoudi, ½ j après 2.5)
 
@@ -356,7 +356,7 @@ apparentes.
 
 À committer: docs/cadrage/kpi_roi.xlsx (ou .ods) + note d'hypothèses.
 
-Utopios® Tous droits réservés 19
+19
 
 ## TP 8 — Note de cadrage & backlog · jeu 17/09 (S. Zaghdoudi, ½ j après 9.1)
 
@@ -384,7 +384,7 @@ La note se lit sans jargon : elle doit convaincre un investisseur qui n'a jamais
 
 “ “
 
-Utopios® Tous droits réservés 20
+20
 
 ## TP 9 — Nettoyage industrialisé · jeu 24/09 (C. Ringot, ½ j après 3.2)
 
@@ -406,7 +406,7 @@ unités, bornage des nutriments (0–100 g/100 g, énergies plausibles), dédupl
 
 À committer: src/cleaning.py + tests verts + docs/data/rapport_nettoyage.md.
 
-Utopios® Tous droits réservés 21
+21
 
 ## TP 10 — Analyse exploratoire · mer 30/09 (C. Ringot, ½ j après 3.3)
 
@@ -428,7 +428,7 @@ entre les mailles) ?
 
 À committer: notebooks/eda_reference.ipynb + synthèse d'une page dans docs/data/.
 
-Utopios® Tous droits réservés 22
+22
 
 ## TP 11 — Datastorytelling · mar 07/10 (S. Zaghdoudi, ½ j après 3.4)
 
@@ -452,7 +452,7 @@ réutilisables.
 
 À committer: mini-deck + src/viz.py avec les fonctions de tracé.
 
-Utopios® Tous droits réservés 23
+23
 
 ## TP 12 — Parquet & DuckDB · mer 08/10 (C. Ringot, ½ j après 3.5)
 
@@ -474,7 +474,7 @@ d'entraînement et de test se fera au TP 13, dans le pipeline.
 
 À committer: scripts de conversion + benchmark chiffré + docs/architecture.md mis à jour.
 
-Utopios® Tous droits réservés 24
+24
 
 ## TP 13 — Pipeline bout-en-bout · mar 14/10 (C. Ringot, journée)
 
@@ -498,7 +498,7 @@ Ce qui casse est corrigé dans la journée.
 
 À committer: pipeline fonctionnel + doc + tag v0.3. Jalon J3 atteint.
 
-Utopios® Tous droits réservés 25
+25
 
 ## TP 14 — Prédire le Nutri-Score · lun 20/10 (C. Ringot, ½ j après 4.3)
 
@@ -522,7 +522,7 @@ normalisée).
 
 À committer: notebooks/ml_nutriscore.ipynb + tableau comparatif baseline/modèles.
 
-Utopios® Tous droits réservés 26
+26
 
 ## TP 15 — Méthodes d'ensemble · mer 22/10 (C. Ringot, ½ j après 4.4)
 
@@ -546,7 +546,7 @@ confiance.
 
 À committer: notebook comparatif + ADR + docs/ml/limites_nutriscore.md.
 
-Utopios® Tous droits réservés 27
+27
 
 ## TP 16 — Segmentation & substitution · mer 28/10 (B. Quinet, journée)
 
@@ -570,7 +570,7 @@ proposer bio en priorité).
 
 suggestions ; les échecs sont documentés. À committer: notebook clustering + src/substitution.py + rapport des 20 cas.
 
-Utopios® Tous droits réservés 28
+28
 
 ## TP 17 — Classifieur d'images · mer 04/11 (B. Quinet, ½ j après 5.1)
 
@@ -592,7 +592,7 @@ photos que le modèle confond, affichées).
 
 À committer: notebooks/dl_images.ipynb complet + modèle sauvegardé + tag v0.4, qui clôt l'ensemble des travaux de modélisation des TP 14 à 17 (Nutri-Score, ensembles, substitution, images). Jalon J4 atteint.
 
-Utopios® Tous droits réservés 29
+29
 
 ## TP 18 — Architecture de l'assistant · lun 09/11 (B. Quinet, ½ j après 6.1)
 
@@ -616,7 +616,7 @@ réelles.
 
 À committer: prototype d'appel outillé + ADR + schéma à jour.
 
-Utopios® Tous droits réservés 30
+30
 
 ## TP 19 — Construire le RAG · lun 16/11 (A. Abarji, journée)
 
@@ -640,7 +640,7 @@ rejouable.
 
 cloche. À committer: pipeline d'ingestion + chaîne RAG + docs/ia/corpus.md (sources et licences).
 
-Utopios® Tous droits réservés 31
+31
 
 ## TP 20 — Évaluer le RAG · jeu 19/11 (A. Abarji, journée)
 
@@ -664,7 +664,7 @@ chaque fois sur les mêmes 30 questions.
 
 À committer: jeu d'évaluation versionné + résultats des itérations + synthèse.
 
-Utopios® Tous droits réservés 32
+32
 
 ## TP 21 — Orchestration & outils · mer 25/11 (B. Quinet, ½ j après 6.4)
 
@@ -684,7 +684,7 @@ L'assistant choisit le bon outil selon la question.
 
 À committer: assistant orchestré + scénarios rejouables + journalisation active.
 
-Utopios® Tous droits réservés 33
+33
 
 ## TP 22 — Garde-fous & gel de la v1 · lun 30/11 (B. Quinet, ½ j après 6.5)
 
@@ -706,7 +706,7 @@ hors sujet insistantes) et les lance sur l'assistant d'une autre.
 
 À committer: prompt système versionné + rapport des tests croisés + ADR + tag v0.5. Jalon J5 atteint.
 
-Utopios® Tous droits réservés 34
+34
 
 ## TP 23 — L'API NutriScope · mer 02/12 (B. Quinet, ½ j après 7.1)
 
@@ -730,7 +730,7 @@ consommer l'API sans nous appeler.
 
 options. À committer: src/api/ + tests verts + capture de la doc dans docs/api.md.
 
-Utopios® Tous droits réservés 35
+35
 
 ## TP 24 — L'application de démonstration · mer 09/12 (B. Quinet, journée)
 
@@ -754,7 +754,7 @@ vérifiée.
 
 À committer: appli fonctionnelle + guide d'utilisation d'une page.
 
-Utopios® Tous droits réservés 36
+36
 
 ## TP 25 — Conteneurisation · mar 15/12 (C. Ringot, ½ j après 7.3)
 
@@ -776,7 +776,7 @@ d'une autre.
 
 À committer: Dockerfiles + compose +.env.example + docs/deploiement.md (début).
 
-Utopios® Tous droits réservés 37
+37
 
 ## TP 26 — Chaîne CI/CD · lun 21/12 (C. Ringot, journée)
 
@@ -798,7 +798,7 @@ séance (le compose du TP 25 sur une machine ou un conteneur dédié). Le TP 27 
 
 sans intervention manuelle. À committer: fichiers de pipeline + badge de statut dans le README + journal d'un déploiement réussi en préproduction.
 
-Utopios® Tous droits réservés 38
+38
 
 ## TP 27 — Mise en ligne · mer 23/12 (I. Abadi, ½ j après 7.5)
 
@@ -820,7 +820,7 @@ sauvegardes de la base planifiées, journaux accessibles.
 
 À committer: configuration de déploiement + docs/deploiement.md finalisé + URL publique.
 
-Utopios® Tous droits réservés 39
+39
 
 ## TP 28 — Autonomie · lun 28 & mar 29/12 (sans encadrant)
 
@@ -846,7 +846,7 @@ Les formateurs ne sont pas joignables ces deux jours: c'est volontaire. Les bloc
 
 “ “
 
-Utopios® Tous droits réservés 40
+40
 
 ## TP 29 — Monitoring · lun 05/01 (A. Abarji, journée)
 
@@ -872,7 +872,7 @@ par le monitoring, pas par hasard.
 
 À committer: supervision active + tableau de bord + docs/exploitation.md.
 
-Utopios® Tous droits réservés 41
+41
 
 ## TP 30 — Intégration finale & soutenance blanche · lun 11 → jeu 14/01 (A.
 
@@ -902,7 +902,7 @@ depuis un sommaire unique.
 
 À committer: dossier de projet complet + retours de soutenance archivés + jalon J7.
 
-Utopios® Tous droits réservés 42
+42
 
 ## TP 31 — Retour de stage & certification · 02-04/03 et 08/03 (I. Abadi,
 
@@ -928,7 +928,7 @@ le projet (document, commit, écran) ; relecture croisée puis dépôt.
 
 À livrer: tag v1.1 + dossiers déposés + supports de soutenance finaux.
 
-Utopios® Tous droits réservés 43
+43
 
 # 31 sujets, 7 jalons, un produit.
 
