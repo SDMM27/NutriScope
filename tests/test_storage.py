@@ -10,8 +10,9 @@ import duckdb
 import pytest
 
 from src.storage.commun import NUTRIMENTS_CLES, RACINE, SQL_CONTROLES
-from src.storage.convert_parquet import SCHEMA, convertir, ecrire_csv_nettoye
-from src.storage.export_features import exporter
+from src.storage.convert_parquet import SCHEMA, convertir
+from src.storage.preparer_csv import ecrire_csv_nettoye
+from src.storage.export_features import chemin_schema, exporter
 from src.storage.run_queries import executer, lire_requetes
 
 ECHANTILLON = RACINE / "data/echantillon_france.csv"
@@ -45,6 +46,12 @@ def test_une_partition_par_rayon_et_toutes_les_lignes(jeu):
     rayons = _sql(jeu, "SELECT count(DISTINCT rayon) FROM {p}")[0][0]
     assert rayons == len(partitions)
     assert jeu["lignes"] == jeu["lignes_csv"] > 0
+
+
+def test_fichier_nomme_d_apres_son_rayon(jeu):
+    for partition in jeu["dossier"].iterdir():
+        slug = partition.name.removeprefix("rayon=")
+        assert [f.name for f in partition.iterdir()] == [f"{slug}.parquet"]
 
 
 def test_types_du_parquet_conformes_au_schema(jeu):
@@ -112,7 +119,7 @@ def test_zero_doublon_et_zero_hors_bornes(jeu):
 def test_export_date_decrit_et_cible_complete(jeu, tmp_path):
     fichier = exporter(jeu["dossier"], tmp_path, "20251014")
     assert fichier.name == "features_nutriscore_20251014.parquet"
-    schema = json.loads((tmp_path / "schema.json").read_text(encoding="utf-8"))
+    schema = json.loads(chemin_schema(fichier).read_text(encoding="utf-8"))
     con = duckdb.connect()
     try:
         colonnes = [r[0] for r in con.execute(f"DESCRIBE SELECT * FROM read_parquet('{fichier.as_posix()}')").fetchall()]
@@ -133,10 +140,19 @@ def test_export_date_decrit_et_cible_complete(jeu, tmp_path):
 
 def test_export_refuse_d_ecraser_et_reste_reproductible(jeu, tmp_path):
     fichier = exporter(jeu["dossier"], tmp_path, "20251014")
-    premier = json.loads((tmp_path / "schema.json").read_text(encoding="utf-8"))["sha256"]
+    premier = json.loads(chemin_schema(fichier).read_text(encoding="utf-8"))["sha256"]
     with pytest.raises(FileExistsError):
         exporter(jeu["dossier"], tmp_path, "20251014")
     exporter(jeu["dossier"], tmp_path, "20251014", force=True)
-    second = json.loads((tmp_path / "schema.json").read_text(encoding="utf-8"))["sha256"]
+    second = json.loads(chemin_schema(fichier).read_text(encoding="utf-8"))["sha256"]
     assert premier == second
     assert Path(fichier).exists()
+
+
+def test_un_schema_par_export(jeu, tmp_path):
+    ancien = exporter(jeu["dossier"], tmp_path, "20251014")
+    nouveau = exporter(jeu["dossier"], tmp_path, "20251015")
+    assert chemin_schema(ancien).name == "features_nutriscore_20251014.schema.json"
+    assert json.loads(chemin_schema(ancien).read_text(encoding="utf-8"))["nom"] == ancien.name
+    assert json.loads(chemin_schema(nouveau).read_text(encoding="utf-8"))["nom"] == nouveau.name
+    assert not (tmp_path / "schema.json").exists()

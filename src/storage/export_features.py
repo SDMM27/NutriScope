@@ -3,7 +3,8 @@
     python -m src.storage.export_features [--date AAAAMMJJ] [--force]
 
 Lit la vue `produits` (Parquet partitionné), garde les produits utilisables et écrit
-`data/exports/features_nutriscore_<AAAAMMJJ>.parquet` + `schema.json`.
+`data/exports/features_nutriscore_<AAAAMMJJ>.parquet` + `features_nutriscore_<AAAAMMJJ>.schema.json`
+(un schéma par export : un nouvel export ne réécrit pas la description d'un ancien).
 Le split train / test n'est pas fait ici (TP 13).
 
 Données : © Open Food Facts contributors — ODbL.
@@ -93,8 +94,13 @@ def commit_git() -> str | None:
     return (sortie.stdout.strip() or None) if sortie.returncode == 0 else None
 
 
+def chemin_schema(fichier: Path) -> Path:
+    """`features_nutriscore_<AAAAMMJJ>.parquet` → `features_nutriscore_<AAAAMMJJ>.schema.json`."""
+    return fichier.with_suffix(".schema.json")
+
+
 def exporter(dossier_parquet: str | Path, dossier_sortie: str | Path, date: Date | str, force: bool = False) -> Path:
-    """Écrit le Parquet daté et `schema.json` ; refuse d'écraser sans `force`."""
+    """Écrit le Parquet daté et son `<nom>.schema.json` ; refuse d'écraser sans `force`."""
     jour = _date(date)
     dossier_sortie = Path(dossier_sortie)
     fichier = dossier_sortie / f"features_nutriscore_{jour:%Y%m%d}.parquet"
@@ -156,7 +162,7 @@ def exporter(dossier_parquet: str | Path, dossier_sortie: str | Path, date: Date
         "usage_prevu": "TP 13 : split train / test stratifié sur la cible (graine fixée), non fait ici ; "
                        "TP 14 : classification du Nutri-Score.",
     }
-    (dossier_sortie / "schema.json").write_text(json.dumps(schema, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    chemin_schema(fichier).write_text(json.dumps(schema, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return fichier
 
 
@@ -169,7 +175,7 @@ def main() -> None:
     args = parser.parse_args()
 
     fichier = exporter(args.parquet, args.sortie, _date(args.date) if args.date else Date.today(), args.force)
-    schema = json.loads((fichier.parent / "schema.json").read_text(encoding="utf-8"))
+    schema = json.loads(chemin_schema(fichier).read_text(encoding="utf-8"))
     print(f"{fichier} : {schema['lignes']:,} lignes, sha256 {schema['sha256']}")
 
 
