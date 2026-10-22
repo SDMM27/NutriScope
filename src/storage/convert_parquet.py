@@ -1,10 +1,11 @@
-"""Données nettoyées (TP 9) → Parquet partitionné par rayon.
+"""CSV nettoyé (TP 9) → Parquet partitionné par rayon.
 
-    python -m src.storage.convert_parquet [--brut data/extracts/france_brut.parquet]
+    python -m src.storage.convert_parquet [--csv data/clean/produits_nettoyes.csv]
 
-1. applique `nettoyer()` au brut et écrit le CSV nettoyé (lu aussi par le benchmark) ;
-2. relit ce CSV avec des types explicites et écrit
-   `data/parquet/produits/rayon=<slug>/…` (ZSTD) ;
+Le CSV est produit par `preparer_csv.py`, à lancer avant.
+
+1. lit le CSV nettoyé (qui porte déjà la colonne `rayon`), avec des types explicites ;
+2. écrit `data/parquet/produits/rayon=<slug>/…` (COPY PARTITION_BY, ZSTD) ;
 3. écrit `schema_produits.json` à côté du dossier.
 
 Données : © Open Food Facts contributors — ODbL.
@@ -12,20 +13,12 @@ Données : © Open Food Facts contributors — ODbL.
 
 import argparse
 import json
-import re
 import shutil
 from pathlib import Path
 
 import duckdb
-import numpy as np
-import pandas as pd
 
-from src.cleaning import lire_brut, nettoyer
-from src.storage.commun import BRUT, CSV_NETTOYE, LICENCE, PARQUET_PRODUITS, SCHEMA_PRODUITS, sql_chemin
-
-RAYON_INCONNU = "unknown"
-# libellés pnns_groups_1 de l'export CSV dont le slug diffère du food group OFF
-ALIAS_RAYONS = {"fat-and-sauces": "fats-and-sauces", "baby-foods": "baby-foods-and-milks"}
+from src.storage.commun import CSV_NETTOYE, LICENCE, PARQUET_PRODUITS, SCHEMA_PRODUITS, sql_chemin
 
 # colonne : (type DuckDB, justification) — l'ordre est celui du Parquet
 SCHEMA = {
@@ -54,71 +47,6 @@ SCHEMA = {
 EPOCHS = {"created_t", "last_modified_t"}
 
 
-def slug(texte) -> str | None:
-    """'Milk and dairy products' ou 'en:milk-and-dairy-products' → 'milk-and-dairy-products'."""
-    if texte is None or pd.isna(texte):
-        return None
-    s = re.sub(r"^[a-z]{2}:", "", str(texte).strip().lower())
-    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
-    if not s or s == RAYON_INCONNU:
-        return None
-    return ALIAS_RAYONS.get(s, s)
-
-
-def _liste(valeur) -> list:
-    if isinstance(valeur, (list, tuple, np.ndarray)):
-        return list(valeur)
-    if isinstance(valeur, str) and valeur.strip():
-        return [v.strip() for v in valeur.split(",") if v.strip()]
-    return []
-
-
-def _nom(valeur):
-    """Texte simple (CSV) ou liste [{lang, text}] (Parquet OFF) → nom français si possible."""
-    if isinstance(valeur, (list, tuple, np.ndarray)):
-        textes = {d.get("lang"): d.get("text") for d in valeur if isinstance(d, dict)}
-        return textes.get("fr") or textes.get("main") or next(iter(textes.values()), None)
-    return None if valeur is None or pd.isna(valeur) else str(valeur)
-
-
-def _niveau(groupes, i: int):
-    groupes = _liste(groupes)
-    return slug(groupes[i]) if len(groupes) > i else None
-
-
-def preparer(propre: pd.DataFrame) -> pd.DataFrame:
-    """Sortie de `nettoyer()` → table plate : rayon, sous-rayon, nom, marque."""
-    groupes = propre.get("food_groups_tags", pd.Series(None, index=propre.index))
-    pnns = propre.get("pnns_groups_1", pd.Series(None, index=propre.index)).map(slug)
-    rayon = pnns.fillna(groupes.map(lambda g: _niveau(g, 0))).fillna(RAYON_INCONNU)
-
-    marques = propre["brands_tags"] if "brands_tags" in propre else propre.get("brands")
-    table = pd.DataFrame({
-        "code": propre["code"],
-        "product_name": propre["product_name"].map(_nom),
-        "brand": marques.map(lambda m: next(iter(_liste(m)), None)) if marques is not None else None,
-        "sous_rayon": propre.get("pnns_groups_2", pd.Series(None, index=propre.index)).map(slug)
-                      .fillna(groupes.map(lambda g: _niveau(g, 1))),
-        "rayon": rayon,
-    }, index=propre.index)
-    for colonne in SCHEMA:
-        if colonne not in table:
-            table[colonne] = propre[colonne] if colonne in propre else np.nan
-    return table[list(SCHEMA) + ["rayon"]]
-
-
-def ecrire_csv_nettoye(brut_chemin: str | Path, csv_chemin: str | Path) -> int:
-    """Nettoie le brut (TP 9) et écrit le CSV nettoyé ; renvoie le nombre de lignes."""
-    brut = lire_brut(brut_chemin)
-    if "food_groups_tags" not in brut:  # export CSV (échantillon) : rayon porté par pnns_groups_1
-        brut["food_groups_tags"] = None
-    propre, _ = nettoyer(brut)
-    table = preparer(propre)
-    Path(csv_chemin).parent.mkdir(parents=True, exist_ok=True)
-    table.to_csv(csv_chemin, index=False)
-    return len(table)
-
-
 def _selection() -> str:
     colonnes = []
     for nom, (type_sql, _) in SCHEMA.items():
@@ -132,6 +60,16 @@ def types_lecture_csv() -> dict[str, str]:
     types = {nom: ("DOUBLE" if nom in EPOCHS else t) for nom, (t, _) in SCHEMA.items()}
     types["rayon"] = "VARCHAR"
     return types
+
+
+def nommer_fichiers(dossier: Path) -> None:
+    """DuckDB écrit `data_0.parquet` dans chaque `rayon=<slug>/` : on le renomme `<slug>.parquet`."""
+    for partition in dossier.glob("rayon=*"):
+        fichiers = list(partition.glob("*.parquet"))
+        if len(fichiers) != 1:
+            raise RuntimeError(f"{partition.name} : {len(fichiers)} fichiers Parquet, attendu 1")
+        slug = partition.name.removeprefix("rayon=")
+        fichiers[0].rename(partition / f"{slug}.parquet")
 
 
 def convertir(csv_chemin: str | Path, dossier: str | Path, schema_chemin: str | Path | None = None) -> int:
@@ -151,6 +89,7 @@ def convertir(csv_chemin: str | Path, dossier: str | Path, schema_chemin: str | 
             ) TO '{sql_chemin(dossier)}'
             (FORMAT PARQUET, PARTITION_BY (rayon), COMPRESSION ZSTD, OVERWRITE_OR_IGNORE)
         """)
+        nommer_fichiers(dossier)
         lignes = connexion.execute(
             f"SELECT count(*) FROM read_parquet('{sql_chemin(dossier)}/**/*.parquet', hive_partitioning = true)"
         ).fetchone()[0]
@@ -175,16 +114,14 @@ def ecrire_schema(chemin: str | Path, lignes: int) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--brut", default=BRUT, help="extrait France (sortie de extract_perimeter.py)")
     parser.add_argument("--csv", default=CSV_NETTOYE)
     parser.add_argument("--sortie", default=PARQUET_PRODUITS)
     parser.add_argument("--schema", default=SCHEMA_PRODUITS)
     args = parser.parse_args()
 
-    nettoyees = ecrire_csv_nettoye(args.brut, args.csv)
     lignes = convertir(args.csv, args.sortie, args.schema)
     rayons = sorted(p.name for p in Path(args.sortie).iterdir())
-    print(f"{nettoyees:,} lignes nettoyées → {lignes:,} lignes Parquet, {len(rayons)} partitions")
+    print(f"{lignes:,} lignes Parquet, {len(rayons)} partitions")
     print("\n".join(rayons))
 
 

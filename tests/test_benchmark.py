@@ -11,7 +11,8 @@ import pytest
 
 from src.storage import benchmark
 from src.storage.commun import RACINE
-from src.storage.convert_parquet import convertir, ecrire_csv_nettoye
+from src.storage.convert_parquet import convertir
+from src.storage.preparer_csv import ecrire_csv_nettoye
 
 ECHANTILLON = RACINE / "data/echantillon_france.csv"
 
