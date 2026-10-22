@@ -21,6 +21,8 @@ Date : 2026-10-20 · source : `data/parquet/produits` (vue `produits`, requêtes
 | alcoholic-beverages | 18 012 | 1,41 |
 | baby-foods-and-milks | 2 549 | 0,20 |
 
+56 % sans rayon sur le périmètre France complet, contre 20,5 % sur l'échantillon de l'EDA (TP 10) : l'échantillon est mieux catégorisé que l'ensemble (`food_groups_tags` n'est renseigné que pour 559 715 produits sur 1 273 567).
+
 ## completude
 
 | rayon | nb_produits | nutriscore_pct | sept_nutriments_pct | categorie_pct |

@@ -15,7 +15,7 @@ data/extracts/france_brut.parquet   1 273 567 lignes
    ▼
 nettoyé (1 273 539 lignes)
    ├─► data/extracts/*.parquet ─► src/load_database.py ─► PostgreSQL     (application)
-   └─► data/clean/produits_nettoyes.csv
+   └─► src/storage/preparer_csv.py ─► data/clean/produits_nettoyes.csv   (+ rayon, sous-rayon, nom, marque)
           │  src/storage/convert_parquet.py
           ▼
        data/parquet/produits/rayon=<slug>/   (ZSTD, 12 partitions)       (analyse)
@@ -23,7 +23,7 @@ nettoyé (1 273 539 lignes)
           ├─► src/storage/benchmark.py     ─► docs/data/benchmark.md
           └─► src/storage/export_features.py
                  ▼
-              data/exports/features_nutriscore_<AAAAMMJJ>.parquet + schema.json   (ML, figé)
+              data/exports/features_nutriscore_<AAAAMMJJ>.parquet + .schema.json   (ML, figé)
 ```
 
 ## Magasins de données
@@ -32,10 +32,10 @@ nettoyé (1 273 539 lignes)
 |---|---|---|---|---|---|
 | Brut | dump Open Food Facts complet | téléchargement | Parquet | `data/food.parquet` | non |
 | Extrait France | colonnes utiles, produits français | `extract_perimeter.py` | Parquet | `data/extracts/france_brut.parquet` | non |
-| Nettoyé | sortie de `nettoyer()`, une ligne par code | `convert_parquet.py` | CSV | `data/clean/produits_nettoyes.csv` | non |
-| Base | produits, marques, catégories, nutriments (relationnel) | `load_database.py` | PostgreSQL | serveur local `nutriscope` | non (schéma : `sql/schema.sql`) |
-| Parquet analytique | produits typés, partitionnés par rayon | `convert_parquet.py` | Parquet ZSTD | `data/parquet/produits/` | non (schéma : `docs/data/schema_produits.json`) |
-| Export features | produits utilisables pour prédire le Nutri-Score | `export_features.py` | Parquet | `data/exports/` | non (schéma : `docs/data/schema_features.json`) |
+| Nettoyé | sortie de `nettoyer()`, une ligne par code | `preparer_csv.py` | CSV | `data/clean/produits_nettoyes.csv` | non |
+| Base | produits, marques, catégories, nutriments (relationnel) | `load_database.py` | PostgreSQL | serveur local `nutriscope` | non (schéma versionné : `sql/schema.sql`) |
+| Parquet analytique | produits typés, partitionnés par rayon | `convert_parquet.py` | Parquet ZSTD | `data/parquet/produits/` | non (schéma versionné : `docs/data/schema_produits.json`) |
+| Export features | produits utilisables pour prédire le Nutri-Score | `export_features.py` | Parquet | `data/exports/` | non (un schéma par export, versionné : `docs/data/features_nutriscore_<AAAAMMJJ>.schema.json`) |
 
 ## Qui lit quoi
 
