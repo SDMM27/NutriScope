@@ -4,12 +4,13 @@ Données : © Open Food Facts contributors — ODbL.
 """
 
 import json
+import subprocess
 from pathlib import Path
 
 import duckdb
 import pytest
 
-from src.storage.commun import NUTRIMENTS_CLES, RACINE, SQL_CONTROLES
+from src.storage.commun import EXPORTS, NUTRIMENTS_CLES, RACINE, SQL_CONTROLES
 from src.storage.convert_parquet import SCHEMA, convertir
 from src.storage.preparer_csv import ecrire_csv_nettoye
 from src.storage.export_features import chemin_schema, exporter
@@ -131,7 +132,7 @@ def test_export_date_decrit_et_cible_complete(jeu, tmp_path):
     finally:
         con.close()
     assert [c["nom"] for c in schema["colonnes"]] == colonnes
-    assert colonnes[:2] == ["code", "rayon"] and colonnes[-1] == "nutriscore_grade"
+    assert colonnes[:2] == ["code", "rayon"] and colonnes[-2:] == ["nutriscore_grade", "split"]
     assert set(NUTRIMENTS_CLES) <= set(colonnes)
     assert manquants == 0 and grades == 0
     assert schema["lignes"] == sum(schema["repartition_cible"].values()) > 0
@@ -147,6 +148,64 @@ def test_export_refuse_d_ecraser_et_reste_reproductible(jeu, tmp_path):
     second = json.loads(chemin_schema(fichier).read_text(encoding="utf-8"))["sha256"]
     assert premier == second
     assert Path(fichier).exists()
+
+
+def test_split_stratifie_vingt_pourcent_par_grade(jeu, tmp_path):
+    fichier = exporter(jeu["dossier"], tmp_path, "20251014")
+    con = duckdb.connect()
+    try:
+        parts = con.execute(
+            f"SELECT nutriscore_grade, count(*), avg(CASE WHEN split = 'test' THEN 1 ELSE 0 END) "
+            f"FROM read_parquet('{fichier.as_posix()}') GROUP BY ALL ORDER BY 1"
+        ).fetchall()
+        valeurs = {r[0] for r in con.execute(f"SELECT DISTINCT split FROM read_parquet('{fichier.as_posix()}')").fetchall()}
+    finally:
+        con.close()
+    assert valeurs == {"train", "test"}
+    assert [g for g, _, _ in parts] == ["a", "b", "c", "d", "e"]
+    for grade, effectif, part in parts:
+        # arrondi au produit près : l'écart à 20 % est au plus d'un demi-produit
+        assert abs(part * effectif - 0.2 * effectif) <= 0.5, grade
+
+
+def test_split_identique_produit_par_produit(jeu, tmp_path):
+    premier = exporter(jeu["dossier"], tmp_path / "1", "20251014")
+    second = exporter(jeu["dossier"], tmp_path / "2", "20251015")
+    con = duckdb.connect()
+    try:
+        differences = con.execute(
+            f"SELECT count(*) FROM read_parquet('{premier.as_posix()}') p "
+            f"JOIN read_parquet('{second.as_posix()}') s USING (code) WHERE p.split <> s.split"
+        ).fetchone()[0]
+    finally:
+        con.close()
+    schema = json.loads(chemin_schema(premier).read_text(encoding="utf-8"))
+    assert differences == 0
+    assert schema["split"]["graine"] == 42 and schema["split"]["part_test"] == 0.2
+
+
+def test_schema_decrit_le_split_ecrit(jeu, tmp_path):
+    fichier = exporter(jeu["dossier"], tmp_path, "20251014")
+    schema = json.loads(chemin_schema(fichier).read_text(encoding="utf-8"))
+    con = duckdb.connect()
+    try:
+        lus = con.execute(
+            f"SELECT nutriscore_grade, split, count(*) FROM read_parquet('{fichier.as_posix()}') GROUP BY ALL"
+        ).fetchall()
+    finally:
+        con.close()
+    effectifs = schema["split"]["effectifs_par_grade"]
+    assert {(g, s, n) for g, d in effectifs.items() for s, n in d.items()} == set(lus)
+    assert sum(n for d in effectifs.values() for n in d.values()) == schema["lignes"]
+    assert any("train seulement" in regle for regle in schema["split"]["regle_usage"])
+
+
+def test_exports_hors_git():
+    # l'export est régénérable (commande + graine versionnées) : le fichier lui-même ne doit jamais être suivi
+    fichier = EXPORTS / "features_nutriscore_20251014.parquet"
+    ignore = subprocess.run(["git", "check-ignore", "-q", str(fichier)], cwd=RACINE)
+    assert EXPORTS == RACINE / "data" / "exports"
+    assert ignore.returncode == 0
 
 
 def test_un_schema_par_export(jeu, tmp_path):

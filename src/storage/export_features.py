@@ -5,7 +5,7 @@
 Lit la vue `produits` (Parquet partitionné), garde les produits utilisables et écrit
 `data/exports/features_nutriscore_<AAAAMMJJ>.parquet` + `features_nutriscore_<AAAAMMJJ>.schema.json`
 (un schéma par export : un nouvel export ne réécrit pas la description d'un ancien).
-Le split train / test n'est pas fait ici (TP 13).
+La colonne `split` (TP 13) sépare train et test, stratifiée sur le grade, graine fixée.
 
 Données : © Open Food Facts contributors — ODbL.
 """
@@ -24,6 +24,9 @@ from src.storage.commun import EXPORTS, LICENCE, NUTRIMENTS_CLES, PARQUET_PRODUI
 
 CIBLE = "nutriscore_grade"
 IDENTIFIANT = "code"
+# split train / test stratifié sur la cible (TP 13) : 20 % de test dans chaque grade
+PART_TEST = 0.2
+GRAINE = 42
 
 FILTRES_SQL = [
     "nutriscore_grade IN ('a', 'b', 'c', 'd', 'e')",
@@ -69,6 +72,7 @@ COLONNES = {
     "part_energie_lipides": ("ratio", "Part de l'énergie venant des lipides : fat * 9 / energy-kcal.", "aucun manquant (énergie > 0)"),
     "nutriscore_score": ("points, -15 à 40", "Score numérique dont dérive le grade. JAMAIS une feature : fuite de la cible.", "aucun manquant"),
     "nutriscore_grade": ("a-e", "Cible : grade Nutri-Score.", "aucun manquant (filtre)"),
+    "split": ("train / test", "Jeu figé du TP 13, stratifié sur nutriscore_grade. Jamais une feature.", "aucun manquant"),
 }
 
 
@@ -113,10 +117,22 @@ def exporter(dossier_parquet: str | Path, dossier_sortie: str | Path, date: Date
     try:
         creer_vue_produits(connexion, dossier_parquet)
         connexion.execute("SET threads = 1")  # un seul fil : ordre et octets stables d'une exécution à l'autre
+        # Dans chaque grade, les produits sont rangés par md5(code + graine) — un ordre pseudo-aléatoire
+        # qui ne dépend que du produit — et les PART_TEST premiers partent en test.
         connexion.execute(f"""
             COPY (
-                SELECT {SELECTION} FROM produits
-                WHERE {" AND ".join(f"({f})" for f in FILTRES_SQL)}
+                WITH retenus AS (
+                    SELECT {SELECTION} FROM produits
+                    WHERE {" AND ".join(f"({f})" for f in FILTRES_SQL)}
+                ), tirage AS (
+                    SELECT *,
+                        row_number() OVER (PARTITION BY {CIBLE} ORDER BY md5(code || ':{GRAINE}'), code) AS rang,
+                        count(*) OVER (PARTITION BY {CIBLE}) AS effectif
+                    FROM retenus
+                )
+                SELECT * EXCLUDE (rang, effectif),
+                    CASE WHEN rang <= round(effectif * {PART_TEST}) THEN 'test' ELSE 'train' END AS split
+                FROM tirage
                 ORDER BY code
             ) TO '{sql_chemin(fichier)}' (FORMAT PARQUET, COMPRESSION ZSTD)
         """)
@@ -129,6 +145,11 @@ def exporter(dossier_parquet: str | Path, dossier_sortie: str | Path, date: Date
         repartition = dict(connexion.execute(
             f"SELECT {CIBLE}, count(*) FROM {source} GROUP BY {CIBLE} ORDER BY {CIBLE}"
         ).fetchall())
+        effectifs_split = {}
+        for grade, split, nombre in connexion.execute(
+            f"SELECT {CIBLE}, split, count(*) FROM {source} GROUP BY ALL ORDER BY ALL"
+        ).fetchall():
+            effectifs_split.setdefault(grade, {})[split] = nombre
     finally:
         connexion.close()
 
@@ -143,6 +164,21 @@ def exporter(dossier_parquet: str | Path, dossier_sortie: str | Path, date: Date
         "identifiant": IDENTIFIANT,
         "filtres": PHRASES_FILTRES,
         "repartition_cible": repartition,
+        "split": {
+            "methode": f"stratifié sur {CIBLE} : dans chaque grade, produits rangés par md5(code || ':{GRAINE}'), "
+                       f"les {PART_TEST:.0%} premiers en test",
+            "graine": GRAINE,
+            "part_test": PART_TEST,
+            "justification_part_test": "20 % : 80 % des produits pour apprendre, et assez de produits de test "
+                                       "dans le grade le plus rare pour des métriques par classe stables.",
+            "effectifs_par_grade": effectifs_split,
+            "regle_usage": [
+                "fit (imputation, normalisation, modèle) sur le train seulement.",
+                "Le test n'est regardé qu'une fois, à la fin, pour la note finale.",
+                "La validation croisée se fait à l'intérieur du train.",
+                "Ne pas recalculer le split : utiliser la colonne split telle quelle.",
+            ],
+        },
         "colonnes": [
             {
                 "nom": nom,
@@ -159,8 +195,7 @@ def exporter(dossier_parquet: str | Path, dossier_sortie: str | Path, date: Date
             "code est un identifiant, pas une feature.",
         ],
         "licence": LICENCE,
-        "usage_prevu": "TP 13 : split train / test stratifié sur la cible (graine fixée), non fait ici ; "
-                       "TP 14 : classification du Nutri-Score.",
+        "usage_prevu": "TP 14 : classification du Nutri-Score, sur le split figé de cet export (voir `split`).",
     }
     chemin_schema(fichier).write_text(json.dumps(schema, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return fichier
@@ -174,7 +209,10 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="écrase un export existant")
     args = parser.parse_args()
 
-    fichier = exporter(args.parquet, args.sortie, _date(args.date) if args.date else Date.today(), args.force)
+    try:
+        fichier = exporter(args.parquet, args.sortie, _date(args.date) if args.date else Date.today(), args.force)
+    except FileExistsError as erreur:  # export figé : un message, pas une trace Python
+        parser.exit(1, f"Refusé : {erreur}\n")
     schema = json.loads(chemin_schema(fichier).read_text(encoding="utf-8"))
     print(f"{fichier} : {schema['lignes']:,} lignes, sha256 {schema['sha256']}")
 
