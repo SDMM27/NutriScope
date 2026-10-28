@@ -1,0 +1,210 @@
+{
+  "nom": "features_nutriscore_20261028.parquet",
+  "date_gel": "2026-10-28",
+  "source": "vue `produits` sur le Parquet partitionné par rayon (data/parquet/produits)",
+  "commit_git": "e02d648b01572d31df1e2ce3e658013048625ee3",
+  "lignes": 461698,
+  "sha256": "971a5a158936b08c39ab5f47798595652130aeab24de412e7241bbbb8a8e500d",
+  "cible": "nutriscore_grade",
+  "identifiant": "code",
+  "filtres": [
+    "nutriscore_grade entre a et e (unknown, not-applicable et manquant exclus)",
+    "les sept nutriments clés (energy-kcal, fat, saturated-fat, carbohydrates, sugars, proteins, salt) renseignés",
+    "sucres <= glucides",
+    "acides gras saturés <= lipides",
+    "énergie > 0 kcal/100 g"
+  ],
+  "repartition_cible": {
+    "a": 60826,
+    "b": 47668,
+    "c": 96690,
+    "d": 123623,
+    "e": 132891
+  },
+  "split": {
+    "methode": "stratifié sur nutriscore_grade : dans chaque grade, produits rangés par md5(code || ':42'), les 20% premiers en test",
+    "graine": 42,
+    "part_test": 0.2,
+    "justification_part_test": "20 % : 80 % des produits pour apprendre, et assez de produits de test dans le grade le plus rare pour des métriques par classe stables.",
+    "effectifs_par_grade": {
+      "a": {
+        "test": 12165,
+        "train": 48661
+      },
+      "b": {
+        "test": 9534,
+        "train": 38134
+      },
+      "c": {
+        "test": 19338,
+        "train": 77352
+      },
+      "d": {
+        "test": 24725,
+        "train": 98898
+      },
+      "e": {
+        "test": 26578,
+        "train": 106313
+      }
+    },
+    "regle_usage": [
+      "fit (imputation, normalisation, modèle) sur le train seulement.",
+      "Le test n'est regardé qu'une fois, à la fin, pour la note finale.",
+      "La validation croisée se fait à l'intérieur du train.",
+      "Ne pas recalculer le split : utiliser la colonne split telle quelle."
+    ]
+  },
+  "colonnes": [
+    {
+      "nom": "code",
+      "type": "VARCHAR",
+      "unite": "",
+      "description": "Code-barres (texte, zéros de tête conservés). Identifiant : jamais une feature.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant"
+    },
+    {
+      "nom": "rayon",
+      "type": "VARCHAR",
+      "unite": "",
+      "description": "Food group OFF de niveau 1 (slug), 'unknown' si absent. Catégorielle.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant ('unknown' est une modalité)"
+    },
+    {
+      "nom": "energy-kcal_100g",
+      "type": "FLOAT",
+      "unite": "kcal/100 g",
+      "description": "Énergie, > 0 dans cet export.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (filtre)"
+    },
+    {
+      "nom": "fat_100g",
+      "type": "FLOAT",
+      "unite": "g/100 g",
+      "description": "Lipides.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (filtre)"
+    },
+    {
+      "nom": "saturated-fat_100g",
+      "type": "FLOAT",
+      "unite": "g/100 g",
+      "description": "Acides gras saturés, <= lipides.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (filtre)"
+    },
+    {
+      "nom": "carbohydrates_100g",
+      "type": "FLOAT",
+      "unite": "g/100 g",
+      "description": "Glucides.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (filtre)"
+    },
+    {
+      "nom": "sugars_100g",
+      "type": "FLOAT",
+      "unite": "g/100 g",
+      "description": "Sucres, <= glucides.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (filtre)"
+    },
+    {
+      "nom": "proteins_100g",
+      "type": "FLOAT",
+      "unite": "g/100 g",
+      "description": "Protéines.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (filtre)"
+    },
+    {
+      "nom": "salt_100g",
+      "type": "FLOAT",
+      "unite": "g/100 g",
+      "description": "Sel.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (filtre)"
+    },
+    {
+      "nom": "fiber_100g",
+      "type": "FLOAT",
+      "unite": "g/100 g",
+      "description": "Fibres.",
+      "pct_manquants": 46.54,
+      "politique_manquants": "imputer par la médiane du rayon (calculée sur le train seulement) + indicateur de manquant"
+    },
+    {
+      "nom": "additives_n",
+      "type": "SMALLINT",
+      "unite": "nombre",
+      "description": "Nombre d'additifs déclarés.",
+      "pct_manquants": 41.96,
+      "politique_manquants": "imputer par la médiane du rayon (train seulement) + indicateur de manquant"
+    },
+    {
+      "nom": "nova_group",
+      "type": "TINYINT",
+      "unite": "1 à 4",
+      "description": "Degré de transformation NOVA.",
+      "pct_manquants": 44.41,
+      "politique_manquants": "imputer par le mode du rayon (train seulement) + indicateur de manquant"
+    },
+    {
+      "nom": "ratio_sucres_glucides",
+      "type": "FLOAT",
+      "unite": "ratio 0-1",
+      "description": "sucres / glucides ; NULL si glucides = 0.",
+      "pct_manquants": 6.63,
+      "politique_manquants": "mettre 0 (sans glucides, pas de sucres) + indicateur de manquant"
+    },
+    {
+      "nom": "ratio_satures_lipides",
+      "type": "FLOAT",
+      "unite": "ratio 0-1",
+      "description": "saturés / lipides ; NULL si lipides = 0.",
+      "pct_manquants": 7.53,
+      "politique_manquants": "mettre 0 (sans lipides, pas de saturés) + indicateur de manquant"
+    },
+    {
+      "nom": "part_energie_lipides",
+      "type": "FLOAT",
+      "unite": "ratio",
+      "description": "Part de l'énergie venant des lipides : fat * 9 / energy-kcal.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (énergie > 0)"
+    },
+    {
+      "nom": "nutriscore_score",
+      "type": "SMALLINT",
+      "unite": "points, -15 à 40",
+      "description": "Score numérique dont dérive le grade. JAMAIS une feature : fuite de la cible.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant"
+    },
+    {
+      "nom": "nutriscore_grade",
+      "type": "VARCHAR",
+      "unite": "a-e",
+      "description": "Cible : grade Nutri-Score.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant (filtre)"
+    },
+    {
+      "nom": "split",
+      "type": "VARCHAR",
+      "unite": "train / test",
+      "description": "Jeu figé du TP 13, stratifié sur nutriscore_grade. Jamais une feature.",
+      "pct_manquants": 0.0,
+      "politique_manquants": "aucun manquant"
+    }
+  ],
+  "avertissements": [
+    "nutriscore_score n'est JAMAIS une feature : le grade en dérive directement (fuite de la cible).",
+    "code est un identifiant, pas une feature."
+  ],
+  "licence": "© Open Food Facts contributors — ODbL 1.0 (https://opendatacommons.org/licenses/odbl/1-0/)",
+  "usage_prevu": "TP 14 : classification du Nutri-Score, sur le split figé de cet export (voir `split`)."
+}
