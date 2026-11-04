@@ -164,5 +164,5 @@ Une quatrième capacité, la perception d'image (photo envoyée quand le produit
 ## Sources
 
 - Personas (TP 5) : [docs/cadrage/personas.md](personas.md)
-- Périmètre fonctionnel et données : [docs/perimetre.md](../perimetre.md)
+- Périmètre fonctionnel et données : [docs/cadrage/perimetre.md](perimetre.md)
 - Notation et méthode : Module 2.3 — Analyse des processus, étude d'opportunité & de faisabilité (Utopios)
