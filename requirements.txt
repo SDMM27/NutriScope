@@ -1,0 +1,27 @@
+# TP 17 : classifieur d'images
+# Python 3.12 obligatoire : numpy 1.26 n'existe pas au-delà de 3.12.
+# Installation (dans un environnement virtuel activé) : pip install -r requirements.txt
+#
+# Les versions sont fixées : ce sont celles avec lesquelles le TP a été vérifié, les mêmes que pour les cours dl/.
+
+# Notebooks
+jupyter
+ipykernel
+
+# Données et graphiques
+numpy==1.26.4
+pandas==2.3.3
+matplotlib==3.10.8
+seaborn==0.13.2
+scikit-learn==1.8.0
+pillow==12.1.1
+
+# Modèles
+tensorflow==2.20.0
+keras==3.13.2
+protobuf==6.33.6
+# TensorBoard 2.20 (imposé par TensorFlow 2.20) a besoin de pkg_resources, retiré de setuptools 82.
+setuptools==81.0.0
+
+# Test de la brique
+pytest==9.2.0
