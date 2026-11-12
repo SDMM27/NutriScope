@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "modele": "images_efficientnetb0.keras",
+  "etat_evaluation": "terminee",
+  "architecture": "EfficientNetB0",
+  "version_retenue": "fine-tuning n°2",
+  "rayons": [
+    "cereales",
+    "eaux",
+    "fromages",
+    "pates",
+    "sauces",
+    "sodas",
+    "yaourts"
+  ],
+  "taille_image": 224,
+  "pretraitement": "rgb_resize_with_pad_uint8_0_255",
+  "seuil": 0.8,
+  "objectif_accuracy_si_reponse_validation": 0.9,
+  "accuracy_validation": 0.7866666913032532,
+  "accuracy_si_reponse_validation": 0.9044776119402985,
+  "couverture_validation": 0.638095238095238,
+  "score_test": 0.8152380952380952,
+  "accuracy_si_reponse_test": 0.935656836461126,
+  "couverture_test": 0.7104761904761905,
+  "ic95_accuracy_si_reponse_test": [
+    0.9060472908836972,
+    0.9563840330465696
+  ],
+  "effectif_test": 525,
+  "effectif_accepte_test": 373,
+  "graine": 42,
+  "date_evaluation_utc": "2026-11-12T09:26:08.247707+00:00",
+  "empreinte_poids": "6b91aa5d9e2da8900b11d30817b7fa120c3b82f1a37b3a466ccf8289f23d029f",
+  "empreinte_test": "4675d6ad88ce23011a8953505d184430338ff91b20410dce2575bfdc66c208d0",
+  "versions": {
+    "python": "3.12.3",
+    "tensorflow": "2.20.0",
+    "keras": "3.13.2",
+    "numpy": "2.5.4"
+  },
+  "source": "contributeurs Open Food Facts",
+  "licence_photos": "CC BY-SA",
+  "sha256_fichier_modele": "20a74a568697fd6d37246fb42f97bdf4d91ef3035669315ccf79c6d8f3b9953b"
+}
