@@ -1,7 +1,7 @@
 """Télécharge les photos du TP 17 depuis le bucket public Open Food Facts.
 
-    python telecharger_images.py --liste
-    python telecharger_images.py --rayons sodas yaourts biscuits cereales pizzas chocolats
+    python src/telecharger_images.py --liste
+    python src/telecharger_images.py --rayons eaux sodas yaourts fromages cereales pates sauces
 
 Écrit data/images/<rayon>/<code>.jpg (version 400 px). Relancer le script ne retélécharge
 que ce qui manque. Photos : CC BY-SA, contributeurs Open Food Facts.
@@ -45,7 +45,8 @@ def main():
     parser.add_argument("--rayons", nargs="+", help="5 à 8 rayons de votre périmètre")
     parser.add_argument("--liste", action="store_true", help="affiche les rayons disponibles")
     parser.add_argument("--dest", type=Path, default=Path("data") / "images")
-    parser.add_argument("--manifest", type=Path, default=ICI.parent / "data" / "manifest_bucket.csv")
+    parser.add_argument("--manifest", type=Path,
+                        default=ICI.parent / "docs" / "ml" / "manifest_images.csv")
     parser.add_argument("--fils", type=int, default=8, help="téléchargements simultanés")
     args = parser.parse_args()
 
