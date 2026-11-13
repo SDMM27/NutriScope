@@ -440,3 +440,8 @@ En outre, l'objectif est d'intégrer les données dans un framework SQL (DuckDB 
 **Fait** : nettoyé → Parquet ZSTD partitionné par rayon (12 partitions, 1 273 539 lignes, 48 Mo contre 239 Mo en CSV) ; cinq contrôles rejoués en DuckDB ; benchmark pandas / SQLite / DuckDB ; `docs/architecture.md` ; export `features_nutriscore_20261020.parquet` (461 698 lignes) ; 18 tests.
 **Décidé** : rayon = food group OFF de niveau 1 (`pnns_groups_1` est vide dans `food.parquet`) ; `unknown` reste une partition (56 %) ; base du benchmark = SQLite construite depuis le CSV nettoyé (PostgreSQL n'était pas démarré) ; préparation du CSV (`preparer_csv.py`) séparée de la conversion ; un `<export>.schema.json` par export daté, pour qu'un nouvel export ne réécrive pas la description d'un ancien.
 **Bloqué** : rien ; 319 sucres > glucides et 339 saturés > lipides (tolérance 0,5 g du TP 9) restent listés dans le contrôle 4, à trancher au TP 9.
+
+## Assistant — TP18, partie 1 (09/11/2026)
+**Fait** : copie de l’énoncé original dans `docs/tps/README_tp_18.md` et création du notebook pédagogique `notebooks/other/clement/tp18_1_architecture_assistant_guide.ipynb` : exercices d’architecture, contrat, garde-fous, catalogue, boucle outillée bornée et préparation de l’ADR.
+**Problème** : les exercices restent à compléter ; aucun appel de modèle ni démonstration réelle n’a été exécuté. La substitution TP16 reste différée ; l’export ML ne fournit pas de nom produit et filtre les manquants, donc la source de recherche doit être inspectée avant intégration.
+**Suite** : compléter progressivement les exercices indépendants, rédiger architecture et ADR avec une mesure réelle, puis réunir les intégrations et les preuves manquantes dans une seconde partie pour clore le TP18.
