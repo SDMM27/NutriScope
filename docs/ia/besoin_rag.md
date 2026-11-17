@@ -1,0 +1,7 @@
+# Besoin d'un RAG — mesure sans RAG (17/11/2026)
+
+- **5/10 réponses conformes au bloc 2**, et ce sont toutes des refus ; 3 réponses justes mais non sourcées (eau, additifs, Nutri-Score D) et 2 inventées (algorithme « mis à jour en 2021 », couleurs fausses). Sur les 30 questions d'évaluation : 23/30 conformes au contrat, mais le comportement attendu n'est atteint que sur 18/30 (aucune question `connaissance` ni `mixte` réussie).
+- **Ce qui surprend** : le filtre médical bloque les repères PNNS (« combien de fruits et légumes par jour ? » → « je ne peux pas donner de conseils médicaux »), et les questions mixtes complètent la fiche de mémoire (féculents complets « 2 à 3 fois par jour », faux). Le modèle écrit encore « ne contient pas de fibres » pour une valeur absente.
+- **Ce que le RAG devra changer** : répondre aux questions de connaissance en citant un document du corpus, assouplir le filtre médical pour les repères généraux (pas pour les conseils personnels), et étendre le vérificateur de chiffres aux passages retrouvés. Limite à lever d'abord : la licence de mangerbouger.fr (repères PNNS) n'autorise pas le découpage ; sans accord du formateur, le corpus n'a pas de source PNNS.
+
+Fichiers : `resultats/bloc2_sans_rag.csv`, `resultats/eval_sans_rag.csv`. Les 10 questions du bloc 2 sont un jeu de remplacement (`eval/bloc2_questions_verite.csv`), le fichier du formateur n'ayant pas été fourni.

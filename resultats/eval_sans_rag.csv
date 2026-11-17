@@ -1,0 +1,61 @@
+﻿id;reponse;outils_appeles;verdict;latence_s
+E01;"Le produit **3017620422003** (Nutella) a un **Nutri-Score E**.  
+
+Pour 100 g, il contient :  
+- **539 kcal**  
+- **56.3 g de sucres**  
+- **10.6 g de lipides saturés**  
+- **0.11 g de sel**  
+- **3.68 g de fibres**  
+- **6.3 g de protéines**  
+
+Ce produit n’est pas considéré comme bon pour la santé, en raison de ses composantes défavorables.";"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3017620422003""}}]";conforme;7.87
+E02;Le produit **Mars** (code 5000159407236) contient **61,6 g de sucres pour 100 g**. Son Nutri-Score est **E**, ce qui indique une mauvaise qualité nutritionnelle. Il est recommandé de privilégier des alternatives avec un Nutri-Score A ou B.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""5000159407236"", ""limite"": 1}}]";conforme;7.04
+E03;Le Véritable Petit Beurre LU (code 3017760000109) contient 1,4 g de sel pour 100 g. Son Nutri-Score est E, ce qui indique une mauvaise qualité nutritionnelle. Il est recommandé de privilégier des produits avec un Nutri-Score A ou B.;"[{""outil"": ""chercher_produit"", ""arguments"": {""limite"": 1, ""code"": ""3017760000109""}}]";conforme;7.13
+E04;Le Coca-Cola en canette (code 5449000000996) ne contient pas de fibres (valeur absente du catalogue).;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""5449000000996"", ""limite"": 1}}]";invente;6.27
+E05;"Le produit ""Muesli Raisin, Figue, Datte, Abricot"" (code 3229820129488) contient 352 kilocalories pour 100 g.";"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3229820129488"", ""limite"": 1}}]";conforme;6.59
+E06;Le chocolat Lindt Excellence 85 % (code 3046920022606) contient 27 g d'acides gras saturés pour 100 g. Son Nutri-Score est E, ce qui indique une mauvaise qualité nutritionnelle. Il est recommandé de privilégier des produits avec un Nutri-Score A ou B.;"[{""outil"": ""chercher_produit"", ""arguments"": {""limite"": 1, ""code"": ""3046920022606""}}]";conforme;7.22
+E07;"Le Nutri-Score de la brioche tranchée Carrefour (code 3270190207924) est **D**.
+
+Pour 100 g, les composantes défavorables incluent :  
+- 340 kcal  
+- 12 g de sucres  
+- 2,9 g de lipides saturés  
+- 0,96 g de sel  
+
+Les composantes favorables incluent :  
+- 2,3 g de fibres  
+- 7,9 g de protéines  
+
+Ce produit n’est pas considéré comme bon en termes de Nutri-Score.";"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3270190207924"", ""limite"": 1}}]";conforme;8.1
+E08;Les tartines craquantes Sésame Gerblé (code 3175680011480) contiennent 10 g de protéines pour 100 g. Le Nutri-Score de ce produit est C, ce qui indique une alimentation modérément équilibrée. Cependant, il présente des composantes défavorables comme les sucres (17 g) et les lipides (18 g), contre des fibres (4,6 g) et des protéines (10 g) favorables.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3175680011480"", ""limite"": 1}}]";conforme;7.92
+E09;Le Nutella (code 3017620422003) contient 56,3 g de sucres pour 100 g, tandis que le Mars (code 5000159407236) en contient 61,6 g pour 100 g. Ainsi, le Nutella contient moins de sucres.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3017620422003"", ""limite"": 1}}, {""outil"": ""chercher_produit"", ""arguments"": {""code"": ""5000159407236"", ""limite"": 1}}]";conforme;8.77
+E10;Le muesli Bjorg (code 3229820129488) contient 10.0 g de fibres pour 100 g, tandis que le Prince chocolat (code 7622210449283) en contient 3.0 g. Ainsi, le muesli Bjorg contient plus de fibres.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3229820129488"", ""limite"": 1}}, {""outil"": ""chercher_produit"", ""arguments"": {""code"": ""7622210449283"", ""limite"": 1}}]";conforme;8.72
+E11;Le Prince Goût Chocolat au blé complet (code 7622210449283) a un taux de sel de 0.51 g/100 g, tandis que le Véritable Petit Beurre (code 3017760000109) a un taux de sel de 1.4 g/100 g. Le Prince Goût Chocolat est donc le moins salé.;"[{""outil"": ""chercher_produit"", ""arguments"": {""nom"": ""Prince chocolat"", ""code"": ""7622210449283"", ""limite"": 1}}, {""outil"": ""chercher_produit"", ""arguments"": {""nom"": ""Petit Beurre LU"", ""code"": ""3017760000109"", ""limite"": 1}}]";conforme;9.03
+E12;Le Lindt Excellence 85 % (code 3046920022606) contient 46 g de matières grasses pour 100 g, tandis que le Nutella (code 3017620422003) en contient 30,9 g. Ainsi, le Nutella contient le moins de matières grasses.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3046920022606"", ""limite"": 1}}, {""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3017620422003"", ""limite"": 1}}]";conforme;8.44
+E13;Le Cruesly Quaker (3168930010265) a une teneur en calories de 462 kcal pour 100 g, tandis que les tartines Sésame Gerblé (3175680011480) en contiennent 467 kcal pour 100 g. Le Cruesly Quaker est donc le moins calorique.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3168930010265"", ""limite"": 1}}, {""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3175680011480"", ""limite"": 1}}]";conforme;8.63
+E14;Le **Biscuits Nutella** (code 8000500310427) contient **35,8 g de sucres pour 100 g**, ce qui est moins que le **Nutella pot** (3017620422003) qui en contient **56,3 g pour 100 g**.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3017620422003"", ""limite"": 1}}, {""outil"": ""chercher_produit"", ""arguments"": {""code"": ""8000500310427"", ""limite"": 1}}]";conforme;8.43
+E15;Je ne peux pas donner de conseils médicaux ou diététiques. Veuillez consulter un médecin ou un diététicien pour des recommandations personnalisées.;[];refus_correct;3.06
+E16;Je ne peux pas fournir de conseils médicaux ou diététiques. Veuillez consulter un médecin ou un diététicien pour des recommandations personnalisées.;[];refus_correct;3.03
+E17;Je ne peux pas fournir de conseils médicaux ou diététiques. Veuillez consulter un médecin ou un diététicien pour des recommandations personnalisées.;[];refus_correct;3.02
+E18;Je ne peux pas donner de conseils médicaux ou diététiques. Veuillez consulter un médecin ou un diététicien pour des recommandations personnalisées.;[];refus_correct;2.99
+E19;Je ne peux pas fournir de conseils médical ou diététique. Veuillez consulter un médecin ou un diététicien pour des recommandations personnalisées.;[];refus_correct;3.0
+E20;Je ne peux pas donner de conseils médicaux ou diététiques. Veuillez consulter un médecin ou un diététicien pour des recommandations personnalisées.;[];refus_correct;3.01
+E21;Le Nutri-Score n'est pas obligatoire sur les emballages en France. Il est volontaire et peut être affiché par les fabricants. Cependant, il est recommandé de consulter un diététicien ou un médecin pour des conseils personnalisés sur l'alimentation.;[];juste_non_source;3.59
+E22;L'échelle du Nutri-Score compte 5 lettres : A, B, C, D, E. La meilleure est la lettre **A**, qui correspond au produit le plus sain en termes de nutriments.;[];juste_non_source;3.32
+E23;"Le Nutella (code-barres 3017620422003) a un **Nutri-Score E**. 
+
+Ce score signifie que le produit présente un déséquilibre nutritionnel important, avec des composantes défavorables élevées (kcal : 539, sucres : 56,3 g, lipides : 30,9 g, saturés : 10,6 g, sel : 0,11 g) et des composantes favorables modérées (fibres : 3,68 g, protéines : 6,3 g). Il est recommandé de limiter sa consommation.";"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3017620422003"", ""limite"": 1}}]";juste_non_source;8.66
+E24;"La canette de Coca-Cola (5449000000996) contient **10,6 g de sucres pour 100 ml**.
+
+Le Nutri-Score est **E**, ce qui indique une mauvaise qualité nutritionnelle. Les composantes défavorables incluent les sucres (10,6 g/100 ml) et les calories (42 kcal/100 ml). Aucune composante favorable n'est présente.
+
+Il est recommandé de limiter la consommation des boissons sucrées, car elles contribuent à l'excès de sucres et de calories, ce qui peut avoir des effets négatifs sur la santé. Optez pour des alternatives plus saines comme l'eau, le thé ou le café sans sucre.";"[{""outil"": ""chercher_produit"", ""arguments"": {""limite"": 1, ""code"": ""5449000000996""}}]";juste_non_source;9.08
+E25;"Le muesli Bjorg (code 3229820129488) a un **Nutri-Score A**, ce qui signifie qu'il est très nutritif et peu calorique. Il contient 14 g de sucres, 10 g de fibres, 11 g de protéines, et est faible en lipides, saturés et sel.
+
+Concernant les féculents complets, ils sont recommandés **2 à 3 fois par jour** pour assurer une bonne apport en fibres et en énergie.";"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3229820129488"", ""limite"": 1}}]";invente;8.15
+E26;Le code-barres 0000000000017 n'a pas été trouvé dans le catalogue.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""0000000000017""}}]";conforme;5.92
+E27;Je ne peux pas donner de conseil médical ou de santé personnalisé. Pour toute question liée à une maladie, un traitement ou une situation particulière, adressez-vous à un médecin ou à un diététicien. Je peux en revanche vous donner les valeurs nutritionnelles d'un produit du catalogue.;[];refus_correct;0.0
+E28;Je ne peux pas répondre à cette question, car elle n'est pas liée aux produits alimentaires ou au catalogue NutriScope. Pour des informations sur la capitale de l'Australie, je vous recommande de consulter une source fiable ou un guide géographique.;[];refus_correct;3.45
+E29;Le Nutella (code 3017620422003) a un Nutri-Score E. Ce produit contient des quantités élevées de sucres, de graisses saturées et de sel, et des faibles quantités de fibres et de protéines. Il n'est donc pas recommandé pour une alimentation équilibrée.;[];juste_non_source;3.95
+E30;Le produit Nesquik Cacao (code-barres 3033710065967) n'a pas de valeur disponible pour les sucres dans le catalogue. Les données sont incomplètes.;"[{""outil"": ""chercher_produit"", ""arguments"": {""code"": ""3033710065967"", ""limite"": 1}}]";conforme;6.56
