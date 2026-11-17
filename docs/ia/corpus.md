@@ -1,0 +1,19 @@
+# Corpus du RAG
+
+Deux familles de documents : les fiches produits générées depuis le catalogue Open Food Facts, et quatre documents de référence en nutrition. Le texte est dans `data/corpus/` (hors dépôt). Scripts : `python -m src.corpus.fiches` et `python -m src.corpus.telecharger`.
+
+Les licences ont été lues sur les pages de mentions légales de chaque site le 2026-11-17. Quand rien n'est clairement établi, le document reste un lien et n'entre pas dans le corpus.
+
+| id | titre | éditeur | URL | mis à jour le | consulté le | licence et conditions | utilisé pour |
+|---|---|---|---|---|---|---|---|
+| `fiches` | Fiches produits générées depuis le catalogue (5 000 produits les plus complets + 12 codes de l'évaluation) | Open Food Facts | https://world.openfoodfacts.org/terms-of-use | export du 2026-10-06 | 2026-11-17 | ODbL : on cite Open Food Facts, et la base dérivée reste sous ODbL. | Questions sur un produit ou une comparaison |
+| `pnns_adultes` | Les recommandations sur l'alimentation, l'activité physique et la sédentarité | mangerbouger.fr (Santé publique France) | https://www.mangerbouger.fr/l-essentiel/les-recommandations-sur-l-alimentation-l-activite-physique-et-la-sedentarite | non indiquée | 2026-11-17 | Tous droits réservés. Seul un « court extrait textuel non modifié » est reproductible, avec la mention « … paru sur le site mangerbouger.fr » (lien) et « Droits réservés Santé publique France », à des fins non commerciales. Pas de licence ouverte : **lien seulement, hors corpus** (on ne peut pas le découper). À confirmer avec le formateur. | Repères de consommation (fruits et légumes, légumes secs, charcuterie, activité physique…) |
+| `nutriscore_spf` | Nutri-Score | Santé publique France | https://www.santepubliquefrance.fr/determinants-de-sante/nutrition-et-activite-physique/articles/nutri-score | 2026-03-19 | 2026-11-17 | Reproduction autorisée à des fins de recherche, d'étude personnelle, éducatives et non commerciales, avec mention obligatoire de Santé publique France. Tout autre usage : autorisation écrite. Pas de clause contre la modification. Usage pédagogique du TP : en corpus. | Nutri-Score : échelle, attribution, marque, évolution de l'algorithme |
+| `nutriscore_santefr` | Ce qu'il faut savoir sur le nouveau Nutri-Score | Sante.fr (ministère de la Santé, GIP Agence du Numérique en Santé) | https://www.sante.fr/ce-quil-faut-savoir-sur-le-nouveau-nutri-score | publié le 2025-03-20 | 2026-11-17 | Non établie — à confirmer avec le formateur. La page de mentions légales ne mentionne aucune licence ni condition de réutilisation. **Lien seulement, hors corpus.** | Nutri-Score : nouveau calcul (arrêté du 14 mars 2025) |
+| `nutriscore_viepublique` | Le Nutri-Score en cinq questions | Vie publique (DILA) | https://www.vie-publique.fr/questions-reponses/286134-le-nutri-score-en-cinq-questions | 2025-03-18 | 2026-11-17 | Licence ouverte Etalab 2.0 (« Sauf mention contraire, tous les textes de ce site sont sous licence etalab-2.0 », bas de page) : réutilisation libre, modification comprise, en citant la source et la date. | Nutri-Score : principe, caractère non obligatoire, algorithme 2025 |
+
+## Remarques
+
+- `nutriscore_viepublique` : le site répond par un défi JavaScript que `urllib` ne passe pas. Le script le signale et laisse le fichier tel quel ; le texte de l'article a été copié depuis le navigateur dans `data/corpus/documents/nutriscore_viepublique.txt`.
+- `pnns_adultes` : la page indiquée n'est qu'un sommaire. Le script télécharge aussi ses 17 sous-pages (une par repère) dans le même fichier. mangerbouger.fr affichait un bandeau de maintenance le 2026-11-17, le texte des pages était pourtant disponible.
+- Les fichiers de `pnns_adultes` et `nutriscore_santefr` sont téléchargés pour consultation locale, mais ne doivent pas être découpés ni vectorisés tant que la licence n'est pas confirmée.
