@@ -1,0 +1,154 @@
+{
+  "bilan": {
+    "date_utc": "20261116T140600776944Z",
+    "version": "scanner-v2",
+    "palier_exerce": 6,
+    "modele": "qwen3:8b",
+    "temperature": 0,
+    "ocr": "Windows.Media.Ocr",
+    "python": "3.13.14",
+    "type_images": "reelles_locales_diagnostic",
+    "provenance": "Images Open Food Facts déjà présentes dans data/images. Tableaux inspectés visuellement le 16/11/2026 ; aucune image modifiée. Ce jeu diagnostique ne remplace pas les trois photos de l'atelier manquant.",
+    "manifest_sha256": "2af867d76421be388071e271b4202448180ba6756d4b5b9358df79078b87dcc2",
+    "catalogue_sha256": {
+      "products.parquet": "c8fb0ea7f1d7ae1eb235704a92c8bd063397592d0a28c8e13ca56438d4020e9c",
+      "nutrients.parquet": "0fc04bd3f384682ca7763900cb495e80e72deed5e96e903f73b2ed75673c89f4"
+    },
+    "total": 3,
+    "catalogue": {
+      "type": "parquets_complets_duckdb",
+      "lignes_produits": 1247336,
+      "codes_distincts": 1247309
+    },
+    "code_sha256": {
+      "src/scanner/scanner.py": "700084ab391322dbef43b800037ba5eb8fcabd15d67a97cfafb0db493360dd73",
+      "src/scanner/catalogue.py": "d65bab601fde5ac503aeec9032553033b8706e9bac0fa88dec6dd42cb5ff02e6",
+      "src/scanner/ocr_windows.ps1": "882a56eed035f6fc194a65356eab9ce22c61781a955d14ecbba44603fe48d858",
+      "src/assistant/scanner.py": "a9e05db49dd23474bdf1056d1de49df6e45c2b7782ed46cb388768661614c131",
+      "src/assistant/client_ollama.py": "da9c85f1472ef9e1198c2cefb9c3398b31a519586a1d82704346f3c47ab63965"
+    },
+    "corrects": 2,
+    "mauvais_rattachements": 0,
+    "erreurs_techniques": 0,
+    "details": "C:\\Users\\Administrateur\\Documents\\NutriScope\\resultats\\scanner\\20261116T140600776944Z_palier6.json"
+  },
+  "cas": [
+    {
+      "id": "fromage_tableau_sans_identite",
+      "photo_sha256": "4912c3508eea2aefd5946eb25429ed717fee967418aba850aab23a105b025fa9",
+      "attendu": "non_verifie",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.",
+      "statut": "illisible",
+      "resultat": {
+        "statut": "illisible",
+        "raison": "tableau_insuffisant",
+        "base": null,
+        "nutriments": {
+          "kcal": null,
+          "lipides": null,
+          "satures": null,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v2",
+        "trace": {
+          "texte_ocr": "unservese en frio\nValor nutritivo medio por 1 oog:\nEnergia\nde la cuales saturadas\nHidratos de Carbono\nbs cuales azücares\nsal\n948 kJ / 228 kcal\n189\n12\n15",
+          "sortie_modele": "{\n  \"base\": \"100 g\",\n  \"preuve_base\": \"Valor nutritivo medio por 1 oog:\",\n  \"nutriments\": {\n    \"kcal\": {\n      \"valeur\": 228,\n      \"preuve\": \"Energia 948 kJ / 228 kcal\"\n    },\n    \"lipides\": {\n      \"valeur\": 189,\n      \"preuve\": \"Energia 948 kJ / 228 kcal\"\n    },\n    \"satures\": {\n      \"valeur\": null,\n      \"preuve\": \"de la cuales saturadas\"\n    },\n    \"sucres\": {\n      \"valeur\": 15,\n      \"preuve\": \"bs cuales azücares\"\n    },\n    \"sel\": {\n      \"valeur\": null,\n      \"preuve\": \"sal\"\n    }\n  }\n}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 6.07168290001573,
+          "tokens": {
+            "prompt_eval_count": 384,
+            "eval_count": 199
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": false,
+      "latence_s": 6.556
+    },
+    {
+      "id": "avoine_tableau_multicolonnes",
+      "photo_sha256": "7eed8336e1f48b5fe4a5e0efd5f1f00fdc1149fa35fc2acef4d63829b4a96c81",
+      "attendu": "illisible",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.",
+      "statut": "illisible",
+      "resultat": {
+        "statut": "illisible",
+        "raison": "tableau_insuffisant",
+        "base": null,
+        "nutriments": {
+          "kcal": null,
+          "lipides": null,
+          "satures": null,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v2",
+        "trace": {
+          "texte_ocr": "KëJln\ncopos de\nmena\nsuaves\n100 % copos de avena integrales\nR\" contener trutos de eAscara '«he.\nINFORMACION Nu TRICIONAL\n;por por raciOn\nAnàhss medio\nValor erxzrgètico\n36 ' kcal kcal\nae carbono\nd\" iOS\n56 g\n05 g",
+          "sortie_modele": "{\"base\":\"100 g\",\"preuve_base\":\"por por raciOn\",\"nutriments\":{\"kcal\":{\"valeur\":36,\"preuve\":\"Valor erxzrgètico 36 ' kcal kcal\"},\"sucres\":{\"valeur\":56,\"preuve\":\"ae carbono d\\\" iOS 56 g\"}}}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 3.7847706000320613,
+          "tokens": {
+            "prompt_eval_count": 413,
+            "eval_count": 74
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 4.274
+    },
+    {
+      "id": "face_avant_sans_tableau",
+      "photo_sha256": "d41251673fb40d04660ecabcefc01695b8a9d929dfac9474a2c4e3ee2cd93a85",
+      "attendu": "illisible",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.",
+      "statut": "illisible",
+      "resultat": {
+        "statut": "illisible",
+        "raison": "tableau_insuffisant",
+        "base": null,
+        "nutriments": {
+          "kcal": null,
+          "lipides": null,
+          "satures": null,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v2",
+        "trace": {
+          "texte_ocr": "ALWAYS\nORGANIC\n6GRAINS\nHeRiTA8e FEKgs",
+          "sortie_modele": "{\"base\":null,\"preuve_base\":null,\"nutriments\":{}}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 2.752656000026036,
+          "tokens": {
+            "prompt_eval_count": 339,
+            "eval_count": 18
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 3.216
+    }
+  ]
+}

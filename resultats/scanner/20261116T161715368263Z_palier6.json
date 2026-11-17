@@ -1,0 +1,930 @@
+{
+  "bilan": {
+    "date_utc": "20261116T161715368263Z",
+    "version": "scanner-v3",
+    "palier_exerce": 6,
+    "modele": "qwen3:8b",
+    "temperature": 0,
+    "ocr": "Windows.Media.Ocr",
+    "python": "3.13.14",
+    "type_images": "reelles_locales_diagnostic",
+    "provenance": "Images Open Food Facts déjà présentes dans data/images. Tableaux inspectés visuellement le 16/11/2026 ; aucune image modifiée. Ce jeu diagnostique ne remplace pas les trois photos de l'atelier manquant.",
+    "manifest_sha256": "2af867d76421be388071e271b4202448180ba6756d4b5b9358df79078b87dcc2",
+    "catalogue_sha256": {
+      "products.parquet": "c8fb0ea7f1d7ae1eb235704a92c8bd063397592d0a28c8e13ca56438d4020e9c",
+      "nutrients.parquet": "0fc04bd3f384682ca7763900cb495e80e72deed5e96e903f73b2ed75673c89f4"
+    },
+    "total": 3,
+    "catalogue": {
+      "type": "parquets_complets_duckdb",
+      "lignes_produits": 1247336,
+      "codes_distincts": 1247309
+    },
+    "code_sha256": {
+      "src/scanner/scanner.py": "d7bac913608d58de39882cb4370f703874847ebab9c5cee9d9bea3172bfd1a38",
+      "src/scanner/catalogue.py": "c8794ab81d47068a22029ce1fd5ebd04f38dfac630dcc97afbeb1a5caa414cf1",
+      "src/scanner/ocr.py": "214ffc7a9a453740f2ff138b95e69a38e7daebab7b0149529dacb3063295b0da",
+      "src/scanner/ocr_windows.ps1": "7c60467af55ffcdc0166559f02cfcca11574b47a8a340658a8089f3e11bf20b3",
+      "src/assistant/scanner.py": "a9e05db49dd23474bdf1056d1de49df6e45c2b7782ed46cb388768661614c131",
+      "src/assistant/client_ollama.py": "da9c85f1472ef9e1198c2cefb9c3398b31a519586a1d82704346f3c47ab63965"
+    },
+    "corrects": 3,
+    "mauvais_rattachements": 0,
+    "erreurs_techniques": 0,
+    "details": "C:\\Users\\Administrateur\\Documents\\NutriScope\\resultats\\scanner\\20261116T161715368263Z_palier6.json"
+  },
+  "cas": [
+    {
+      "id": "fromage_tableau_sans_identite",
+      "photo_sha256": "4912c3508eea2aefd5946eb25429ed717fee967418aba850aab23a105b025fa9",
+      "attendu": "non_verifie",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "Étiquette non vérifiée : je ne peux pas confirmer une fiche du catalogue ni son Nutri-Score. Lecture OCR pour 100 g (à contrôler sur l'emballage) : kcal : 228 kcal; lipides : 18 g; satures : 12 g; sucres : non renseigné; sel : non renseigné; fibres : non renseigné; proteines : non renseigné.",
+      "statut": "non_verifie",
+      "resultat": {
+        "statut": "non_verifie",
+        "raison": "identite_non_confirmee",
+        "base": "100 g",
+        "nutriments": {
+          "kcal": 228.0,
+          "lipides": 18.0,
+          "satures": 12.0,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v3",
+        "trace": {
+          "texte_ocr": "consérvese en frio 2-80C\nValor nutritivo medio por 100 g:\nEnergia 948 kJ/ 228 kcal\nGrasas 18g\nde la cuales saturadas 12g\nHidratos de Carbono\nde los cuales azücares 05 g\nProteinas 15\nsal",
+          "sortie_modele": "{\n  \"base\": \"100 g\",\n  \"preuve_base\": \"Valor nutritivo medio por 100 g\",\n  \"nutriments\": {\n    \"kcal\": {\n      \"valeur\": 228,\n      \"preuve\": \"Energia 948 kJ/ 228 kcal\"\n    },\n    \"lipides\": {\n      \"valeur\": 18,\n      \"preuve\": \"Grasas 18g\"\n    },\n    \"satures\": {\n      \"valeur\": 12,\n      \"preuve\": \"de la cuales saturadas 12g\"\n    },\n    \"sucres\": {\n      \"valeur\": 5,\n      \"preuve\": \"de los cuales azücares 05 g\"\n    },\n    \"proteines\": {\n      \"valeur\": 15,\n      \"preuve\": \"Proteinas 15\"\n    }\n  }\n}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 9.087883200030774,
+          "tokens": {
+            "prompt_eval_count": 406,
+            "eval_count": 210
+          },
+          "ocr": {
+            "lignes": [
+              {
+                "mots": [
+                  {
+                    "y": 0,
+                    "texte": "consérvese",
+                    "largeur": 364,
+                    "hauteur": 60,
+                    "x": 180
+                  },
+                  {
+                    "y": 16,
+                    "texte": "en",
+                    "largeur": 88,
+                    "hauteur": 48,
+                    "x": 564
+                  },
+                  {
+                    "y": 0,
+                    "texte": "frio",
+                    "largeur": 124,
+                    "hauteur": 64,
+                    "x": 672
+                  },
+                  {
+                    "y": 0,
+                    "texte": "2-80C",
+                    "largeur": 192,
+                    "hauteur": 64,
+                    "x": 820
+                  }
+                ],
+                "texte": "consérvese en frio 2-80C"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 164,
+                    "texte": "Valor",
+                    "largeur": 152,
+                    "hauteur": 68,
+                    "x": 212
+                  },
+                  {
+                    "y": 180,
+                    "texte": "nutritivo",
+                    "largeur": 288,
+                    "hauteur": 60,
+                    "x": 384
+                  },
+                  {
+                    "y": 180,
+                    "texte": "medio",
+                    "largeur": 224,
+                    "hauteur": 60,
+                    "x": 696
+                  },
+                  {
+                    "y": 192,
+                    "texte": "por",
+                    "largeur": 116,
+                    "hauteur": 64,
+                    "x": 944
+                  },
+                  {
+                    "y": 176,
+                    "texte": "1",
+                    "largeur": 28,
+                    "hauteur": 56,
+                    "x": 1080
+                  },
+                  {
+                    "y": 172,
+                    "texte": "OOg:",
+                    "largeur": 140,
+                    "hauteur": 68,
+                    "x": 1120
+                  }
+                ],
+                "texte": "Valor nutritivo medio por 1 OOg:"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 276,
+                    "texte": "948",
+                    "largeur": 124,
+                    "hauteur": 56,
+                    "x": 956
+                  },
+                  {
+                    "y": 264,
+                    "texte": "kJ/",
+                    "largeur": 108,
+                    "hauteur": 64,
+                    "x": 1100
+                  },
+                  {
+                    "y": 256,
+                    "texte": "228",
+                    "largeur": 108,
+                    "hauteur": 60,
+                    "x": 1224
+                  },
+                  {
+                    "y": 236,
+                    "texte": "kcal",
+                    "largeur": 100,
+                    "hauteur": 68,
+                    "x": 1348
+                  }
+                ],
+                "texte": "948 kJ/ 228 kcal"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 256,
+                    "texte": "Energia",
+                    "largeur": 224,
+                    "hauteur": 84,
+                    "x": 232
+                  }
+                ],
+                "texte": "Energia"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 348,
+                    "texte": "Grasas",
+                    "largeur": 188,
+                    "hauteur": 68,
+                    "x": 244
+                  }
+                ],
+                "texte": "Grasas"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 424,
+                    "texte": "de",
+                    "largeur": 64,
+                    "hauteur": 60,
+                    "x": 280
+                  },
+                  {
+                    "y": 432,
+                    "texte": "la",
+                    "largeur": 44,
+                    "hauteur": 56,
+                    "x": 356
+                  },
+                  {
+                    "y": 440,
+                    "texte": "cuales",
+                    "largeur": 180,
+                    "hauteur": 60,
+                    "x": 416
+                  },
+                  {
+                    "y": 448,
+                    "texte": "saturadas",
+                    "largeur": 296,
+                    "hauteur": 56,
+                    "x": 608
+                  }
+                ],
+                "texte": "de la cuales saturadas"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 508,
+                    "texte": "Hidratos",
+                    "largeur": 240,
+                    "hauteur": 76,
+                    "x": 264
+                  },
+                  {
+                    "y": 532,
+                    "texte": "de",
+                    "largeur": 76,
+                    "hauteur": 60,
+                    "x": 524
+                  },
+                  {
+                    "y": 536,
+                    "texte": "Carbono",
+                    "largeur": 288,
+                    "hauteur": 60,
+                    "x": 620
+                  }
+                ],
+                "texte": "Hidratos de Carbono"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 580,
+                    "texte": "de",
+                    "largeur": 64,
+                    "hauteur": 56,
+                    "x": 296
+                  },
+                  {
+                    "y": 588,
+                    "texte": "los",
+                    "largeur": 76,
+                    "hauteur": 56,
+                    "x": 372
+                  },
+                  {
+                    "y": 604,
+                    "texte": "cuales",
+                    "largeur": 176,
+                    "hauteur": 56,
+                    "x": 460
+                  },
+                  {
+                    "y": 608,
+                    "texte": "azücares",
+                    "largeur": 256,
+                    "hauteur": 56,
+                    "x": 652
+                  }
+                ],
+                "texte": "de los cuales azücares"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 660,
+                    "texte": "Proteinas",
+                    "largeur": 260,
+                    "hauteur": 80,
+                    "x": 284
+                  }
+                ],
+                "texte": "Proteinas"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 740,
+                    "texte": "sal",
+                    "largeur": 76,
+                    "hauteur": 60,
+                    "x": 292
+                  }
+                ],
+                "texte": "sal"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 352,
+                    "texte": "18g",
+                    "largeur": 116,
+                    "hauteur": 60,
+                    "x": 1204
+                  }
+                ],
+                "texte": "18g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 424,
+                    "texte": "12g",
+                    "largeur": 116,
+                    "hauteur": 60,
+                    "x": 1200
+                  }
+                ],
+                "texte": "12g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 580,
+                    "texte": "05",
+                    "largeur": 124,
+                    "hauteur": 60,
+                    "x": 1128
+                  },
+                  {
+                    "y": 580,
+                    "texte": "g",
+                    "largeur": 32,
+                    "hauteur": 56,
+                    "x": 1272
+                  }
+                ],
+                "texte": "05 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 664,
+                    "texte": "15",
+                    "largeur": 60,
+                    "hauteur": 52,
+                    "x": 1188
+                  }
+                ],
+                "texte": "15"
+              }
+            ],
+            "version": "geometrie-v1",
+            "moteur": "Windows.Media.Ocr",
+            "hauteur": 924,
+            "largeur": 1600,
+            "langue": "fr-FR",
+            "facteur": 4,
+            "texte_avant_normalisation": "consérvese en frio 2-80C\nValor nutritivo medio por 1 OOg:\nEnergia 948 kJ/ 228 kcal\nGrasas 18g\nde la cuales saturadas 12g\nHidratos de Carbono\nde los cuales azücares 05 g\nProteinas 15\nsal",
+            "corrections": [
+              {
+                "avant": "1 OOg",
+                "apres": "100 g",
+                "regle": "base_100_ocr_O_zero"
+              }
+            ],
+            "reconstruction": "lignes-geometriques-v1"
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 9.692
+    },
+    {
+      "id": "avoine_tableau_multicolonnes",
+      "photo_sha256": "7eed8336e1f48b5fe4a5e0efd5f1f00fdc1149fa35fc2acef4d63829b4a96c81",
+      "attendu": "illisible",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.",
+      "statut": "illisible",
+      "resultat": {
+        "statut": "illisible",
+        "raison": "tableau_insuffisant",
+        "base": null,
+        "nutriments": {
+          "kcal": null,
+          "lipides": null,
+          "satures": null,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v3",
+        "trace": {
+          "texte_ocr": "Kôlln\nasena\nsuaves\n100 copos de avena integrales\nPuede contener frutos de eAsca.ta y leche.\nINFORMACION NUTRICIONAt\nArteil'*is medio Ipor \"Oog\n{40 g)\nValor ergergético u520kJ 608kJ\nkcal 144 kcal\nHidratos de carbono 56 22\nde los cuales g g",
+          "sortie_modele": "{\"base\":\"100 g\",\"preuve_base\":\"100 copos de avena integrales\",\"nutriments\":{\"kcal\":{\"valeur\":144,\"preuve\":\"kcal 144 kcal\"},\"sucres\":{\"valeur\":null,\"preuve\":null},\"lipides\":{\"valeur\":null,\"preuve\":null},\"satures\":{\"valeur\":null,\"preuve\":null},\"sel\":{\"valeur\":null,\"preuve\":null},\"fibres\":{\"valeur\":null,\"preuve\":null},\"proteines\":{\"valeur\":null,\"preuve\":null}}}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 4.77226990001509,
+          "tokens": {
+            "prompt_eval_count": 426,
+            "eval_count": 130
+          },
+          "ocr": {
+            "lignes": [
+              {
+                "mots": [
+                  {
+                    "y": 24,
+                    "texte": "Kôlln",
+                    "largeur": 300,
+                    "hauteur": 120,
+                    "x": 380
+                  }
+                ],
+                "texte": "Kôlln"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 464,
+                    "texte": "asena",
+                    "largeur": 816,
+                    "hauteur": 176,
+                    "x": 128
+                  }
+                ],
+                "texte": "asena"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 696,
+                    "texte": "suaves",
+                    "largeur": 316,
+                    "hauteur": 60,
+                    "x": 372
+                  }
+                ],
+                "texte": "suaves"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 796,
+                    "texte": "100",
+                    "largeur": 84,
+                    "hauteur": 40,
+                    "x": 148
+                  },
+                  {
+                    "y": 792,
+                    "texte": "%",
+                    "largeur": 44,
+                    "hauteur": 48,
+                    "x": 244
+                  },
+                  {
+                    "y": 808,
+                    "texte": "copos",
+                    "largeur": 144,
+                    "hauteur": 40,
+                    "x": 308
+                  },
+                  {
+                    "y": 800,
+                    "texte": "de",
+                    "largeur": 56,
+                    "hauteur": 40,
+                    "x": 468
+                  },
+                  {
+                    "y": 808,
+                    "texte": "avena",
+                    "largeur": 136,
+                    "hauteur": 36,
+                    "x": 540
+                  },
+                  {
+                    "y": 800,
+                    "texte": "integrales",
+                    "largeur": 232,
+                    "hauteur": 56,
+                    "x": 692
+                  }
+                ],
+                "texte": "100 % copos de avena integrales"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 856,
+                    "texte": "Puede",
+                    "largeur": 120,
+                    "hauteur": 40,
+                    "x": 136
+                  },
+                  {
+                    "y": 860,
+                    "texte": "contener",
+                    "largeur": 164,
+                    "hauteur": 40,
+                    "x": 268
+                  },
+                  {
+                    "y": 860,
+                    "texte": "frutos",
+                    "largeur": 104,
+                    "hauteur": 44,
+                    "x": 444
+                  },
+                  {
+                    "y": 864,
+                    "texte": "de",
+                    "largeur": 44,
+                    "hauteur": 40,
+                    "x": 564
+                  },
+                  {
+                    "y": 864,
+                    "texte": "eAsca.ta",
+                    "largeur": 144,
+                    "hauteur": 44,
+                    "x": 624
+                  },
+                  {
+                    "y": 880,
+                    "texte": "y",
+                    "largeur": 24,
+                    "hauteur": 40,
+                    "x": 780
+                  },
+                  {
+                    "y": 868,
+                    "texte": "leche.",
+                    "largeur": 112,
+                    "hauteur": 44,
+                    "x": 816
+                  }
+                ],
+                "texte": "Puede contener frutos de eAsca.ta y leche."
+              },
+              {
+                "mots": [
+                  {
+                    "y": 956,
+                    "texte": "INFORMACION",
+                    "largeur": 372,
+                    "hauteur": 44,
+                    "x": 104
+                  },
+                  {
+                    "y": 964,
+                    "texte": "NUTRICIONAt",
+                    "largeur": 368,
+                    "hauteur": 48,
+                    "x": 504
+                  }
+                ],
+                "texte": "INFORMACION NUTRICIONAt"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1020,
+                    "texte": "Arteil'*is",
+                    "largeur": 144,
+                    "hauteur": 40,
+                    "x": 108
+                  },
+                  {
+                    "y": 1024,
+                    "texte": "medio",
+                    "largeur": 120,
+                    "hauteur": 40,
+                    "x": 264
+                  }
+                ],
+                "texte": "Arteil'*is medio"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1136,
+                    "texte": "Valor",
+                    "largeur": 92,
+                    "hauteur": 40,
+                    "x": 112
+                  },
+                  {
+                    "y": 1148,
+                    "texte": "ergergético",
+                    "largeur": 188,
+                    "hauteur": 44,
+                    "x": 216
+                  }
+                ],
+                "texte": "Valor ergergético"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1408,
+                    "texte": "Hidratos",
+                    "largeur": 144,
+                    "hauteur": 44,
+                    "x": 128
+                  },
+                  {
+                    "y": 1420,
+                    "texte": "de",
+                    "largeur": 44,
+                    "hauteur": 32,
+                    "x": 284
+                  },
+                  {
+                    "y": 1424,
+                    "texte": "carbono",
+                    "largeur": 140,
+                    "hauteur": 36,
+                    "x": 340
+                  }
+                ],
+                "texte": "Hidratos de carbono"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1460,
+                    "texte": "de",
+                    "largeur": 36,
+                    "hauteur": 36,
+                    "x": 156
+                  },
+                  {
+                    "y": 1464,
+                    "texte": "los",
+                    "largeur": 48,
+                    "hauteur": 36,
+                    "x": 204
+                  },
+                  {
+                    "y": 1468,
+                    "texte": "cuales",
+                    "largeur": 104,
+                    "hauteur": 36,
+                    "x": 264
+                  }
+                ],
+                "texte": "de los cuales"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1016,
+                    "texte": "Ipor",
+                    "largeur": 76,
+                    "hauteur": 60,
+                    "x": 540
+                  },
+                  {
+                    "y": 1032,
+                    "texte": "\"Oog",
+                    "largeur": 108,
+                    "hauteur": 52,
+                    "x": 636
+                  }
+                ],
+                "texte": "Ipor \"Oog"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1096,
+                    "texte": "{40",
+                    "largeur": 64,
+                    "hauteur": 40,
+                    "x": 856
+                  },
+                  {
+                    "y": 1096,
+                    "texte": "g)",
+                    "largeur": 36,
+                    "hauteur": 48,
+                    "x": 936
+                  }
+                ],
+                "texte": "{40 g)"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1152,
+                    "texte": "u520kJ",
+                    "largeur": 168,
+                    "hauteur": 44,
+                    "x": 576
+                  },
+                  {
+                    "y": 1160,
+                    "texte": "608kJ",
+                    "largeur": 136,
+                    "hauteur": 40,
+                    "x": 836
+                  }
+                ],
+                "texte": "u520kJ 608kJ"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1212,
+                    "texte": "kcal",
+                    "largeur": 72,
+                    "hauteur": 36,
+                    "x": 668
+                  },
+                  {
+                    "y": 1212,
+                    "texte": "144",
+                    "largeur": 68,
+                    "hauteur": 40,
+                    "x": 812
+                  },
+                  {
+                    "y": 1216,
+                    "texte": "kcal",
+                    "largeur": 72,
+                    "hauteur": 36,
+                    "x": 896
+                  }
+                ],
+                "texte": "kcal 144 kcal"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1432,
+                    "texte": "56",
+                    "largeur": 48,
+                    "hauteur": 36,
+                    "x": 652
+                  },
+                  {
+                    "y": 1448,
+                    "texte": "g",
+                    "largeur": 24,
+                    "hauteur": 36,
+                    "x": 712
+                  }
+                ],
+                "texte": "56 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1440,
+                    "texte": "22",
+                    "largeur": 48,
+                    "hauteur": 40,
+                    "x": 872
+                  },
+                  {
+                    "y": 1452,
+                    "texte": "g",
+                    "largeur": 24,
+                    "hauteur": 36,
+                    "x": 932
+                  }
+                ],
+                "texte": "22 g"
+              }
+            ],
+            "version": "geometrie-v1",
+            "moteur": "Windows.Media.Ocr",
+            "hauteur": 1600,
+            "largeur": 1200,
+            "langue": "fr-FR",
+            "facteur": 4,
+            "texte_avant_normalisation": "Kôlln\nasena\nsuaves\n100 copos de avena integrales\nPuede contener frutos de eAsca.ta y leche.\nINFORMACION NUTRICIONAt\nArteil'*is medio Ipor \"Oog\n{40 g)\nValor ergergético u520kJ 608kJ\nkcal 144 kcal\nHidratos de carbono 56 22\nde los cuales g g",
+            "corrections": [],
+            "reconstruction": "lignes-geometriques-v1"
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 5.376
+    },
+    {
+      "id": "face_avant_sans_tableau",
+      "photo_sha256": "d41251673fb40d04660ecabcefc01695b8a9d929dfac9474a2c4e3ee2cd93a85",
+      "attendu": "illisible",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.",
+      "statut": "illisible",
+      "resultat": {
+        "statut": "illisible",
+        "raison": "tableau_insuffisant",
+        "base": null,
+        "nutriments": {
+          "kcal": null,
+          "lipides": null,
+          "satures": null,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v3",
+        "trace": {
+          "texte_ocr": "ORGANIC\n6C,RAlNS\nluges\nHeRiTA8e flaics",
+          "sortie_modele": "{\"base\":null,\"preuve_base\":null,\"nutriments\":{}}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 2.704520399973262,
+          "tokens": {
+            "prompt_eval_count": 340,
+            "eval_count": 18
+          },
+          "ocr": {
+            "lignes": [
+              {
+                "mots": [
+                  {
+                    "y": 176,
+                    "texte": "ORGANIC",
+                    "largeur": 248,
+                    "hauteur": 52,
+                    "x": 744
+                  }
+                ],
+                "texte": "ORGANIC"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 308,
+                    "texte": "6C,RAlNS",
+                    "largeur": 176,
+                    "hauteur": 52,
+                    "x": 776
+                  }
+                ],
+                "texte": "6C,RAlNS"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 904,
+                    "texte": "luges",
+                    "largeur": 128,
+                    "hauteur": 44,
+                    "x": 404
+                  }
+                ],
+                "texte": "luges"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 1152,
+                    "texte": "HeRiTA8e",
+                    "largeur": 416,
+                    "hauteur": 108,
+                    "x": 140
+                  },
+                  {
+                    "y": 1156,
+                    "texte": "flaics",
+                    "largeur": 292,
+                    "hauteur": 104,
+                    "x": 596
+                  }
+                ],
+                "texte": "HeRiTA8e flaics"
+              }
+            ],
+            "version": "geometrie-v1",
+            "moteur": "Windows.Media.Ocr",
+            "hauteur": 1600,
+            "largeur": 992,
+            "langue": "fr-FR",
+            "facteur": 4,
+            "texte_avant_normalisation": "ORGANIC\n6C,RAlNS\nluges\nHeRiTA8e flaics",
+            "corrections": [],
+            "reconstruction": "lignes-geometriques-v1"
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 3.272
+    }
+  ]
+}
