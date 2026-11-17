@@ -444,3 +444,28 @@ En outre, l'objectif est d'intégrer les données dans un framework SQL (DuckDB 
 **Fait** : prototype d'appel outillé `src/assistant/` (outil `chercher_produit` conforme au contrat, boucle bornée à 4 tours, filtre médical, vérificateur de chiffres, mémoire de conversation bornée à 3 échanges, recherche par mots sur nom et marque, 73 tests) branché sur `qwen3:8b` (Ollama), client OpenRouter ajouté et comparaison exécutée dans `notebooks/tp18_assistant_llm.ipynb` sur le catalogue réel avec `openai/gpt-oss-20b:floor`, ADR 0001 et `docs/assistant_architecture.md`.
 **Problème** : sans prompt système, `qwen3:8b` (`think: false`) n'appelle jamais l'outil (0/5) ; avec, il appelle bien l'outil mais écrit « ne contient pas de fibres » pour une valeur absente et affirme qu'aucune alternative n'existe sans avoir cherché ; la comparaison OpenRouter est limitée à deux questions et ne constitue pas un benchmark général ; 27 codes en double dans les extraits.
 **Suite** : renforcer le prompt sur `null` et la recommandation puis rejouer la démo comparative ; brancher le moteur de substitution du TP 16 comme outil (TP 21).
+
+## Scanner d'étiquettes — bloc 1 (16/11/2026)
+**Fait** : entrée photo `repondre_photo`, OCR Windows, extraction avec le vrai `qwen3:8b`, preuves contrôlées et aiguillage déterministe ; 39 tests verts ; mesures des paliers 3 et 6 sur trois images synthétiques, plus une vraie face avant sans tableau. Voir `docs/scanner.md` et `docs/mesures_scanner.md`.
+**Problème** : sujet/contrat/photos du 12/11 absents ; contrat local reconstitué, aucune conformité officielle annoncée. `.venv` Python 3.12 cassé : tests exécutés avec un Python 3.13 existant et mesures avec un snapshot réel du catalogue ; précision sur vrais tableaux et catalogue complet non validée.
+**Suite** : réparer l'environnement du catalogue, récupérer trois photos réelles annotées, remesurer et comparer au contrat du formateur avant de déclarer le bloc entièrement validé ; conserver l'assistant texte actuel pour la mesure sans RAG du bloc 2.
+
+## Scanner — environnement autonome et catalogue complet (16/11/2026)
+**Fait** : environnement hors ligne `.venv-scanner` préparé et vérifié (Python 3.13.14), backend exact DuckDB sur les Parquets complets (1 247 309 codes distincts), 45 tests verts ; mesures des paliers 3/6 avec le catalogue complet, historique et compte rendu mis à jour.
+**Problème** : le `.venv` Python 3.12 historique n'a pas pu être réparé faute de téléchargement autorisé ; recherche OCR dans 3 500 images locales, diagnostic de trois vraies photos : 2/3, un tableau espagnol lisible à l'œil échoue à l'OCR/extraction. Aucun mauvais rattachement. Pas de vraie photo réunissant tableau et identité pour démontrer `verifie`.
+**Suite** : obtenir des photos nettes avec tableau et identité, améliorer la conservation de l'alignement des libellés/valeurs et remesurer ; contrat officiel toujours à récupérer. Les images synthétiques ne valent pas validation terrain.
+
+## Scanner — recherche de photos publiques (16/11/2026)
+**Fait** : photo réelle française Charal téléchargée depuis Houra, examinée et mesurée avec le vrai modèle et le catalogue complet ; source, empreinte, manifest et résultat conservés.
+**Problème** : l'OCR échoue sur les petits caractères du tableau (illisible au lieu de non_verifie) ; les premiers liens Nutella prétendument nutritionnels montraient en réalité une face avant. Aucun faux succès annoncé.
+**Suite** : améliorer le prétraitement/la disposition OCR et poursuivre la recherche d'un cadrage contenant aussi le nom catalogue complet ; il n'est pas nécessaire de demander une image utilisateur pour commencer ces essais.
+
+## Scanner — géométrie OCR et garde-fous de lecture (16/11/2026)
+**Fait** : conservation des mots/rectangles OCR, agrandissement en mémoire des petites images, reconstruction des lignes, normalisation bornée des en-têtes 1 OOg, libellés FR/ES et codes EAN groupés ; 53 tests verts ; remesures avec le vrai qwen3:8b et le catalogue complet, attentes inchangées : 3/3 synthétiques et 3/4 photos réelles, aucun mauvais rattachement.
+**Problème** : Charal reste illisible, malgré les essais de contraste, grille, recadrage de diagnostic et Tesseract. Sur le fromage amélioré, le modèle propose encore des chiffres ambigus ; le code les rejette et garde null. Aucun cas réel verifie complet disponible.
+**Suite** : évaluer d'autres photos plus détaillées et la reconstruction géométrique sur des tableaux inclinés ; conserver la distinction entre statut juste, champs correctement lus et identité vérifiée. Voir docs/mesures_scanner.md, version 3.
+
+## TP 16/11 — blocs 2 à 4 : mesure sans RAG, corpus, jeu d'évaluation (17/11/2026)
+**Fait** : 10 questions hors catalogue mesurées (5/10 conformes, toutes des refus) ; corpus = 5 012 fiches générées (`src/corpus/fiches.py`, « non renseigné » jamais 0, 3 tests) + documents Nutri-Score ; 30 questions d'évaluation gelées et mesure de référence sans RAG : 23/30 conformes au contrat, 18/30 au comportement attendu.
+**Problème** : questions du bloc 2 réécrites faute du fichier formateur ; filtre médical trop large (bloque les repères PNNS) ; licence mangerbouger.fr = lien seulement, donc pas de PNNS dans le corpus ; réponses attendues `connaissance` encore à revérifier à la main.
+**Suite** : faire confirmer les licences et les réponses attendues, puis RAG (mardi-mercredi) et remesure sur `eval/questions.csv` jeudi.
