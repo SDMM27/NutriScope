@@ -1,0 +1,11 @@
+{
+  "type_images": "reelles_publiques",
+  "provenance": "Photo du dos Charal L'Américain, publiée par Houra.fr : https://media.houra.fr/ART-IMG-XL/25/16/3181239101625-2.jpg ; fiche https://www.houra.fr/charal-l-americain-frites-ketchup-et-sauce-cheddar-220g/1439198/ . Image téléchargée sans modification, réservée au test local, non redistribuée dans Git. Inspection visuelle : tableau français pour 100 g, code imprimé 3 181239 101625, marque Charal ; nom catalogue complet non confirmé dans le cadrage. Attente non_verifie, sans assouplir le contrat pour obtenir verifie.",
+  "cas": [
+    {
+      "id": "charal_dos_public_francais",
+      "photo": "../../data/scanner_public/charal_3181239101625.jpg",
+      "statut_attendu": "non_verifie"
+    }
+  ]
+}

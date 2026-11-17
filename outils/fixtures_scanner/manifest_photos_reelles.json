@@ -1,0 +1,10 @@
+{
+  "type_images": "reelles_locales_et_publiques",
+  "provenance": "Réunion des trois cas du manifest_photos_locales.json et du cas manifest_photo_publique.json, avec attentes inchangées. Les trois premières images proviennent du jeu Open Food Facts local ; Charal provient de https://media.houra.fr/ART-IMG-XL/25/16/3181239101625-2.jpg (Houra, usage local, hors Git). Aucun cas réel vérifié n'est présent dans ce jeu.",
+  "cas": [
+    {"id": "fromage_tableau_sans_identite", "photo": "../../data/images/fromages/5760466815635.jpg", "statut_attendu": "non_verifie"},
+    {"id": "avoine_tableau_multicolonnes", "photo": "../../data/images/cereales/4000540040104.jpg", "statut_attendu": "illisible"},
+    {"id": "face_avant_sans_tableau", "photo": "../../data/images/cereales/0058449770206.jpg", "statut_attendu": "illisible"},
+    {"id": "charal_dos_public_francais", "photo": "../../data/scanner_public/charal_3181239101625.jpg", "statut_attendu": "non_verifie"}
+  ]
+}

@@ -26,3 +26,17 @@
 - `ambigu` sur un nom générique (« Nutella » : 396 résultats) : le modèle choisit la première fiche. Le tri (nom exact, puis complétude) rend ce choix raisonnable, mais pas garanti.
 
 *Données : Open Food Facts, licence ODbL.*
+
+## Entrée photo — bloc 1 du 16/11
+
+`src/assistant/scanner.py::repondre_photo(photo, catalogue, client)` ajoute une entrée photo : OCR Windows → extraction structurée par `qwen3:8b` → contrôle des preuves et des unités → aiguillage déterministe → réponse formulée depuis les données contrôlées. Le code exige un EAN valide, une identité visible et une concordance nutritionnelle avant de joindre une fiche. Aucun Nutri-Score du catalogue n'est exposé pour une étiquette non vérifiée.
+
+Cette entrée utilise le client Ollama existant et ne modifie ni `repondre(...)`, ni le prompt de l'assistant texte, ni son historique. Le modèle texte retenu dans l'ADR suffit : l'OCR transforme la photo en texte en amont. Le contrat local, la démonstration et les limites sont décrits dans [scanner.md](scanner.md), les mesures exécutées dans [mesures_scanner.md](mesures_scanner.md). Le contrat officiel de l'atelier du 12/11 et sa validation sur trois photos réelles restent manquants.
+
+### Catalogue de l'entrée photo — version 2
+
+Les CLI photo et mesure utilisent maintenant `src/scanner/catalogue.py::CatalogueParquet`, qui consulte les deux Parquets complets au code exact avec le CLI DuckDB. Aucun chargement pandas n'est requis pour le scanner. Les doublons sont conservés pour refuser les rattachements ambigus. L'environnement autonome `.venv-scanner` est reproductible via `outils/preparer_env_scanner.ps1` sur ce poste ; il ne remplace pas le `.venv` historique du TP18. Les mesures distinguent explicitement catalogue complet/snapshot et photos réelles/synthétiques.
+
+### Conservation de la géométrie OCR — version 3
+
+Le scanner reçoit les mots et leurs rectangles depuis Windows OCR. `src/scanner/ocr.py` reconstruit les lignes avant extraction LLM ; la trace conserve les positions, le facteur d'agrandissement et les normalisations d'en-têtes. Le validateur exige une preuve dans une seule ligne et contrôle toutes ses valeurs pour refuser une colonne ambiguë, même si le modèle tronque sa preuve. Les nombres ambigus et les unités manquantes restent null. Le modèle texte et sa boucle ne changent pas. La dernière mesure sur quatre photos réelles donne 3 statuts attendus, sans mauvais rattachement ; le cas Charal reste un échec de lecture.

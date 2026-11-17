@@ -15,6 +15,7 @@ dist/
 
 # Virtual environments
 .venv/
+.venv-scanner/
 venv/
 env/
 ENV/
