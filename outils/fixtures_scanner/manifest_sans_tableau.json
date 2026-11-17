@@ -1,0 +1,11 @@
+{
+  "type_images": "reelles_sans_tableau_uniquement",
+  "provenance": "Face avant d'un emballage Heritage Flakes déjà présente dans data/images (jeu Open Food Facts du projet). Absence de tableau vérifiée visuellement le 16/11/2026. L'image reste hors Git.",
+  "cas": [
+    {
+      "id": "photo_reelle_face_avant",
+      "photo": "../../data/images/cereales/0058449770206.jpg",
+      "statut_attendu": "illisible"
+    }
+  ]
+}

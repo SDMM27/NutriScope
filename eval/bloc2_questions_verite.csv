@@ -1,0 +1,11 @@
+id;question;reponse_verifiee;source;notes
+B01;Combien de portions de fruits et légumes faut-il manger par jour ?;Au moins 5 par jour.;doc:pnns_adultes;JEU DE REMPLACEMENT écrit par Claude en attendant le fichier du formateur : réponse à vérifier dans la source
+B02;Combien de verres d'alcool au maximum par semaine recommande-t-on ?;Maximum 2 verres par jour et pas tous les jours (le repère PNNS ne donne pas de total hebdomadaire).;doc:pnns_adultes;idem
+B03;Combien de temps d'activité physique par jour est recommandé pour un adulte ?;Au moins 30 minutes d'activité physique dynamique par jour.;doc:pnns_adultes;idem
+B04;Combien de boissons sucrées par jour au maximum ?;Le PNNS dit de limiter les boissons sucrées, sans donner de chiffre.;doc:pnns_adultes;idem
+B05;À quelle fréquence faut-il manger des féculents complets ?;Au moins un féculent complet par jour.;doc:pnns_adultes;idem
+B06;Quelle est la seule boisson indispensable ?;L'eau.;doc:pnns_adultes;idem
+B07;Depuis quelle année le nouvel algorithme du Nutri-Score s'applique-t-il ?;En France, depuis mars 2025 (arrêté du 14 mars 2025), avec 2 ans pour mettre à jour les emballages ; dès 2024 en Allemagne, Belgique, Suisse et Pays-Bas.;doc:nutriscore_santefr;idem
+B08;Le Nutri-Score tient-il compte des additifs ?;Non, il se calcule à partir de la composition nutritionnelle pour 100 g.;doc:nutriscore_spf;idem
+B09;Pourquoi un produit peut-il obtenir un Nutri-Score D ?;Le score combine des éléments à limiter (énergie, sucres, graisses saturées, sel) et à favoriser (fibres, protéines, fruits et légumes...) ; un D signifie que les éléments à limiter l'emportent.;doc:nutriscore_spf;idem
+B10;Quelles couleurs le Nutri-Score utilise-t-il ?;Une échelle de 5 couleurs, du vert foncé (A) au rouge/orange foncé (E).;doc:nutriscore_spf;idem

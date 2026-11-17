@@ -1,0 +1,115 @@
+{
+  "bilan": {
+    "date_utc": "20261116T133824474908Z",
+    "version": "scanner-v1",
+    "palier_exerce": 3,
+    "modele": "qwen3:8b",
+    "temperature": 0,
+    "ocr": "Windows.Media.Ocr",
+    "python": "3.13.14",
+    "type_images": "synthetiques",
+    "provenance": "Images de controle generees par outils/generer_demo_scanner.ps1. Valeurs Nutella : export local Open Food Facts (ODbL), 16/11/2026. Ne prouve pas la precision sur photos reelles.",
+    "manifest_sha256": "051920a0eb4cbd789295505f5078ee970c7ff20732c00b8f4a198abbf4a3c0c5",
+    "catalogue_sha256": "847bc596481c583c33af3edbf214f3ce36fdb5cf6f6d3dfc8c7c22b5555cfb18",
+    "total": 3,
+    "corrects": 3,
+    "mauvais_rattachements": 0,
+    "erreurs_techniques": 0,
+    "details": "resultats\\scanner\\20261116T133824474908Z_palier3.json"
+  },
+  "cas": [
+    {
+      "id": "verifie",
+      "photo_sha256": "ad9f261c6bbd8dd22d16bcfa883e6def2621c3aa3a3230c9aba77ca79e76a7c9",
+      "attendu": "verifie",
+      "code_attendu": "3017620422003",
+      "erreur": "",
+      "reponse": "",
+      "statut": "verifie",
+      "resultat": {
+        "statut": "verifie",
+        "raison": "code_identite_et_valeurs_concordants",
+        "base": "100 g",
+        "nutriments": {
+          "kcal": 539.0,
+          "lipides": 30.9,
+          "satures": null,
+          "sucres": 56.3,
+          "sel": 0.107,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": {
+          "code": "3017620422003",
+          "nom": "Nutella",
+          "marque": "xx:nutella",
+          "nutriscore": "E",
+          "source": "Open Food Facts (ODbL)"
+        },
+        "source": "etiquette_ocr",
+        "version": "scanner-v1"
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 13.448
+    },
+    {
+      "id": "non_verifie",
+      "photo_sha256": "9fec55fc9b11ebaf4391a612d35f8ece084204e81667cb3e0f7e7c69eda70b41",
+      "attendu": "non_verifie",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "",
+      "statut": "non_verifie",
+      "resultat": {
+        "statut": "non_verifie",
+        "raison": "identite_non_confirmee",
+        "base": "100 g",
+        "nutriments": {
+          "kcal": 400.0,
+          "lipides": 10.0,
+          "satures": null,
+          "sucres": 20.0,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v1"
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 5.134
+    },
+    {
+      "id": "illisible",
+      "photo_sha256": "1f0307afcf715b369f7209c3dcd39df1e8f79a01c3cbf6914af701e9e7bac9ce",
+      "attendu": "illisible",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "",
+      "statut": "illisible",
+      "resultat": {
+        "statut": "illisible",
+        "raison": "tableau_insuffisant",
+        "base": null,
+        "nutriments": {
+          "kcal": null,
+          "lipides": null,
+          "satures": null,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v1"
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 3.138
+    }
+  ]
+}

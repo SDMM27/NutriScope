@@ -107,4 +107,4 @@ WHERE rayon = 'beverages' (12 partitions) :
 
 - **DuckDB sur Parquet est 30 à 60 fois plus rapide que pandas sur CSV** (0,03-0,06 s contre 1,8-2,4 s). On n'atteint pas les trois ordres de grandeur annoncés : pandas ne lit ici que 2 à 6 colonnes (`usecols`). Lire tout le CSV avec pandas coûterait bien plus cher en temps et en mémoire.
 - **Le format compte autant que le moteur** : DuckDB sur le CSV est 5 à 8 fois plus lent que sur le Parquet. Le Parquet lit seulement les colonnes utiles et saute 11 partitions sur 12 quand on filtre par rayon (EXPLAIN ci-dessus).
-- **SQLite garde la mémoire la plus basse** (≈ 38 Mo, il lit depuis le disque) mais il est 4 à 23 fois plus lent que DuckDB sur ces balayages. La base reste faite pour l'accès par code-barres, le Parquet pour l'analyse (voir `docs/architecture.md`).
+- **SQLite garde la mémoire la plus basse** (≈ 38 Mo, il lit depuis le disque) mais il est 4 à 23 fois plus lent que DuckDB sur ces balayages. La base reste faite pour l'accès par code-barres, le Parquet pour l'analyse (voir `docs/data/architecture.md`).

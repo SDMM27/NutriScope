@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="760" viewBox="0 0 1440 760" role="img" aria-labelledby="title desc">
+  <title id="title">Architecture de l’assistant NutriScope</title>
+  <desc id="desc">Flux de question utilisateur à travers le filtre médical, la boucle LLM et l’outil de recherche dans le catalogue, puis vérification de la réponse.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#64748b"/></marker>
+    <marker id="futureArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#94a3b8"/></marker>
+    <style>
+      text{font-family:Segoe UI,Arial,sans-serif;fill:#172033}.title{font-size:25px;font-weight:700}.label{font-size:16px;font-weight:600}.small{font-size:13px;fill:#475569}.edge{stroke:#64748b;stroke-width:2.4;fill:none;marker-end:url(#arrow)}.future{stroke:#94a3b8;stroke-width:2;stroke-dasharray:7 6;fill:none;marker-end:url(#futureArrow)}
+    </style>
+  </defs>
+  <rect width="1440" height="760" fill="#f8fafc" rx="18"/>
+  <text x="44" y="48" class="title">Assistant NutriScope — flux d’une question</text>
+
+  <!-- Main request flow -->
+  <rect x="45" y="120" width="170" height="90" rx="14" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="130" y="158" text-anchor="middle" class="label">Utilisateur</text><text x="130" y="184" text-anchor="middle" class="small">question</text>
+  <rect x="285" y="105" width="210" height="120" rx="14" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="390" y="145" text-anchor="middle" class="label">Filtre médical</text><text x="390" y="171" text-anchor="middle" class="small">garde_fous.py</text><text x="390" y="195" text-anchor="middle" class="small">avant l’appel au LLM</text>
+  <rect x="300" y="290" width="180" height="86" rx="14" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="390" y="326" text-anchor="middle" class="label">Refus poli</text><text x="390" y="350" text-anchor="middle" class="small">renvoi vers un professionnel</text>
+  <rect x="575" y="105" width="230" height="120" rx="14" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="690" y="145" text-anchor="middle" class="label">Boucle d’orchestration</text><text x="690" y="171" text-anchor="middle" class="small">assistant.py · max 4 tours</text><text x="690" y="195" text-anchor="middle" class="small">mémoire : 3 échanges</text>
+  <rect x="910" y="105" width="220" height="120" rx="14" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="1020" y="145" text-anchor="middle" class="label">LLM · qwen3:8b</text><text x="1020" y="171" text-anchor="middle" class="small">Ollama local</text><text x="1020" y="195" text-anchor="middle" class="small">client_ollama.py</text>
+  <rect x="1200" y="105" width="195" height="120" rx="14" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="1297" y="145" text-anchor="middle" class="label">Validation</text><text x="1297" y="171" text-anchor="middle" class="small">registre + arguments</text><text x="1297" y="195" text-anchor="middle" class="small">outils.py</text>
+
+  <path d="M215 165 H285" class="edge"/><text x="250" y="151" text-anchor="middle" class="small">question</text>
+  <path d="M495 145 H575" class="edge"/><text x="535" y="131" text-anchor="middle" class="small">autorisé</text>
+  <path d="M390 225 V290" class="edge"/><text x="403" y="264" class="small">médical</text>
+  <path d="M805 150 H910" class="edge"/><text x="857" y="136" text-anchor="middle" class="small">messages + outils</text>
+  <path d="M1130 165 H1200" class="edge"/><text x="1165" y="151" text-anchor="middle" class="small">tool_call</text>
+
+  <!-- Tool and catalog -->
+  <rect x="1190" y="330" width="210" height="96" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="1295" y="368" text-anchor="middle" class="label">chercher_produit</text><text x="1295" y="395" text-anchor="middle" class="small">recherche contrôlée</text>
+  <rect x="900" y="330" width="220" height="96" rx="14" fill="#ecfccb" stroke="#65a30d" stroke-width="2"/>
+  <text x="1010" y="368" text-anchor="middle" class="label">Catalogue en mémoire</text><text x="1010" y="395" text-anchor="middle" class="small">products ⨝ nutrients</text>
+  <path d="M1297 225 V330" class="edge"/><text x="1310" y="281" class="small">valide</text>
+  <path d="M1190 378 H1120" class="edge"/><text x="1155" y="363" text-anchor="middle" class="small">chercher</text>
+  <path d="M900 378 H805 V210" class="edge"/><text x="850" y="363" text-anchor="middle" class="small">résultats</text>
+  <path d="M1200 205 C1150 270 850 270 805 190" class="edge"/><text x="1004" y="258" text-anchor="middle" class="small">argument invalide → erreur au LLM</text>
+
+  <!-- Final answer -->
+  <rect x="575" y="500" width="230" height="100" rx="14" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+  <text x="690" y="540" text-anchor="middle" class="label">Vérificateur de chiffres</text><text x="690" y="568" text-anchor="middle" class="small">garde_fous.py</text>
+  <rect x="285" y="500" width="210" height="100" rx="14" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="390" y="540" text-anchor="middle" class="label">Réponse utilisateur</text><text x="390" y="568" text-anchor="middle" class="small">réponse finale vérifiée</text>
+  <path d="M690 225 V500" class="edge"/><text x="704" y="455" class="small">réponse finale</text>
+  <path d="M575 550 H495" class="edge"/>
+
+  <!-- Future components -->
+  <text x="45" y="676" class="label">À venir</text>
+  <rect x="160" y="635" width="220" height="72" rx="12" fill="#fff" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="270" y="664" text-anchor="middle" class="label">Moteur substitution</text><text x="270" y="687" text-anchor="middle" class="small">TP 16 → outil TP 21</text>
+  <rect x="420" y="635" width="220" height="72" rx="12" fill="#fff" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="530" y="664" text-anchor="middle" class="label">RAG nutrition</text><text x="530" y="687" text-anchor="middle" class="small">outil à venir</text>
+  <rect x="900" y="635" width="190" height="72" rx="12" fill="#fff" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="995" y="664" text-anchor="middle" class="label">API REST</text><text x="995" y="687" text-anchor="middle" class="small">TP 23</text>
+  <rect x="1160" y="635" width="190" height="72" rx="12" fill="#fff" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="1255" y="664" text-anchor="middle" class="label">Application</text><text x="1255" y="687" text-anchor="middle" class="small">cliente API</text>
+  <path d="M380 635 C430 520 1180 510 1220 426" class="future"/>
+  <path d="M640 635 C700 545 1170 520 1235 426" class="future"/>
+  <path d="M1090 671 H1160" class="future"/>
+</svg>

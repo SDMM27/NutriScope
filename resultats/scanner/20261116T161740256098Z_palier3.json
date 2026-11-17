@@ -1,0 +1,588 @@
+{
+  "bilan": {
+    "date_utc": "20261116T161740256098Z",
+    "version": "scanner-v3",
+    "palier_exerce": 3,
+    "modele": "qwen3:8b",
+    "temperature": 0,
+    "ocr": "Windows.Media.Ocr",
+    "python": "3.13.14",
+    "type_images": "synthetiques",
+    "provenance": "Images de controle generees par outils/generer_demo_scanner.ps1. Valeurs Nutella : export local Open Food Facts (ODbL), 16/11/2026. Ne prouve pas la precision sur photos reelles.",
+    "manifest_sha256": "051920a0eb4cbd789295505f5078ee970c7ff20732c00b8f4a198abbf4a3c0c5",
+    "catalogue_sha256": {
+      "products.parquet": "c8fb0ea7f1d7ae1eb235704a92c8bd063397592d0a28c8e13ca56438d4020e9c",
+      "nutrients.parquet": "0fc04bd3f384682ca7763900cb495e80e72deed5e96e903f73b2ed75673c89f4"
+    },
+    "total": 3,
+    "catalogue": {
+      "type": "parquets_complets_duckdb",
+      "lignes_produits": 1247336,
+      "codes_distincts": 1247309
+    },
+    "code_sha256": {
+      "src/scanner/scanner.py": "d7bac913608d58de39882cb4370f703874847ebab9c5cee9d9bea3172bfd1a38",
+      "src/scanner/catalogue.py": "c8794ab81d47068a22029ce1fd5ebd04f38dfac630dcc97afbeb1a5caa414cf1",
+      "src/scanner/ocr.py": "214ffc7a9a453740f2ff138b95e69a38e7daebab7b0149529dacb3063295b0da",
+      "src/scanner/ocr_windows.ps1": "7c60467af55ffcdc0166559f02cfcca11574b47a8a340658a8089f3e11bf20b3",
+      "src/assistant/scanner.py": "a9e05db49dd23474bdf1056d1de49df6e45c2b7782ed46cb388768661614c131",
+      "src/assistant/client_ollama.py": "da9c85f1472ef9e1198c2cefb9c3398b31a519586a1d82704346f3c47ab63965"
+    },
+    "corrects": 3,
+    "mauvais_rattachements": 0,
+    "erreurs_techniques": 0,
+    "details": "C:\\Users\\Administrateur\\Documents\\NutriScope\\resultats\\scanner\\20261116T161740256098Z_palier3.json"
+  },
+  "cas": [
+    {
+      "id": "verifie",
+      "photo_sha256": "ad9f261c6bbd8dd22d16bcfa883e6def2621c3aa3a3230c9aba77ca79e76a7c9",
+      "attendu": "verifie",
+      "code_attendu": "3017620422003",
+      "erreur": "",
+      "reponse": "",
+      "statut": "verifie",
+      "resultat": {
+        "statut": "verifie",
+        "raison": "code_identite_et_valeurs_concordants",
+        "base": "100 g",
+        "nutriments": {
+          "kcal": 539.0,
+          "lipides": 30.9,
+          "satures": null,
+          "sucres": 56.3,
+          "sel": 0.107,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": {
+          "code": "3017620422003",
+          "nom": "Nutella",
+          "marque": "xx:nutella",
+          "nutriscore": "E",
+          "source": "Open Food Facts (ODbL)"
+        },
+        "source": "etiquette_ocr",
+        "version": "scanner-v3",
+        "trace": {
+          "texte_ocr": "Nutella\n3017620422003\nPour 100 g\nEnergie 539 kcal\nLipides 30,9 g\nSucres 56,3 g\nSel 0,107 g",
+          "sortie_modele": "{\n  \"base\": \"100 g\",\n  \"preuve_base\": \"Pour 100 g\",\n  \"nutriments\": {\n    \"kcal\": {\n      \"valeur\": 539,\n      \"preuve\": \"Energie 539 kcal\"\n    },\n    \"lipides\": {\n      \"valeur\": 30.9,\n      \"preuve\": \"Lipides 30,9 g\"\n    },\n    \"sucres\": {\n      \"valeur\": 56.3,\n      \"preuve\": \"Sucres 56,3 g\"\n    },\n    \"sel\": {\n      \"valeur\": 0.107,\n      \"preuve\": \"Sel 0,107 g\"\n    }\n  }\n}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 5.5626580999814905,
+          "tokens": {
+            "prompt_eval_count": 378,
+            "eval_count": 172
+          },
+          "ocr": {
+            "lignes": [
+              {
+                "mots": [
+                  {
+                    "y": 36,
+                    "texte": "Nutella",
+                    "largeur": 97,
+                    "hauteur": 23,
+                    "x": 37
+                  }
+                ],
+                "texte": "Nutella"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 101,
+                    "texte": "3017620422003",
+                    "largeur": 232,
+                    "hauteur": 23,
+                    "x": 36
+                  }
+                ],
+                "texte": "3017620422003"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 166,
+                    "texte": "Pour",
+                    "largeur": 66,
+                    "hauteur": 23,
+                    "x": 37
+                  },
+                  {
+                    "y": 166,
+                    "texte": "100",
+                    "largeur": 50,
+                    "hauteur": 23,
+                    "x": 115
+                  },
+                  {
+                    "y": 172,
+                    "texte": "g",
+                    "largeur": 15,
+                    "hauteur": 23,
+                    "x": 176
+                  }
+                ],
+                "texte": "Pour 100 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 231,
+                    "texte": "Energie",
+                    "largeur": 108,
+                    "hauteur": 29,
+                    "x": 37
+                  },
+                  {
+                    "y": 231,
+                    "texte": "539",
+                    "largeur": 52,
+                    "hauteur": 23,
+                    "x": 156
+                  },
+                  {
+                    "y": 231,
+                    "texte": "kcal",
+                    "largeur": 53,
+                    "hauteur": 23,
+                    "x": 220
+                  }
+                ],
+                "texte": "Energie 539 kcal"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 296,
+                    "texte": "Lipides",
+                    "largeur": 99,
+                    "hauteur": 29,
+                    "x": 37
+                  },
+                  {
+                    "y": 296,
+                    "texte": "30,9",
+                    "largeur": 61,
+                    "hauteur": 28,
+                    "x": 147
+                  },
+                  {
+                    "y": 302,
+                    "texte": "g",
+                    "largeur": 15,
+                    "hauteur": 23,
+                    "x": 219
+                  }
+                ],
+                "texte": "Lipides 30,9 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 361,
+                    "texte": "Sucres",
+                    "largeur": 98,
+                    "hauteur": 23,
+                    "x": 36
+                  },
+                  {
+                    "y": 361,
+                    "texte": "56,3",
+                    "largeur": 61,
+                    "hauteur": 28,
+                    "x": 145
+                  },
+                  {
+                    "y": 367,
+                    "texte": "g",
+                    "largeur": 15,
+                    "hauteur": 23,
+                    "x": 217
+                  }
+                ],
+                "texte": "Sucres 56,3 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 426,
+                    "texte": "Sel",
+                    "largeur": 43,
+                    "hauteur": 23,
+                    "x": 36
+                  },
+                  {
+                    "y": 426,
+                    "texte": "0,107",
+                    "largeur": 79,
+                    "hauteur": 28,
+                    "x": 91
+                  },
+                  {
+                    "y": 432,
+                    "texte": "g",
+                    "largeur": 15,
+                    "hauteur": 23,
+                    "x": 181
+                  }
+                ],
+                "texte": "Sel 0,107 g"
+              }
+            ],
+            "version": "geometrie-v1",
+            "moteur": "Windows.Media.Ocr",
+            "hauteur": 700,
+            "largeur": 1100,
+            "langue": "fr-FR",
+            "facteur": 1,
+            "texte_avant_normalisation": "Nutella\n3017620422003\nPour 100 g\nEnergie 539 kcal\nLipides 30,9 g\nSucres 56,3 g\nSel 0,107 g",
+            "corrections": [],
+            "reconstruction": "lignes-geometriques-v1"
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 6.189
+    },
+    {
+      "id": "non_verifie",
+      "photo_sha256": "9fec55fc9b11ebaf4391a612d35f8ece084204e81667cb3e0f7e7c69eda70b41",
+      "attendu": "non_verifie",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "",
+      "statut": "non_verifie",
+      "resultat": {
+        "statut": "non_verifie",
+        "raison": "identite_non_confirmee",
+        "base": "100 g",
+        "nutriments": {
+          "kcal": 400.0,
+          "lipides": 10.0,
+          "satures": null,
+          "sucres": 20.0,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v3",
+        "trace": {
+          "texte_ocr": "Biscuits de demonstration\nMarque inconnue\nPour 100 g\nEnergie 400 kcal\nLipides 10 g\nSucres 20 g\nSel g",
+          "sortie_modele": "{\"base\":\"100 g\",\"preuve_base\":\"Pour 100 g\",\"nutriments\":{\"kcal\":{\"valeur\":400,\"preuve\":\"Energie 400 kcal\"},\"lipides\":{\"valeur\":10,\"preuve\":\"Lipides 10 g\"},\"sucres\":{\"valeur\":20,\"preuve\":\"Sucres 20 g\"}}}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 3.9727330999448895,
+          "tokens": {
+            "prompt_eval_count": 363,
+            "eval_count": 86
+          },
+          "ocr": {
+            "lignes": [
+              {
+                "mots": [
+                  {
+                    "y": 36,
+                    "texte": "Biscuits",
+                    "largeur": 107,
+                    "hauteur": 23,
+                    "x": 37
+                  },
+                  {
+                    "y": 36,
+                    "texte": "de",
+                    "largeur": 34,
+                    "hauteur": 23,
+                    "x": 155
+                  },
+                  {
+                    "y": 36,
+                    "texte": "demonstration",
+                    "largeur": 202,
+                    "hauteur": 23,
+                    "x": 200
+                  }
+                ],
+                "texte": "Biscuits de demonstration"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 101,
+                    "texte": "Marque",
+                    "largeur": 107,
+                    "hauteur": 29,
+                    "x": 37
+                  },
+                  {
+                    "y": 101,
+                    "texte": "inconnue",
+                    "largeur": 128,
+                    "hauteur": 23,
+                    "x": 156
+                  }
+                ],
+                "texte": "Marque inconnue"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 166,
+                    "texte": "Pour",
+                    "largeur": 66,
+                    "hauteur": 23,
+                    "x": 37
+                  },
+                  {
+                    "y": 166,
+                    "texte": "100",
+                    "largeur": 50,
+                    "hauteur": 23,
+                    "x": 115
+                  },
+                  {
+                    "y": 172,
+                    "texte": "g",
+                    "largeur": 15,
+                    "hauteur": 23,
+                    "x": 176
+                  }
+                ],
+                "texte": "Pour 100 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 231,
+                    "texte": "Energie",
+                    "largeur": 108,
+                    "hauteur": 29,
+                    "x": 37
+                  },
+                  {
+                    "y": 231,
+                    "texte": "400",
+                    "largeur": 53,
+                    "hauteur": 23,
+                    "x": 155
+                  },
+                  {
+                    "y": 231,
+                    "texte": "kcal",
+                    "largeur": 53,
+                    "hauteur": 23,
+                    "x": 220
+                  }
+                ],
+                "texte": "Energie 400 kcal"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 296,
+                    "texte": "Lipides",
+                    "largeur": 99,
+                    "hauteur": 29,
+                    "x": 37
+                  },
+                  {
+                    "y": 296,
+                    "texte": "10",
+                    "largeur": 32,
+                    "hauteur": 23,
+                    "x": 149
+                  },
+                  {
+                    "y": 302,
+                    "texte": "g",
+                    "largeur": 15,
+                    "hauteur": 23,
+                    "x": 192
+                  }
+                ],
+                "texte": "Lipides 10 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 361,
+                    "texte": "Sucres",
+                    "largeur": 98,
+                    "hauteur": 23,
+                    "x": 36
+                  },
+                  {
+                    "y": 361,
+                    "texte": "20",
+                    "largeur": 34,
+                    "hauteur": 23,
+                    "x": 145
+                  },
+                  {
+                    "y": 367,
+                    "texte": "g",
+                    "largeur": 15,
+                    "hauteur": 23,
+                    "x": 190
+                  }
+                ],
+                "texte": "Sucres 20 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 426,
+                    "texte": "Sel",
+                    "largeur": 43,
+                    "hauteur": 23,
+                    "x": 36
+                  },
+                  {
+                    "y": 432,
+                    "texte": "g",
+                    "largeur": 15,
+                    "hauteur": 23,
+                    "x": 145
+                  }
+                ],
+                "texte": "Sel g"
+              }
+            ],
+            "version": "geometrie-v1",
+            "moteur": "Windows.Media.Ocr",
+            "hauteur": 700,
+            "largeur": 1100,
+            "langue": "fr-FR",
+            "facteur": 1,
+            "texte_avant_normalisation": "Biscuits de demonstration\nMarque inconnue\nPour 100 g\nEnergie 400 kcal\nLipides 10 g\nSucres 20 g\nSel g",
+            "corrections": [],
+            "reconstruction": "lignes-geometriques-v1"
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 4.502
+    },
+    {
+      "id": "illisible",
+      "photo_sha256": "1f0307afcf715b369f7209c3dcd39df1e8f79a01c3cbf6914af701e9e7bac9ce",
+      "attendu": "illisible",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "",
+      "statut": "illisible",
+      "resultat": {
+        "statut": "illisible",
+        "raison": "tableau_insuffisant",
+        "base": null,
+        "nutriments": {
+          "kcal": null,
+          "lipides": null,
+          "satures": null,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v3",
+        "trace": {
+          "texte_ocr": "Photographie de demonstration\nUn emballage sans tableau nutritionnel",
+          "sortie_modele": "{\"base\":null,\"preuve_base\":null,\"nutriments\":{}}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 2.629730999993626,
+          "tokens": {
+            "prompt_eval_count": 333,
+            "eval_count": 18
+          },
+          "ocr": {
+            "lignes": [
+              {
+                "mots": [
+                  {
+                    "y": 36,
+                    "texte": "Photographie",
+                    "largeur": 189,
+                    "hauteur": 29,
+                    "x": 37
+                  },
+                  {
+                    "y": 36,
+                    "texte": "de",
+                    "largeur": 34,
+                    "hauteur": 23,
+                    "x": 237
+                  },
+                  {
+                    "y": 36,
+                    "texte": "demonstration",
+                    "largeur": 202,
+                    "hauteur": 23,
+                    "x": 282
+                  }
+                ],
+                "texte": "Photographie de demonstration"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 101,
+                    "texte": "Un",
+                    "largeur": 37,
+                    "hauteur": 23,
+                    "x": 37
+                  },
+                  {
+                    "y": 101,
+                    "texte": "emballage",
+                    "largeur": 147,
+                    "hauteur": 29,
+                    "x": 86
+                  },
+                  {
+                    "y": 107,
+                    "texte": "sans",
+                    "largeur": 66,
+                    "hauteur": 17,
+                    "x": 244
+                  },
+                  {
+                    "y": 101,
+                    "texte": "tableau",
+                    "largeur": 104,
+                    "hauteur": 23,
+                    "x": 320
+                  },
+                  {
+                    "y": 101,
+                    "texte": "nutritionnel",
+                    "largeur": 154,
+                    "hauteur": 23,
+                    "x": 437
+                  }
+                ],
+                "texte": "Un emballage sans tableau nutritionnel"
+              }
+            ],
+            "version": "geometrie-v1",
+            "moteur": "Windows.Media.Ocr",
+            "hauteur": 700,
+            "largeur": 1100,
+            "langue": "fr-FR",
+            "facteur": 1,
+            "texte_avant_normalisation": "Photographie de demonstration\nUn emballage sans tableau nutritionnel",
+            "corrections": [],
+            "reconstruction": "lignes-geometriques-v1"
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": true,
+      "latence_s": 3.145
+    }
+  ]
+}

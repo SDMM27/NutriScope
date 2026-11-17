@@ -1,0 +1,4 @@
+﻿id;attendu;statut;correct;mauvais_rattachement;latence_s;reponse;erreur
+verifie;verifie;verifie;True;False;6.189;;
+non_verifie;non_verifie;non_verifie;True;False;4.502;;
+illisible;illisible;illisible;True;False;3.145;;

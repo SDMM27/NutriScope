@@ -45,7 +45,7 @@ nettoyé (1 273 539 lignes)
 | Notebooks d'EDA | Parquet `produits` via DuckDB | balayages et agrégats rapides, élagage par rayon | la base (charge inutile), le brut |
 | Entraînement (TP 13-14) | export `features_nutriscore_<date>.parquet` | jeu figé, daté, reproductible | le Parquet vivant, la base |
 | Contrôles qualité | Parquet `produits` (`sql/controles.sql`) | mêmes chiffres que la base, sans serveur | le brut |
-| Assistant (RAG, plus tard) | PostgreSQL (fiches) | réponses sur un produit précis | Parquet |
+| Assistant (TP 18) | extracts `data/extracts/products.parquet` ⨝ `nutrients.parquet`, chargés en mémoire (`src/assistant/catalogue.py`) | prototype de démo sur un poste, sans serveur à lancer ; passe sur PostgreSQL au TP 23 (API multi-utilisateurs, accès par code indexé) | Parquet `produits`, exports |
 
 ## Règles
 

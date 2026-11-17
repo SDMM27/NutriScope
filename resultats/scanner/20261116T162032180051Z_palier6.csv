@@ -1,0 +1,5 @@
+﻿id;attendu;statut;correct;mauvais_rattachement;latence_s;reponse;erreur
+fromage_tableau_sans_identite;non_verifie;non_verifie;True;False;6.822;"Étiquette non vérifiée : je ne peux pas confirmer une fiche du catalogue ni son Nutri-Score. Lecture OCR pour 100 g (à contrôler sur l'emballage) : kcal : 228 kcal; lipides : 18 g; satures : 12 g; sucres : non renseigné; sel : non renseigné; fibres : non renseigné; proteines : non renseigné.";
+avoine_tableau_multicolonnes;illisible;illisible;True;False;5.212;Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.;
+face_avant_sans_tableau;illisible;illisible;True;False;3.191;Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.;
+charal_dos_public_francais;non_verifie;illisible;False;False;3.219;Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.;

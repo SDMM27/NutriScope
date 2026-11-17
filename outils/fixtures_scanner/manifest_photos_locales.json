@@ -1,0 +1,21 @@
+{
+  "type_images": "reelles_locales_diagnostic",
+  "provenance": "Images Open Food Facts déjà présentes dans data/images. Tableaux inspectés visuellement le 16/11/2026 ; aucune image modifiée. Ce jeu diagnostique ne remplace pas les trois photos de l'atelier manquant.",
+  "cas": [
+    {
+      "id": "fromage_tableau_sans_identite",
+      "photo": "../../data/images/fromages/5760466815635.jpg",
+      "statut_attendu": "non_verifie"
+    },
+    {
+      "id": "avoine_tableau_multicolonnes",
+      "photo": "../../data/images/cereales/4000540040104.jpg",
+      "statut_attendu": "illisible"
+    },
+    {
+      "id": "face_avant_sans_tableau",
+      "photo": "../../data/images/cereales/0058449770206.jpg",
+      "statut_attendu": "illisible"
+    }
+  ]
+}

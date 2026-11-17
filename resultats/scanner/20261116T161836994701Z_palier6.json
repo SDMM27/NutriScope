@@ -1,0 +1,282 @@
+{
+  "bilan": {
+    "date_utc": "20261116T161836994701Z",
+    "version": "scanner-v3",
+    "palier_exerce": 6,
+    "modele": "qwen3:8b",
+    "temperature": 0,
+    "ocr": "Windows.Media.Ocr",
+    "python": "3.13.14",
+    "type_images": "reelles_publiques",
+    "provenance": "Photo du dos Charal L'Américain, publiée par Houra.fr : https://media.houra.fr/ART-IMG-XL/25/16/3181239101625-2.jpg ; fiche https://www.houra.fr/charal-l-americain-frites-ketchup-et-sauce-cheddar-220g/1439198/ . Image téléchargée sans modification, réservée au test local, non redistribuée dans Git. Inspection visuelle : tableau français pour 100 g, code imprimé 3 181239 101625, marque Charal ; nom catalogue complet non confirmé dans le cadrage. Attente non_verifie, sans assouplir le contrat pour obtenir verifie.",
+    "manifest_sha256": "f807b3018f1e7aa8266c0ee6eaab136618a0fc660d72d049db500fce3f579457",
+    "catalogue_sha256": {
+      "products.parquet": "c8fb0ea7f1d7ae1eb235704a92c8bd063397592d0a28c8e13ca56438d4020e9c",
+      "nutrients.parquet": "0fc04bd3f384682ca7763900cb495e80e72deed5e96e903f73b2ed75673c89f4"
+    },
+    "total": 1,
+    "catalogue": {
+      "type": "parquets_complets_duckdb",
+      "lignes_produits": 1247336,
+      "codes_distincts": 1247309
+    },
+    "code_sha256": {
+      "src/scanner/scanner.py": "4b42196024cbe03c1d21f7ebddce11b2eb31a5566239c0f527db8c540db0004e",
+      "src/scanner/catalogue.py": "c8794ab81d47068a22029ce1fd5ebd04f38dfac630dcc97afbeb1a5caa414cf1",
+      "src/scanner/ocr.py": "214ffc7a9a453740f2ff138b95e69a38e7daebab7b0149529dacb3063295b0da",
+      "src/scanner/ocr_windows.ps1": "7c60467af55ffcdc0166559f02cfcca11574b47a8a340658a8089f3e11bf20b3",
+      "src/assistant/scanner.py": "a9e05db49dd23474bdf1056d1de49df6e45c2b7782ed46cb388768661614c131",
+      "src/assistant/client_ollama.py": "da9c85f1472ef9e1198c2cefb9c3398b31a519586a1d82704346f3c47ab63965"
+    },
+    "corrects": 0,
+    "mauvais_rattachements": 0,
+    "erreurs_techniques": 0,
+    "details": "C:\\Users\\Administrateur\\Documents\\NutriScope\\resultats\\scanner\\20261116T161836994701Z_palier6.json"
+  },
+  "cas": [
+    {
+      "id": "charal_dos_public_francais",
+      "photo_sha256": "e54d0f7837b3bc69a2df85512327317ca67c0a9503c013bee5d922c91f87da0d",
+      "attendu": "non_verifie",
+      "code_attendu": null,
+      "erreur": "",
+      "reponse": "Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.",
+      "statut": "illisible",
+      "resultat": {
+        "statut": "illisible",
+        "raison": "tableau_insuffisant",
+        "base": null,
+        "nutriments": {
+          "kcal": null,
+          "lipides": null,
+          "satures": null,
+          "sucres": null,
+          "sel": null,
+          "fibres": null,
+          "proteines": null
+        },
+        "produit": null,
+        "source": "etiquette_ocr",
+        "version": "scanner-v3",
+        "trace": {
+          "texte_ocr": "\"ite\n220 g Restoqs en CO tact\nprofitez\n\"parez les éléments avant tri\"\nSur\nDIARAI SAS -tsmni\n181239\n•apfiuoo• op",
+          "sortie_modele": "{\"base\":null,\"preuve_base\":null,\"nutriments\":{}}",
+          "modele": "qwen3:8b",
+          "latence_modele_s": 2.855450800037943,
+          "tokens": {
+            "prompt_eval_count": 369,
+            "eval_count": 18
+          },
+          "ocr": {
+            "lignes": [
+              {
+                "mots": [
+                  {
+                    "y": 451,
+                    "texte": "\"ite",
+                    "largeur": 15,
+                    "hauteur": 6,
+                    "x": 399
+                  }
+                ],
+                "texte": "\"ite"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 645,
+                    "texte": "220",
+                    "largeur": 41,
+                    "hauteur": 18,
+                    "x": 642
+                  },
+                  {
+                    "y": 649,
+                    "texte": "g",
+                    "largeur": 12,
+                    "hauteur": 20,
+                    "x": 687
+                  }
+                ],
+                "texte": "220 g"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 672,
+                    "texte": "\"parez",
+                    "largeur": 30,
+                    "hauteur": 9,
+                    "x": 472
+                  },
+                  {
+                    "y": 673,
+                    "texte": "les",
+                    "largeur": 11,
+                    "hauteur": 7,
+                    "x": 504
+                  },
+                  {
+                    "y": 672,
+                    "texte": "éléments",
+                    "largeur": 34,
+                    "hauteur": 8,
+                    "x": 517
+                  },
+                  {
+                    "y": 673,
+                    "texte": "avant",
+                    "largeur": 21,
+                    "hauteur": 7,
+                    "x": 553
+                  },
+                  {
+                    "y": 672,
+                    "texte": "tri\"",
+                    "largeur": 15,
+                    "hauteur": 7,
+                    "x": 587
+                  }
+                ],
+                "texte": "\"parez les éléments avant tri\""
+              },
+              {
+                "mots": [
+                  {
+                    "y": 737,
+                    "texte": "181239",
+                    "largeur": 49,
+                    "hauteur": 10,
+                    "x": 477
+                  }
+                ],
+                "texte": "181239"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 780,
+                    "texte": "•apfiuoo•",
+                    "largeur": 39,
+                    "hauteur": 8,
+                    "x": 393
+                  },
+                  {
+                    "y": 781,
+                    "texte": "op",
+                    "largeur": 9,
+                    "hauteur": 7,
+                    "x": 435
+                  }
+                ],
+                "texte": "•apfiuoo• op"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 644,
+                    "texte": "Restoqs",
+                    "largeur": 60,
+                    "hauteur": 25,
+                    "x": 736
+                  },
+                  {
+                    "y": 647,
+                    "texte": "en",
+                    "largeur": 18,
+                    "hauteur": 11,
+                    "x": 800
+                  },
+                  {
+                    "y": 647,
+                    "texte": "CO",
+                    "largeur": 18,
+                    "hauteur": 12,
+                    "x": 823
+                  },
+                  {
+                    "y": 645,
+                    "texte": "tact",
+                    "largeur": 32,
+                    "hauteur": 14,
+                    "x": 851
+                  },
+                  {
+                    "y": 644,
+                    "texte": "!",
+                    "largeur": 4,
+                    "hauteur": 14,
+                    "x": 887
+                  }
+                ],
+                "texte": "Restoqs en CO tact !"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 665,
+                    "texte": "profitez",
+                    "largeur": 37,
+                    "hauteur": 10,
+                    "x": 736
+                  }
+                ],
+                "texte": "profitez"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 680,
+                    "texte": "Sur",
+                    "largeur": 14,
+                    "hauteur": 8,
+                    "x": 784
+                  }
+                ],
+                "texte": "Sur"
+              },
+              {
+                "mots": [
+                  {
+                    "y": 703,
+                    "texte": "DIARAI",
+                    "largeur": 25,
+                    "hauteur": 8,
+                    "x": 736
+                  },
+                  {
+                    "y": 703,
+                    "texte": "SAS",
+                    "largeur": 17,
+                    "hauteur": 8,
+                    "x": 764
+                  },
+                  {
+                    "y": 701,
+                    "texte": "-tsmni",
+                    "largeur": 35,
+                    "hauteur": 10,
+                    "x": 784
+                  }
+                ],
+                "texte": "DIARAI SAS -tsmni"
+              }
+            ],
+            "version": "geometrie-v1",
+            "moteur": "Windows.Media.Ocr",
+            "hauteur": 1200,
+            "largeur": 1200,
+            "langue": "fr-FR",
+            "facteur": 1,
+            "texte_avant_normalisation": "\"ite\n220 g Restoqs en CO tact\nprofitez\n\"parez les éléments avant tri\"\nSur\nDIARAI SAS -tsmni\n181239\n•apfiuoo• op",
+            "corrections": [],
+            "reconstruction": "lignes-geometriques-v1"
+          }
+        }
+      },
+      "mauvais_rattachement": false,
+      "correct": false,
+      "latence_s": 3.454
+    }
+  ]
+}

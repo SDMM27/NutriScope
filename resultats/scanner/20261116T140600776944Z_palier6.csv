@@ -1,0 +1,4 @@
+﻿id;attendu;statut;correct;mauvais_rattachement;latence_s;reponse;erreur
+fromage_tableau_sans_identite;non_verifie;illisible;False;False;6.556;Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.;
+avoine_tableau_multicolonnes;illisible;illisible;True;False;4.274;Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.;
+face_avant_sans_tableau;illisible;illisible;True;False;3.216;Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.;

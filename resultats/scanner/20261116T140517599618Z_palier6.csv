@@ -1,0 +1,4 @@
+﻿id;attendu;statut;correct;mauvais_rattachement;latence_s;reponse;erreur
+verifie;verifie;verifie;True;False;9.558;"Produit concordant avec le catalogue : Nutella — xx:nutella (code 3017620422003). Nutri-Score : E. Source : Open Food Facts (ODbL). Lecture OCR pour 100 g (à contrôler sur l'emballage) : kcal : 539 kcal; lipides : 30.9 g; satures : non renseigné; sucres : 56.3 g; sel : 0.107 g; fibres : non renseigné; proteines : non renseigné.";
+non_verifie;non_verifie;non_verifie;True;False;5.26;"Étiquette non vérifiée : je ne peux pas confirmer une fiche du catalogue ni son Nutri-Score. Lecture OCR pour 100 g (à contrôler sur l'emballage) : kcal : 400 kcal; lipides : 10 g; satures : non renseigné; sucres : 20 g; sel : non renseigné; fibres : non renseigné; proteines : non renseigné.";
+illisible;illisible;illisible;True;False;3.153;Je ne peux pas lire suffisamment le tableau nutritionnel. Reprenez une photo nette du tableau, avec la base pour 100 g ou 100 ml.;
