@@ -1,0 +1,16 @@
+pytest
+numpy
+pandas
+scipy
+duckdb
+Pillow
+matplotlib
+SQLAlchemy
+psutil
+pyarrow
+python-dotenv
+openai
+chromadb==1.5.9
+requests
+beautifulsoup4
+pypdf
