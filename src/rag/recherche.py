@@ -92,10 +92,6 @@ def rechercher(question: str, k: int = 5, filtres: dict[str, Any] | None = None,
 
     return resultats
 
-    
-
-
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Cherche les fiches les plus proches d'une question.")

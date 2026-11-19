@@ -123,7 +123,11 @@ def indexer(fiches: list[dict[str, Any]], collection: Any, vectoriser: Vectorise
 
         ids = [fiche["id"] for fiche in lot]
         documents = [fiche["texte"] for fiche in lot]
-        metadatas = [fiche["metadonnees"] for fiche in lot]
+        metadatas = [
+            {cle: valeur for cle, valeur in fiche["metadonnees"].items()
+            if valeur is not None}
+            for fiche in lot
+        ]
 
         # TODO 2c : vectoriser les documents du lot.
         embeddings = vectoriser(documents)
