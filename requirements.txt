@@ -1,0 +1,40 @@
+# NutriScope — dépendances Python du projet
+# Installation (dans un environnement virtuel activé) : pip install -r requirements.txt
+# Versions épinglées : celles du venv nutriscope avec lesquelles le projet a été exécuté et vérifié (25/11/2026).
+
+# Notebooks
+ipython==9.18.1
+
+# Données : Parquet, DuckDB, accès base
+pandas==2.3.3
+numpy==2.5.4
+pyarrow==26.0.1
+duckdb==2.0.0
+sqlalchemy==2.1.9
+
+# Machine learning
+scikit-learn==1.8.0
+scipy==1.17.1
+
+# Visualisation
+matplotlib==3.10.8
+seaborn==0.13.2
+
+# Assistant LLM — TP 18 et suivants (LangChain / LangGraph / Ollama local)
+langchain==1.5.2
+langchain-core==1.8.4
+langchain-ollama==1.1.0
+langgraph==1.2.24
+langgraph-checkpoint==4.3.2
+python-dotenv==1.2.4
+
+# Utilitaires
+requests==2.34.2
+pydantic==2.14.4
+psutil==7.2.2
+
+# Tests
+pytest==9.2.0
+
+# Optionnel : lecture de PDF (import local dans src/corpus/telecharger.py)
+# pypdf
