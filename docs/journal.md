@@ -469,3 +469,11 @@ En outre, l'objectif est d'intégrer les données dans un framework SQL (DuckDB 
 **Fait** : 10 questions hors catalogue mesurées (5/10 conformes, toutes des refus) ; corpus = 5 012 fiches générées (`src/corpus/fiches.py`, « non renseigné » jamais 0, 3 tests) + documents Nutri-Score ; 30 questions d'évaluation gelées et mesure de référence sans RAG : 23/30 conformes au contrat, 18/30 au comportement attendu.
 **Problème** : questions du bloc 2 réécrites faute du fichier formateur ; filtre médical trop large (bloque les repères PNNS) ; licence mangerbouger.fr = lien seulement, donc pas de PNNS dans le corpus ; réponses attendues `connaissance` encore à revérifier à la main.
 **Suite** : faire confirmer les licences et les réponses attendues, puis RAG (mardi-mercredi) et remesure sur `eval/questions.csv` jeudi.
+
+## Orchestration LangChain — TP 21 (25/11/2026)
+
+**Fait** : `notebooks/tp21_langchain.ipynb` — agent LangChain/LangGraph (`create_agent` + `InMemorySaver`, mémoire par `thread_id`), trois outils déclarés (`chercher_produit` réel du TP 18, `substituer` et `repondre_source` en stubs en attendant les TP 16/19-20), scénarios multi-tours rejouables (« bon pour la santé ? → pourquoi ? → propose mieux → et en bio ? ») et boucle interactive, garde-fou déterministe `detecter_hors_perimetre` appelé avant chaque invoke (refus persisté via `update_state` sans appel au LLM), `system_prompt` renforcé (périmètre nutrition, refus hors sujet et médical), journalisation active : `poser_question` écrit une ligne JSONL par échange (horodatage, question, outils + arguments + résultats, réponse, latence, tokens, refus) dans `resultats/journal_tp21/conversation_<thread_id>.jsonl` — un fichier par conversation.
+
+**Problème** : `substituer` / `repondre_source` renvoient `non_disponible` (stubs) ; le hors-sujet général n'est couvert que par le prompt (probabiliste), le filtre déterministe ne gère que le médical — une réponse hallucinée sur une question sport a été observée avant renforcement du prompt.
+
+**Suite** : revue croisée de 10 min avec l'assistant d'une autre équipe, remarques en issues (point 5 du TP 21) ; brancher le moteur de substitution (TP 16) et le RAG (TP 19-20) dans les stubs ; tests adverses et prompt définitif au TP 22.
