@@ -1,5 +1,5 @@
+import os
 from pathlib import Path
-
 
 # ============================================================
 # Configuration des fichiers
@@ -21,11 +21,11 @@ REQUIRED_FILES = [
 # ============================================================
 
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "nutriscope",
-    "user": "postgres",
-    "password": "postgres",
+    "host": os.environ.get("NUTRISCOPE_DB_HOST", "localhost"),
+    "port": int(os.environ.get("NUTRISCOPE_DB_PORT", "5432")),
+    "dbname": os.environ.get("NUTRISCOPE_DB_NAME", "nutriscope"),
+    "user": os.environ.get("NUTRISCOPE_DB_USER", "postgres"),
+    "password": os.environ.get("NUTRISCOPE_DB_PASSWORD", "postgres"),
 }
 
 POSTGRES_DB_ALIAS = "pg"

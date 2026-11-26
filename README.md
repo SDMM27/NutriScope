@@ -119,6 +119,37 @@ Les volumes peuvent évoluer au fil des traitements et des règles de nettoyage.
 
 # Pipeline de données
 
+## Lancer le pipeline TP13
+
+Installe Git, Python 3.12 et Docker, puis clone le jalon TP13 et crée l'environnement Python. Exemple PowerShell :
+
+```powershell
+git clone --branch v0.3 https://github.com/clement-welsch/NutriScope.git
+Set-Location NutriScope
+py -3.12 -m venv .venv
+$python = ".\.venv\Scripts\python.exe"
+& $python -m pip install -r requirements.txt
+& $python -c "import duckdb; duckdb.connect().execute('INSTALL postgres')"
+```
+
+Télécharge [le Parquet officiel Open Food Facts](https://huggingface.co/datasets/openfoodfacts/product-database/blob/main/food.parquet) et place-le dans `data/food.parquet`. Pour une première exécution, prépare le petit Parquet décrit dans [le guide du pipeline TP13](docs/data/pipeline.md). Pour exécuter les cinq étapes, il faut un Parquet contenant les champs structurés Open Food Facts. Le CSV plat historique reste utilisable pour les étapes fichier du TP12.
+
+Crée une instance PostgreSQL dédiée au TP13 sur le port local 55432. Une fois que `pg_isready` indique que PostgreSQL accepte les connexions, initialise le schéma puis lance le pipeline :
+
+```powershell
+docker run --name nutriscope-tp13 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=nutriscope -p 127.0.0.1:55432:5432 -d postgres:17
+docker exec nutriscope-tp13 pg_isready -h 127.0.0.1 -U postgres -d nutriscope
+Get-Content -Raw sql/schema.sql | docker exec -i nutriscope-tp13 psql -v ON_ERROR_STOP=1 -U postgres -d nutriscope
+$env:NUTRISCOPE_DB_PORT = "55432"
+& $python -m nutriscope.pipeline all --source data/tp13_echantillon.parquet --dossier-donnees data/tp13 --date 2026-11-25
+```
+
+`charger_base` remplace le contenu des cinq tables de la base configurée. Le pipeline affiche les effectifs par étape et écrit le journal dans `data/tp13/logs/pipeline.jsonl`. Vérifie que les cinq entrées ont le statut `succes`, que `charger_base` et `parquet` indiquent le même nombre de produits et que l'export ML et son schéma existent sous `data/tp13/exports/`.
+
+Lance les tests avec `& $python -m pytest -q`. Le guide TP13 détaille le rejeu, les commandes isolées et les durées mesurées.
+
+## Pipeline historique TP9
+
 L'architecture du pipeline a évolué au cours du projet.
 
 L'organisation actuellement retenue est :

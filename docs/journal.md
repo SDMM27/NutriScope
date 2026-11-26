@@ -445,3 +445,27 @@ En outre, l'objectif est d'intégrer les données dans un framework SQL (DuckDB 
 **Fait** : copie de l’énoncé original dans `docs/tps/README_tp_18.md` et création du notebook pédagogique `notebooks/other/clement/tp18_1_architecture_assistant_guide.ipynb` : exercices d’architecture, contrat, garde-fous, catalogue, boucle outillée bornée et préparation de l’ADR.
 **Problème** : les exercices restent à compléter ; aucun appel de modèle ni démonstration réelle n’a été exécuté. La substitution TP16 reste différée ; l’export ML ne fournit pas de nom produit et filtre les manquants, donc la source de recherche doit être inspectée avant intégration.
 **Suite** : compléter progressivement les exercices indépendants, rédiger architecture et ADR avec une mesure réelle, puis réunir les intégrations et les preuves manquantes dans une seconde partie pour clore le TP18.
+
+## 25 novembre 2026 — Mise en place des outils de développement
+
+### Ce qui a été fait
+
+La branche `Klement/CI/mettre_a_jour_les_outils` ajoute une configuration commune des dépendances et des outils de développement avec `uv`. Le fichier `pyproject.toml` fixe Python 3.12, déclare les dépendances du projet et les groupes d’outils de développement et de notebooks ; `uv.lock` enregistre les versions résolues et `requirements.txt` fournit un export compatible avec `pip`.
+
+Ruff est configuré pour le code Python du dépôt, avec une longueur de ligne de 120 caractères et la cible Python 3.12. Le code de `src/` et les tests ont été reformatés avec Ruff. Une configuration pre-commit ajoute des vérifications Ruff et pytest avant les commits.
+
+Un état des lieux du Kanban a également été ajouté dans `docs/etat-des-lieux-kanban-2026-11-25.md`, à partir des branches et documents disponibles dans le dépôt.
+
+### Décisions et limites
+
+La dépendance aux outils passe désormais par `uv` pour que l’installation et les commandes de développement utilisent l’environnement déclaré dans le projet. `requirements.txt` reste disponible pour les usages fondés sur `pip`.
+
+Les hooks pytest sont configurés, mais leur exécution lors de cette mise à jour n’est pas consignée comme une validation. Le reformatage Ruff a été appliqué ; aucun résultat de tests ou de vérification Ruff n’est ajouté ici sans exécution vérifiée.
+
+## 25 novembre 2026 — Pipeline de bout en bout TP13
+
+- Les cinq étapes s'exécutent depuis une commande et partagent le nettoyé daté. Le journal JSONL trace les succès, les échecs et les durées.
+- Le pipeline a traité un échantillon de 10 000 lignes et le fichier complet de 4 811 891 lignes. PostgreSQL et le Parquet partitionné comptent chacun 1 273 539 produits sur le jeu complet. L'export ML contient 461 698 lignes.
+- Un clone local neuf a reproduit le flux sur l'échantillon. Sa suite de tests a révélé que le benchmark Windows utilisait `psutil` sans dépendance directe. Le paquet est désormais déclaré pour Windows.
+- Après installation de la dépendance déclarée, les 149 tests passent dans ce clone, dont 12 nouveaux cas propres au pipeline TP13.
+- Les commandes, durées et conventions du split sont consignées dans [le guide TP13](data/pipeline.md). Le retour de l'autre équipe reste à recueillir.

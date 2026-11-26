@@ -1,6 +1,9 @@
 import duckdb
 
-from config.settings import DB_CONFIG, POSTGRES_DB_ALIAS
+try:
+    from src.config.settings import DB_CONFIG, POSTGRES_DB_ALIAS
+except ModuleNotFoundError:
+    from config.settings import DB_CONFIG, POSTGRES_DB_ALIAS
 
 
 def create_duckdb_connection():
