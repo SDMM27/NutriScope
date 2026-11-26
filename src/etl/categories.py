@@ -1,7 +1,12 @@
-from config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+try:
+    from src.config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+    from src.storage.commun import sql_chemin
+except ModuleNotFoundError:
+    from config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+    from storage.commun import sql_chemin
 
 
-def insert_categories(connection):
+def insert_categories(connection, dossier_import=INPUT_DIR):
     """
     Importe les catégories.
 
@@ -14,7 +19,7 @@ def insert_categories(connection):
         SELECT DISTINCT
             REPLACE(tag, chr(0), '')
         FROM read_parquet(
-            '{INPUT_DIR / "categories.parquet"}'
+            '{sql_chemin(dossier_import / "categories.parquet")}'
         )
         WHERE tag IS NOT NULL;
         """

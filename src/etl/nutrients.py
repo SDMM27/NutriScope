@@ -1,7 +1,12 @@
-from config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+try:
+    from src.config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+    from src.storage.commun import sql_chemin
+except ModuleNotFoundError:
+    from config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+    from storage.commun import sql_chemin
 
 
-def insert_nutrients(connection):
+def insert_nutrients(connection, dossier_import=INPUT_DIR):
     """
     Importe les données nutritionnelles.
 
@@ -29,7 +34,7 @@ def insert_nutrients(connection):
                 salt
 
             FROM read_parquet(
-                '{INPUT_DIR / "nutrients.parquet"}'
+                '{sql_chemin(dossier_import / "nutrients.parquet")}'
             )
 
             WHERE code IS NOT NULL

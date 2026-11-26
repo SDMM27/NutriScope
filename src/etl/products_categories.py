@@ -1,7 +1,12 @@
-from config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+try:
+    from src.config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+    from src.storage.commun import sql_chemin
+except ModuleNotFoundError:
+    from config.settings import INPUT_DIR, POSTGRES_DB_ALIAS
+    from storage.commun import sql_chemin
 
 
-def insert_products_categories(connection):
+def insert_products_categories(connection, dossier_import=INPUT_DIR):
     """
     Importe les relations produits / catégories.
 
@@ -18,7 +23,7 @@ def insert_products_categories(connection):
                 REPLACE(tag, chr(0), '') AS tag
 
             FROM read_parquet(
-                '{INPUT_DIR / "products_categories.parquet"}'
+                '{sql_chemin(dossier_import / "products_categories.parquet")}'
             )
 
             WHERE code IS NOT NULL

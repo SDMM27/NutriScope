@@ -17,7 +17,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
 if int(pd.__version__.split(".")[0]) < 3:
     pd.options.mode.copy_on_write = True  # déjà le comportement par défaut en pandas 3
 
@@ -35,16 +34,16 @@ RAPPORT_KJ_KCAL_MAX = 4.5
 # écart toléré entre sel et sodium × 2,5 (arrondis de saisie)
 TOLERANCE_SEL_SODIUM = 0.1
 
-NUTRIMENT_MAX_G = 100.0        # g pour 100 g
-SODIUM_MAX_G = NUTRIMENT_MAX_G / SEL_PAR_SODIUM   # 40 g : sel ≤ 100 g
-TOLERANCE_SOUS_TOTAL_G = 0.5   # sucres ≤ glucides + 0,5 ; saturés ≤ lipides + 0,5
+NUTRIMENT_MAX_G = 100.0  # g pour 100 g
+SODIUM_MAX_G = NUTRIMENT_MAX_G / SEL_PAR_SODIUM  # 40 g : sel ≤ 100 g
+TOLERANCE_SOUS_TOTAL_G = 0.5  # sucres ≤ glucides + 0,5 ; saturés ≤ lipides + 0,5
 
-KCAL_MAX = 900.0               # 100 g de lipides purs
+KCAL_MAX = 900.0  # 100 g de lipides purs
 KCAL_PAR_G_GLUCIDES = 4.0
 KCAL_PAR_G_PROTEINES = 4.0
 KCAL_PAR_G_LIPIDES = 9.0
-ECART_ENERGIE_MAX = 0.5        # écart relatif toléré avec le calcul 4 / 4 / 9
-CALCUL_ENERGIE_MIN = 50.0      # sous 50 kcal calculées, l'écart relatif n'est pas fiable
+ECART_ENERGIE_MAX = 0.5  # écart relatif toléré avec le calcul 4 / 4 / 9
+CALCUL_ENERGIE_MIN = 50.0  # sous 50 kcal calculées, l'écart relatif n'est pas fiable
 
 RAYON_ALCOOL = "Alcoholic beverages"
 
@@ -93,6 +92,7 @@ COLONNES_0_100 = [
 # Contrat commun des comptes rendus
 # ============================================================
 
+
 @dataclass
 class CompteRendu:
     """Résumé des transformations effectuées par une règle."""
@@ -138,7 +138,7 @@ def _compte_rendu(
         regle=regle,
         lignes_avant=len(avant),
         lignes_apres=len(apres),
-        lignes_touchees=sum(touchees),
+        lignes_touchees=int(sum(touchees)),
         details=details,
     )
 
@@ -149,10 +149,7 @@ def _a_change(
 ) -> pd.Series:
     """Indique les lignes dont la valeur a réellement changé."""
 
-    identiques = (
-        (avant == apres).fillna(False)
-        | (avant.isna() & apres.isna())
-    )
+    identiques = (avant == apres).fillna(False) | (avant.isna() & apres.isna())
 
     return ~identiques.astype(bool)
 
@@ -160,6 +157,7 @@ def _a_change(
 # ============================================================
 # Règle 1 - typer_colonnes
 # ============================================================
+
 
 def typer_colonnes(
     df: pd.DataFrame,
@@ -179,10 +177,7 @@ def typer_colonnes(
     codes_normalises = codes.str.contains("\x00", regex=False, na=False)
     codes_sans_nul = codes.str.replace("\x00", "", regex=False)
     codes_sans_espaces = codes_sans_nul.str.strip()
-    espaces_normalises = (
-        codes_sans_nul.notna()
-        & codes_sans_espaces.ne(codes_sans_nul).fillna(False)
-    )
+    espaces_normalises = codes_sans_nul.notna() & codes_sans_espaces.ne(codes_sans_nul).fillna(False)
     codes_vide = codes_sans_espaces.eq("").fillna(False)
     res["code"] = codes_sans_espaces.mask(codes_vide, pd.NA)
 
@@ -201,10 +196,7 @@ def typer_colonnes(
             errors="coerce",
         ).astype("float64")
 
-        valeurs_non_numeriques |= (
-            avant.notna()
-            & apres.isna()
-        )
+        valeurs_non_numeriques |= avant.notna() & apres.isna()
 
         res[colonne] = apres
 
@@ -217,21 +209,13 @@ def typer_colonnes(
             errors="coerce",
         )
 
-        valeurs_non_numeriques |= (
-            res[colonne].notna()
-            & avant.isna()
-        )
+        valeurs_non_numeriques |= res[colonne].notna() & avant.isna()
 
-        valeurs_non_entieres = (
-            avant.notna()
-            & (avant % 1 != 0)
-        )
+        valeurs_non_entieres = avant.notna() & (avant % 1 != 0)
 
         valeurs_non_numeriques |= valeurs_non_entieres
 
-        res[colonne] = avant.where(
-            ~valeurs_non_entieres
-        ).astype("Int64")
+        res[colonne] = avant.where(~valeurs_non_entieres).astype("Int64")
 
     masques = {
         "valeurs_non_numeriques": valeurs_non_numeriques,
@@ -255,6 +239,7 @@ def typer_colonnes(
 # Règle 2 - dedupliquer_codes
 # ============================================================
 
+
 def dedupliquer_codes(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
@@ -269,10 +254,7 @@ def dedupliquer_codes(
     colonne_position = "__position_initiale__"
 
     if colonne_position in df.columns:
-        raise ValueError(
-            f"La colonne temporaire {colonne_position!r} "
-            "existe déjà dans le DataFrame."
-        )
+        raise ValueError(f"La colonne temporaire {colonne_position!r} existe déjà dans le DataFrame.")
 
     res = df.copy()
     res[colonne_position] = range(len(res))
@@ -291,29 +273,20 @@ def dedupliquer_codes(
 
     ascending = [True] + [False] * (len(sort_columns) - 1)
 
-    res = (
-        res.sort_values(
-            sort_columns,
-            ascending=ascending,
-            na_position="last",
-            kind="stable",
-        )
-        .drop_duplicates(
-            subset="code",
-            keep="first",
-        )
+    res = res.sort_values(
+        sort_columns,
+        ascending=ascending,
+        na_position="last",
+        kind="stable",
+    ).drop_duplicates(
+        subset="code",
+        keep="first",
     )
 
     positions_conservees = set(res[colonne_position])
-    lignes_supprimees = [
-        position not in positions_conservees
-        for position in range(len(df))
-    ]
+    lignes_supprimees = [position not in positions_conservees for position in range(len(df))]
 
-    codes_absents_par_position = [
-        bool(valeur)
-        for valeur in df["code"].isna()
-    ]
+    codes_absents_par_position = [bool(valeur) for valeur in df["code"].isna()]
 
     doublons_supprimes = [
         supprimee and not code_absent
@@ -347,6 +320,7 @@ def dedupliquer_codes(
 # Règle 3 - normaliser_unites
 # ============================================================
 
+
 def normaliser_unites(df):
     res = df.copy()
 
@@ -375,10 +349,7 @@ def normaliser_unites(df):
         depuis_kj,
     )
 
-    kcal_recalculees = (
-        hors_rapport
-        & _a_change(kcal, nouvelles_kcal)
-    )
+    kcal_recalculees = hors_rapport & _a_change(kcal, nouvelles_kcal)
 
     res["energy-kcal_100g"] = nouvelles_kcal
 
@@ -397,10 +368,7 @@ def normaliser_unites(df):
     # et non négatives.
     valeurs_valides = sel.notna() & sodium.notna() & sel.ge(0) & sodium.ge(0)
 
-    incoherent = (
-        valeurs_valides
-        & (sel - sodium * SEL_PAR_SODIUM).abs().gt(TOLERANCE_SEL_SODIUM)
-    )
+    incoherent = valeurs_valides & (sel - sodium * SEL_PAR_SODIUM).abs().gt(TOLERANCE_SEL_SODIUM)
 
     nouveau_sodium = sodium.mask(incoherent, sel / SEL_PAR_SODIUM)
 
@@ -427,6 +395,7 @@ def normaliser_unites(df):
 # Règle 4 - borner_nutriments
 # ============================================================
 
+
 def borner_nutriments(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
@@ -442,10 +411,7 @@ def borner_nutriments(
     res = df.copy()
     masques = {}
 
-    bornes = {
-        colonne: NUTRIMENT_MAX_G
-        for colonne in COLONNES_0_100
-    }
+    bornes = {colonne: NUTRIMENT_MAX_G for colonne in COLONNES_0_100}
 
     bornes["sodium_100g"] = SODIUM_MAX_G
 
@@ -456,32 +422,18 @@ def borner_nutriments(
         negatif = res[colonne] < 0
         sup_borne = res[colonne] > borne
 
-        res[colonne] = res[colonne].mask(
-            negatif | sup_borne
-        )
+        res[colonne] = res[colonne].mask(negatif | sup_borne)
 
         masques[f"{colonne}_negatifs"] = negatif
         masques[f"{colonne}_sup_borne"] = sup_borne
 
-    sucres_sup = (
-        res["sugars_100g"]
-        > res["carbohydrates_100g"]
-        + TOLERANCE_SOUS_TOTAL_G
-    )
+    sucres_sup = res["sugars_100g"] > res["carbohydrates_100g"] + TOLERANCE_SOUS_TOTAL_G
 
-    res["sugars_100g"] = res[
-        "sugars_100g"
-    ].mask(sucres_sup)
+    res["sugars_100g"] = res["sugars_100g"].mask(sucres_sup)
 
-    satures_sup = (
-        res["saturated-fat_100g"]
-        > res["fat_100g"]
-        + TOLERANCE_SOUS_TOTAL_G
-    )
+    satures_sup = res["saturated-fat_100g"] > res["fat_100g"] + TOLERANCE_SOUS_TOTAL_G
 
-    res["saturated-fat_100g"] = res[
-        "saturated-fat_100g"
-    ].mask(satures_sup)
+    res["saturated-fat_100g"] = res["saturated-fat_100g"].mask(satures_sup)
 
     masques["sucres_sup_glucides"] = sucres_sup
     masques["satures_sup_lipides"] = satures_sup
@@ -498,18 +450,16 @@ def borner_nutriments(
 # Règle 5 - corriger_energie
 # ============================================================
 
+
 def calcul_energie_449(
     df: pd.DataFrame,
 ) -> pd.Series:
     """Calcule l'énergie théorique selon la formule 4/4/9."""
 
     return (
-        KCAL_PAR_G_GLUCIDES
-        * df["carbohydrates_100g"]
-        + KCAL_PAR_G_PROTEINES
-        * df["proteins_100g"]
-        + KCAL_PAR_G_LIPIDES
-        * df["fat_100g"]
+        KCAL_PAR_G_GLUCIDES * df["carbohydrates_100g"]
+        + KCAL_PAR_G_PROTEINES * df["proteins_100g"]
+        + KCAL_PAR_G_LIPIDES * df["fat_100g"]
     )
 
 
@@ -532,19 +482,14 @@ def corriger_energie(
     kcal = res["energy-kcal_100g"]
     calcul = calcul_energie_449(res)
 
-    calcul_valide = (
-        calcul.notna()
-        & calcul.between(
-            0,
-            KCAL_MAX,
-        )
+    calcul_valide = calcul.notna() & calcul.between(
+        0,
+        KCAL_MAX,
     )
 
     # Le schéma OFF utilisé par NutriScope ne garantit pas ce champ. En son
     # absence, aucune ligne n'est présumée alcoolisée et le contrôle s'applique.
-    groupes_pnns = res.get(
-        "pnns_groups_1", pd.Series(pd.NA, index=res.index, dtype="string")
-    )
+    groupes_pnns = res.get("pnns_groups_1", pd.Series(pd.NA, index=res.index, dtype="string"))
     alcool = groupes_pnns.eq(RAYON_ALCOOL).fillna(False).astype(bool)
 
     macro_positif = (
@@ -554,54 +499,33 @@ def corriger_energie(
                 "proteins_100g",
                 "fat_100g",
             ]
-        ] > 0
+        ]
+        > 0
     ).any(axis=1)
 
-    nulles = (
-        (kcal == 0)
-        & macro_positif
-    )
+    nulles = (kcal == 0) & macro_positif
 
     negatives = kcal < 0
     sup_900 = kcal > KCAL_MAX
 
-    ecart = (
-        (kcal - calcul).abs()
-        / calcul
-    )
+    ecart = (kcal - calcul).abs() / calcul
 
     incoherentes = (
-        ~nulles
-        & ~negatives
-        & ~sup_900
-        & ~alcool
-        & (calcul >= CALCUL_ENERGIE_MIN)
-        & (ecart > ECART_ENERGIE_MAX)
+        ~nulles & ~negatives & ~sup_900 & ~alcool & (calcul >= CALCUL_ENERGIE_MIN) & (ecart > ECART_ENERGIE_MAX)
     )
 
-    a_corriger = (
-        nulles
-        | negatives
-        | sup_900
-        | incoherentes
-    )
+    a_corriger = nulles | negatives | sup_900 | incoherentes
 
-    nouvelles_kcal = (
-        kcal
-        .mask(
-            a_corriger & calcul_valide,
-            calcul,
-        )
-        .mask(
-            a_corriger & ~calcul_valide,
-        )
+    nouvelles_kcal = kcal.mask(
+        a_corriger & calcul_valide,
+        calcul,
+    ).mask(
+        a_corriger & ~calcul_valide,
     )
 
     res["energy-kcal_100g"] = nouvelles_kcal
 
-    res["energy_100g"] = res[
-        "energy_100g"
-    ].mask(
+    res["energy_100g"] = res["energy_100g"].mask(
         a_corriger,
         nouvelles_kcal * KJ_PAR_KCAL,
     )
@@ -614,13 +538,9 @@ def corriger_energie(
         ("sup_900", sup_900),
         ("incoherentes", incoherentes),
     ]:
-        masques[
-            f"{nom}_recalculees"
-        ] = cas & calcul_valide
+        masques[f"{nom}_recalculees"] = cas & calcul_valide
 
-        masques[
-            f"{nom}_invalidees"
-        ] = cas & ~calcul_valide
+        masques[f"{nom}_invalidees"] = cas & ~calcul_valide
 
     return res, _compte_rendu(
         "corriger_energie",
@@ -634,6 +554,7 @@ def corriger_energie(
 # Règle 6 - traiter_categories_vides
 # ============================================================
 
+
 def traiter_categories_vides(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, CompteRendu]:
@@ -641,19 +562,19 @@ def traiter_categories_vides(
     res = df.copy()
     masques = {}
 
-    categories_vides = res["food_groups_tags"].map(
-        lambda valeur: (
-            isinstance(valeur, str) and not valeur.strip()
-        ) or (
-            isinstance(valeur, (list, tuple, np.ndarray))
-            and len(valeur) == 0
+    categories_vides = (
+        res["food_groups_tags"]
+        .map(
+            lambda valeur: (
+                (isinstance(valeur, str) and not valeur.strip())
+                or (isinstance(valeur, (list, tuple, np.ndarray)) and len(valeur) == 0)
+            )
         )
-    ).astype(bool)
+        .astype(bool)
+    )
 
     # Une valeur déjà manquante n'est pas une modification.
-    categories_a_remplacer = (
-        categories_vides & res["food_groups_tags"].notna()
-    )
+    categories_a_remplacer = categories_vides & res["food_groups_tags"].notna()
 
     res.loc[categories_a_remplacer, "food_groups_tags"] = pd.NA
     masques["categories_vides"] = categories_a_remplacer
@@ -669,6 +590,7 @@ def traiter_categories_vides(
 # ============================================================
 # Règle 7 - strategie_manquants
 # ============================================================
+
 
 def strategie_manquants(
     df: pd.DataFrame,
@@ -698,6 +620,7 @@ def strategie_manquants(
 # Ordre imposé : types, textes, doublons, unités, bornes, énergie,
 # catégories, manquants. Chaque règle ajoutée se branche ici.
 
+
 def lire_brut(
     chemin: str | Path,
 ) -> pd.DataFrame:
@@ -715,6 +638,7 @@ def lire_brut(
         low_memory=False,
     )
 
+
 REGLES = [
     typer_colonnes,
     dedupliquer_codes,
@@ -724,6 +648,7 @@ REGLES = [
     traiter_categories_vides,
     strategie_manquants,
 ]
+
 
 def nettoyer(
     brut: pd.DataFrame,
