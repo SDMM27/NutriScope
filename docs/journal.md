@@ -469,3 +469,7 @@ Les hooks pytest sont configurés, mais leur exécution lors de cette mise à jo
 - Un clone local neuf a reproduit le flux sur l'échantillon. Sa suite de tests a révélé que le benchmark Windows utilisait `psutil` sans dépendance directe. Le paquet est désormais déclaré pour Windows.
 - Après installation de la dépendance déclarée, les 149 tests passent dans ce clone, dont 12 nouveaux cas propres au pipeline TP13.
 - Les commandes, durées et conventions du split sont consignées dans [le guide TP13](data/pipeline.md). Le retour de l'autre équipe reste à recueillir.
+
+## 26 novembre 2026 — Classification du Nutri-Score (TP14)
+
+Sur l’échantillon Open Food Facts et le split figé du TP13, la forêt aléatoire pondérée atteint un F1 macro de 0,85860 en validation croisée et de 0,85775 sur le test. L’expérience de fuite confirme que le score numérique doit être exclu des entrées. Les erreurs de test documentent des hypothèses liées à la qualité des fiches, au référentiel et au périmètre des produits.
