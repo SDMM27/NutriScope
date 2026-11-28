@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<title>Audit RNCP 38603 — Sacha Don</title>
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f6f7fb;
+  --bg2: #ffffff;
+  --bg3: #eef0f8;
+  --fg: #14152a;
+  --fg2: #3d4060;
+  --fg3: #7a7d9a;
+  --accent: #4a3fc0;
+  --accent-bg: #eceaf9;
+  --accent-dark: #3630a0;
+  --ok: #2d7d46;
+  --ok-bg: #e8f5ec;
+  --warn: #c17d10;
+  --warn-bg: #fef9e8;
+  --fail: #c0392b;
+  --fail-bg: #fdf0ef;
+  --border: #d8daf0;
+  --shadow: 0 2px 8px rgba(0,0,0,0.07);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0f1e;
+    --bg2: #161828;
+    --bg3: #1e2038;
+    --fg: #e8eaf6;
+    --fg2: #9ea2cc;
+    --fg3: #585c88;
+    --accent: #7b72e8;
+    --accent-bg: #1a1840;
+    --accent-dark: #9d96f0;
+    --ok: #4caf70;
+    --ok-bg: #0d2a18;
+    --warn: #e0a830;
+    --warn-bg: #2a200a;
+    --fail: #e05a4a;
+    --fail-bg: #2a0f0c;
+    --border: #282c50;
+    --shadow: 0 2px 10px rgba(0,0,0,0.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0f1e;
+  --bg2: #161828;
+  --bg3: #1e2038;
+  --fg: #e8eaf6;
+  --fg2: #9ea2cc;
+  --fg3: #585c88;
+  --accent: #7b72e8;
+  --accent-bg: #1a1840;
+  --accent-dark: #9d96f0;
+  --ok: #4caf70;
+  --ok-bg: #0d2a18;
+  --warn: #e0a830;
+  --warn-bg: #2a200a;
+  --fail: #e05a4a;
+  --fail-bg: #2a0f0c;
+  --border: #282c50;
+  --shadow: 0 2px 10px rgba(0,0,0,0.3);
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.65;
+  padding:0 max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;text-wrap:balance}
+a{color:var(--accent)}
+
+.page{max-width:960px;margin:0 auto;padding-block:40px 60px}
+
+.header{padding:40px 36px;background:var(--bg2);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:32px;display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+.header-left{flex:1;min-width:260px}
+.header-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.header h1{font-size:clamp(22px,3.5vw,30px);font-weight:700;line-height:1.2;margin-bottom:8px}
+.header-sub{color:var(--fg2);font-size:14px}
+.header-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.meta-pill{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--fg2)}
+.score-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px}
+.score-tile{background:var(--bg3);border-radius:12px;border:1px solid var(--border);padding:18px 22px;text-align:center;min-width:100px;flex:1}
+.score-tile .num{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;line-height:1}
+.score-tile .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);margin-top:4px}
+.score-tile.ok .num{color:var(--ok)}
+.score-tile.warn .num{color:var(--warn)}
+.score-tile.fail .num{color:var(--fail)}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}
+.badge.warn{background:var(--warn-bg);color:var(--warn)}
+.badge.fail{background:var(--fail-bg);color:var(--fail)}
+.badge::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:32px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.card-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.card h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.card p{font-size:13px;color:var(--fg2);line-height:1.5}
+.card.highlight{border-color:var(--accent);background:var(--accent-bg)}
+.card.highlight h3{color:var(--accent-dark)}
+@media(prefers-color-scheme:dark){.card.highlight h3{color:var(--accent)}}
+:root[data-theme="dark"] .card.highlight h3{color:var(--accent)}
+
+.section-title{font-size:18px;font-weight:700;margin-bottom:16px;color:var(--fg)}
+
+.bloc-section{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow)}
+.bloc-header{padding:16px 20px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bloc-header h2{font-size:16px;font-weight:700;margin:0}
+.bloc-status{display:flex;gap:8px;flex-wrap:wrap}
+.comp-row{display:grid;grid-template-columns:60px 1fr 90px;gap:8px 16px;align-items:start;padding:12px 20px;border-bottom:1px solid var(--border);font-size:13px}
+.comp-row:last-child{border-bottom:none}
+.comp-row:hover{background:var(--bg3)}
+.comp-id{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--fg3);font-size:12px;white-space:nowrap}
+.comp-text{color:var(--fg2);line-height:1.45}
+.comp-text strong{color:var(--fg);font-weight:600}
+.comp-note{font-size:11px;color:var(--fg3);margin-top:3px;line-height:1.4}
+
+.priority-list{list-style:none}
+.priority-item{display:flex;gap:16px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;align-items:flex-start}
+.priority-item .rank{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--accent);min-width:28px;line-height:1}
+.priority-item .content h4{font-size:14px;font-weight:600;margin-bottom:3px}
+.priority-item .content p{font-size:12px;color:var(--fg2)}
+.priority-item .impact{font-size:11px;font-weight:600;padding:2px 8px;border-radius:8px;background:var(--fail-bg);color:var(--fail);white-space:nowrap;margin-top:4px;display:inline-block}
+.priority-item .impact.med{background:var(--warn-bg);color:var(--warn)}
+
+/* vs Clement comparison bar */
+.vs-bar{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:28px}
+.vs-bar h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--accent)}
+.vs-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px}
+.vs-label{min-width:140px;color:var(--fg2)}
+.vs-tracks{flex:1;display:flex;gap:4px;align-items:center}
+.vs-track{background:var(--bg3);border-radius:4px;height:8px;flex:1;overflow:hidden}
+.vs-fill{height:100%;border-radius:4px}
+.vs-fill.s{background:var(--accent)}
+.vs-fill.c{background:var(--ok)}
+.vs-legend{display:flex;gap:16px;font-size:11px;color:var(--fg3);margin-top:10px}
+.vs-legend span{display:flex;align-items:center;gap:5px}
+.vs-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+.footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:12px;color:var(--fg3);text-align:center;line-height:1.6}
+
+@media(max-width:600px){
+  .comp-row{grid-template-columns:52px 1fr;}.comp-row .badge{display:none;}
+}
+</style>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-label">Audit RNCP 38603 · Développeur en IA</div>
+      <h1>Sacha Don &amp; Clément Welsch<br>NutriScope</h1>
+      <div class="header-sub">Application d'analyse nutritionnelle — Open Food Facts · 1,25M produits France</div>
+      <div class="header-meta">
+        <span class="meta-pill">Python 3.12 · scikit-learn · PostgreSQL</span>
+        <span class="meta-pill">Parquet + DuckDB + S3 (prévu)</span>
+        <span class="meta-pill">LLM agent TP18 (GPT / Qwen)</span>
+        <span class="meta-pill">GitHub SDMM27/NutriScope</span>
+        <span class="meta-pill">Revue du 27/11/2026</span>
+      </div>
+    </div>
+    <div class="score-row">
+      <div class="score-tile ok">
+        <div class="num">16</div>
+        <div class="lbl">Couvertes</div>
+      </div>
+      <div class="score-tile warn">
+        <div class="num">5</div>
+        <div class="lbl">En cours</div>
+      </div>
+      <div class="score-tile fail">
+        <div class="num">7</div>
+        <div class="lbl">Absentes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYNTHESE PROJET -->
+  <div style="margin-bottom:28px">
+    <div class="section-title">Synthèse du projet</div>
+    <div class="cards">
+      <div class="card highlight">
+        <div class="card-label">Point fort</div>
+        <h3>Pipeline TP13 industriel et exécuté</h3>
+        <p>nutriscope/pipeline.py : 5 étapes orchestrées (charger, nettoyer, charger_base, parquet, exports), journal JSON, SHA-256 sur les exports. Exécuté sur 1 273 567 lignes le 15/10/2026 : 1 273 539 produits conservés, 25 490 anomalies résolues à zéro. Architecture documentée avec 5 magasins de données et règles explicites.</p>
+      </div>
+      <div class="card highlight">
+        <div class="card-label">Point fort</div>
+        <h3>Assistant LLM avec outil outillé (TP18)</h3>
+        <p>Prototype completé : outil chercher_produit (nom/code, retour statut ok/ambigu/introuvable), boucle outillée anti-boucle infinie, garde-fous (jamais d'eval, refus conseil médical, valeur manquante → null). Essais réels sur vrai modèle documentés. ADR modèle attendue. Clément n'a pas ce livrable.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Infrastructure données</div>
+        <h3>5 magasins de données articulés</h3>
+        <p>Brut OFF → France extrait → Nettoyé → PostgreSQL (application) + Parquet analytique partitionné par rayon (DuckDB) + Export features figé (ML). Contrôles qualité sur Parquet (controle.md 2026-10-20). Export daté + schéma JSON + SHA-256 pour reproductibilité ML.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Données</div>
+        <h3>EDA + statistiques poussées</h3>
+        <p>8 findings EDA (Cramér V 0,34, Spearman sur 6 nutriments, Cohen's d, Mann-Whitney, paradoxe Simpson), hypothèses H1–H4 testées par rayon. Rapport nettoyage réel. 10 figures. Datastorytelling TP11 livré (PDF + PPTX). src/validation/checks.py pour les contrôles avant chargement.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Risques jury</div>
+        <h3>ML et Deep Learning totalement absents</h3>
+        <p>Contrairement à Clément dont une branche TP14 est en cours, ce fork n'a pas commencé TP14. Les données d'entraînement sont prêtes (export features figé, split stratifié), mais aucun modèle n'est entraîné. Blocs 3 (sauf C1.3) et 4 complets ne sont pas démontrables face au jury.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Collaboration</div>
+        <h3>75 PRs fusionnées, dépôt équipe</h3>
+        <p>Dépôt principal SDMM27/NutriScope, intégrant les branches Sacha/* et Klement/* via PRs. 75+ PRs dont PR #1 (TP18 Clément), PR #68 (réorganisation docs), PR #75 (pipeline TP13). Branches nommées par fonctionnalité. Journal de bord depuis juillet 2026.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC 1 -->
+  <div class="bloc-section">
+    <div class="bloc-header">
+      <h2>Bloc 1 — Métier &amp; Contexte</h2>
+      <div class="bloc-status">
+        <span class="badge ok">4 couvertes</span>
+        <span class="badge warn">0 partielle</span>
+        <span class="badge fail">0 absente</span>
+      </div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C1.1</div>
+      <div>
+        <div class="comp-text"><strong>Identification des besoins</strong></div>
+        <div class="comp-note">Parties prenantes avec matrice pouvoir/intérêt, interview réelle Direction, 3 personas (Léa famille pressée, Inès étudiante, Sophie diabétique), benchmark 9 concurrents (Yuka, Foodvisor, OpenFoodFacts, Nutrio, MyFitnessPal…). Mêmes livrables que Clément — dossier partagé.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C2.1</div>
+      <div>
+        <div class="comp-text"><strong>Analyse concurrentielle</strong></div>
+        <div class="comp-note">9 concurrents analysés, SWOT documenté, proposition de valeur freemium (alternative visible + substitution filtrée par contrainte santé).</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C3.1</div>
+      <div>
+        <div class="comp-text"><strong>Spécification fonctionnelle</strong></div>
+        <div class="comp-note">BPMN as-is + to-be à 4 couloirs, 5 frictions identifiées et adressées, 5 fonctionnalités définies (Nutri-Score, substitution, classification images, RAG, app), périmètre 6 rayons avec critères de sélection.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C4.1</div>
+      <div>
+        <div class="comp-text"><strong>Veille technologique &amp; réglementaire</strong></div>
+        <div class="comp-note">Veille concurrentielle documentée, DPO dans les parties prenantes, prévention fuite de cible documentée dans périmetre.md, contraintes RGPD évoquées. Pas de document RGPD formel ni mention AI Act.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+  </div>
+
+  <!-- BLOC 2 -->
+  <div class="bloc-section">
+    <div class="bloc-header">
+      <h2>Bloc 2 — Données</h2>
+      <div class="bloc-status">
+        <span class="badge ok">7 couvertes</span>
+        <span class="badge warn">0 partielle</span>
+        <span class="badge fail">0 absente</span>
+      </div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C1.2</div>
+      <div>
+        <div class="comp-text"><strong>Identification des sources</strong></div>
+        <div class="comp-note">Open Food Facts (1 247 309 produits France, 1 273 567 lignes brutes). Périmètre 6 rayons documenté, critères KEEP/KEEP_LOW/ANALYSIS_ONLY/DROP, profiling du Parquet complet (TP2), seuils par fonctionnalité. Crédit ODbL systématique.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C2.2</div>
+      <div>
+        <div class="comp-text"><strong>Collecte &amp; extraction</strong></div>
+        <div class="comp-note">src/etl/ modulaire + nutriscope/pipeline.py TP13 (5 étapes orchestrées, CLI --source/--dossier-donnees/--date, journal JSONL, rejouable). Exécuté le 15/10/2026 et le 19/10/2026. Guide de démarrage PowerShell avec Docker. NUTRISCOPE_SOURCE configurable.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C3.2</div>
+      <div>
+        <div class="comp-text"><strong>Nettoyage &amp; transformation</strong></div>
+        <div class="comp-note">src/cleaning.py (7 règles) + rapport_nettoyage.md RÉEL (généré le 2026-10-19) : 1 273 539 produits conservés, 25 490 anomalies résolues à zéro (hors bornes, énergie incohérente, sucres > glucides, saturés > lipides, sel ≠ sodium×2,5). Tests pytest complets.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C4.2</div>
+      <div>
+        <div class="comp-text"><strong>Stockage des données</strong></div>
+        <div class="comp-note">5 magasins documentés (brut, extrait France, nettoyé CSV, PostgreSQL, Parquet analytique ZSTD). Export features figé daté + schéma JSON + SHA-256. Architecture.md avec règles explicites (source de vérité unique, reconstruction idempotente, export immuable). Phases 6-7 avec S3 et base managée.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C5.2</div>
+      <div>
+        <div class="comp-text"><strong>Analyse exploratoire (EDA)</strong></div>
+        <div class="comp-note">8 findings EDA (snacks 38g sucres, Cramér V 0,34, 20,5% hors rayon, 5,5% incohérences, Spearman 6 nutriments, paradoxe Simpson, extrêmes validés à la main). Hypothèses H1–H4 testées par rayon. 10 figures dans notebooks/figures/.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C6.2</div>
+      <div>
+        <div class="comp-text"><strong>Analyse statistique</strong></div>
+        <div class="comp-note">Spearman, V de Cramér, Mann-Whitney, Cohen's d (d médian −0,31 pour bio, 0,20–0,77 pour NOVA 4), paradoxe Simpson. Mise en garde sur comparaisons multiples. Corrélations intra-rayon vs globales distinguées. Registre hypothèses avec décisions formelles.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C7.2</div>
+      <div>
+        <div class="comp-text"><strong>Visualisation &amp; datastorytelling</strong></div>
+        <div class="comp-note">src/viz.py + 10 figures (histogrammes nutriments, boîtes sucres par rayon, grades par rayon, complétude par marque/rayon, énergie déclarée/calculée, corrélations Spearman, Cohen's d bio/NOVA). Datastorytelling TP11 livré (NutriScope_TP11_Etat_du_marche.pptx + .pdf). Contrôles qualité sur Parquet (controle.md).</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+  </div>
+
+  <!-- BLOC 3 -->
+  <div class="bloc-section">
+    <div class="bloc-header">
+      <h2>Bloc 3 — Machine Learning</h2>
+      <div class="bloc-status">
+        <span class="badge ok">1 couverte</span>
+        <span class="badge warn">1 partielle</span>
+        <span class="badge fail">5 absentes</span>
+      </div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C1.3</div>
+      <div>
+        <div class="comp-text"><strong>Formulation du problème ML</strong></div>
+        <div class="comp-note">Prédit Nutri-Score (classification A→E depuis nutriments), substitution (clustering), classification images par rayon. Cibles, features et contrainte anti-fuite documentées dans périmetre.md et synthese_eda.md. Export features figé et daté avec split train/test stratifié (graine 42, commit e02d648).</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C2.3</div>
+      <div>
+        <div class="comp-text"><strong>Préparation des features</strong></div>
+        <div class="comp-note">Export features figé avec split train/test stratifié sur nutriscore_grade (graine 42), schéma JSON versionnné avec SHA-256. Pipeline ML décrit dans synthese_eda.md (features : saturés, énergie, lipides, sucres, sel, glucides, rayon). Pas encore de code scikit-learn Pipeline dans ce fork.</div>
+      </div>
+      <span class="badge warn">En cours</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C3.3</div>
+      <div>
+        <div class="comp-text"><strong>Entraînement des modèles</strong></div>
+        <div class="comp-note">Absent. Les données d'entraînement sont prêtes (export features figé), mais aucun notebook ml_nutriscore.ipynb ni code d'entraînement. TP14 non commencé dans ce fork (Clément a une branche TP14 en cours).</div>
+      </div>
+      <span class="badge fail">Absent</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C4.3</div>
+      <div>
+        <div class="comp-text"><strong>Évaluation des modèles</strong></div>
+        <div class="comp-note">Absent. Protocole d'évaluation décrit dans tp-14-predire-le-nutriscore.md (F1 macro, CV stratifiée, analyse fuite nutriscore_score) mais non implémenté dans ce fork.</div>
+      </div>
+      <span class="badge fail">Absent</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C5.3</div>
+      <div>
+        <div class="comp-text"><strong>Overfitting &amp; régularisation</strong></div>
+        <div class="comp-note">Absent. Contrôles prévus dans le protocole TP14 (écart CV/test &lt; 0,05, class_weight balanced, SMOTE dans imblearn.Pipeline) mais non implémentés.</div>
+      </div>
+      <span class="badge fail">Absent</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C6.3</div>
+      <div>
+        <div class="comp-text"><strong>Validation croisée</strong></div>
+        <div class="comp-note">Absent. StratifiedKFold 5-plis documenté dans les specs TP14 mais aucun code de cross-validation dans ce fork.</div>
+      </div>
+      <span class="badge fail">Absent</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C7.3</div>
+      <div>
+        <div class="comp-text"><strong>Hyperparamétrage</strong></div>
+        <div class="comp-note">Absent. Optuna prévu dans TP15 mais non commencé dans ce fork. Aucun réglage d'hyperparamètres ni ADR modèle livrés.</div>
+      </div>
+      <span class="badge fail">Absent</span>
+    </div>
+  </div>
+
+  <!-- BLOC 4 -->
+  <div class="bloc-section">
+    <div class="bloc-header">
+      <h2>Bloc 4 — Deep Learning</h2>
+      <div class="bloc-status">
+        <span class="badge ok">0 couverte</span>
+        <span class="badge warn">1 partielle</span>
+        <span class="badge fail">2 absentes</span>
+      </div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C1.4</div>
+      <div>
+        <div class="comp-text"><strong>Architecture réseau de neurones</strong></div>
+        <div class="comp-note">Grille d'évaluation TP17 et tp-17-cnn.md dans docs/tps/. CNN pour classification d'images par rayon planifié dans le processus to-be (Keras). Images Open Food Facts mentionnées dans la pipeline. Aucune architecture concrète ni code dans ce fork.</div>
+      </div>
+      <span class="badge warn">En cours</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C2.4</div>
+      <div>
+        <div class="comp-text"><strong>Entraînement Deep Learning</strong></div>
+        <div class="comp-note">Absent dans ce fork. TP17 (CNN/MobileNetV2) et scanner d'étiquettes sont planifiés mais aucun code d'entraînement commité.</div>
+      </div>
+      <span class="badge fail">Absent</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C3.4</div>
+      <div>
+        <div class="comp-text"><strong>Évaluation modèle de vision</strong></div>
+        <div class="comp-note">Absent. Grille d'évaluation TP17 existe (seuil de rejet, test séparé documentés) mais aucun résultat ni métriques livrés dans ce fork.</div>
+      </div>
+      <span class="badge fail">Absent</span>
+    </div>
+  </div>
+
+  <!-- BLOC 5 -->
+  <div class="bloc-section">
+    <div class="bloc-header">
+      <h2>Bloc 5 — Déploiement</h2>
+      <div class="bloc-status">
+        <span class="badge ok">4 couvertes</span>
+        <span class="badge warn">3 partielles</span>
+        <span class="badge fail">0 absente</span>
+      </div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C1.5</div>
+      <div>
+        <div class="comp-text"><strong>Architecture applicative</strong></div>
+        <div class="comp-note">BPMN to-be à 4 couloirs, architecture données complète (architecture.md), 5 magasins articulés, phases 6-7 (S3 + base managée). Assistant TP18 avec architecture documentée (composants, garde-fous, branché/à venir). ADR modèle (docs/adr/0001-modele-et-mode-d-acces.md) attendue mais pas encore livrée.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C2.5</div>
+      <div>
+        <div class="comp-text"><strong>API &amp; déploiement</strong></div>
+        <div class="comp-note">TP18 assistant LLM livré : outil chercher_produit avec boucle outillée anti-infinie, contrôle des arguments du modèle, garde-fous (refus conseil médical, valeur manquante → null), essais réels sur vrai modèle. Pas de FastAPI ni déploiement cloud. TP23–TP27 planifiés mais non commencés.</div>
+      </div>
+      <span class="badge warn">En cours</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C3.5</div>
+      <div>
+        <div class="comp-text"><strong>Conteneurisation</strong></div>
+        <div class="comp-note">Docker utilisé pour PostgreSQL dans le pipeline TP13 (docker run nutriscope-tp13, docker exec pour schema.sql). Pas de Dockerfile/Compose pour l'application. TP25 (Docker Compose complet) et TP26 (CI/CD) planifiés mais non commencés.</div>
+      </div>
+      <span class="badge warn">En cours</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C4.5</div>
+      <div>
+        <div class="comp-text"><strong>Conformité RGPD / éthique IA</strong></div>
+        <div class="comp-note">DPO identifié dans parties prenantes, fuite de cible documentée (nutriscore_score jamais en feature), garde-fous TP18 (refus conseil médical, valeur manquante jamais à 0). Pas de politique RGPD formelle, pas de registre de traitements, pas de mention AI Act.</div>
+      </div>
+      <span class="badge warn">En cours</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C5.5</div>
+      <div>
+        <div class="comp-text"><strong>Documentation technique</strong></div>
+        <div class="comp-note">Architecture des données complète (architecture.md), pipeline.md avec commandes rejouables, rapport_nettoyage.md réel, controle.md daté, schémas JSON versionnés par date. Journal de bord depuis juillet 2026. README avec guide de démarrage complet (PowerShell + Docker). PROJECT_LOG.md pour les décisions structurantes.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C6.5</div>
+      <div>
+        <div class="comp-text"><strong>Gestion de projet</strong></div>
+        <div class="comp-note">Journal de bord depuis juillet 2026 avec répartition Clément/Sacha documentée. PROJECT_LOG.md pour les décisions techniques. KPI/ROI avec analyse de fragilité. 75+ PRs tracées. Commits atomiques nommés (feat:, docs:, fix:).</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+    <div class="comp-row">
+      <div class="comp-id">C7.5</div>
+      <div>
+        <div class="comp-text"><strong>Collaboration &amp; versioning</strong></div>
+        <div class="comp-note">Dépôt principal SDMM27/NutriScope, branches Sacha/* et Klement/* intégrées via PRs numérotées (75+). PR #1 (TP18 Clément), PR #68 (réorganisation docs), PR #72 (mise à jour agent), PR #75 (pipeline TP13). Convention branches par fonctionnalité. Travail en équipe de 2 avec répartition tracée.</div>
+      </div>
+      <span class="badge ok">Couvert</span>
+    </div>
+  </div>
+
+  <!-- PRIORITES -->
+  <div class="section-title" style="margin-top:36px">Priorités avant le jury</div>
+  <ul class="priority-list">
+    <li class="priority-item">
+      <div class="rank">1</div>
+      <div class="content">
+        <h4>Commencer TP14 — entraîner le modèle Nutri-Score</h4>
+        <p>L'export features figé est prêt (split stratifié, schéma JSON, SHA-256). Il faut maintenant le notebook : baselines DummyClassifier, LogReg + RandomForest en pipeline scikit-learn, cross-validation stratifiée 5-plis, analyse fuite nutriscore_score. C'est le livrable le plus critique : sans lui, C2.3, C3.3, C4.3, C5.3, C6.3 restent sans preuve.</p>
+        <span class="impact">Critique · 5 compétences Bloc 3</span>
+      </div>
+    </li>
+    <li class="priority-item">
+      <div class="rank">2</div>
+      <div class="content">
+        <h4>Terminer TP15 — boosting, ADR et note de limites</h4>
+        <p>Hyperparamétrage Optuna (C7.3), ADR modèle retenu (C2.5 + C5.5), note de limites actionnable. Produit les arguments pour défendre le choix du modèle devant le jury. Dépend de TP14.</p>
+        <span class="impact">Critique · C7.3 + doc technique</span>
+      </div>
+    </li>
+    <li class="priority-item">
+      <div class="rank">3</div>
+      <div class="content">
+        <h4>Livrer l'ADR modèle TP18 (docs/adr/0001-modele-et-mode-d-acces.md)</h4>
+        <p>L'assistant LLM est implémenté mais l'ADR n'est pas livrée. Elle est attendue dans les livrables TP18 et renforce C2.5, C5.5. Une page, 5 sections, avec au moins une mesure de latence et un critère non-performance.</p>
+        <span class="impact">Critique · C2.5 déjà bien avancé</span>
+      </div>
+    </li>
+    <li class="priority-item">
+      <div class="rank">4</div>
+      <div class="content">
+        <h4>Réintégrer / implémenter TP17 — classifieur images</h4>
+        <p>TP17 planifié dans docs/tps/. Merge la branche d'équipe si elle existe, sinon implémenter CNN/MobileNetV2 sur les images téléchargées. Débloque C1.4, C2.4, C3.4 (Bloc 4 entier).</p>
+        <span class="impact">Critique · 3 compétences Bloc 4</span>
+      </div>
+    </li>
+    <li class="priority-item">
+      <div class="rank">5</div>
+      <div class="content">
+        <h4>Implémenter une API FastAPI minimale (TP23)</h4>
+        <p>Au moins 2 routes fonctionnelles avec schéma Pydantic et documentation OpenAPI. L'assistant TP18 couvre partiellement C2.5 mais une API REST démontre mieux l'exposition des modèles en production.</p>
+        <span class="impact">Important · C2.5</span>
+      </div>
+    </li>
+    <li class="priority-item">
+      <div class="rank">6</div>
+      <div class="content">
+        <h4>Rédiger un document RGPD/éthique IA + ajouter réduction dimensionnalité</h4>
+        <p>Politique RGPD (profils de santé, données personnelles), mention AI Act pour le modèle. Clôt C4.5. En parallèle, ajouter PCA/t-SNE dans eda_reference.ipynb sur l'espace nutritionnel des 6 rayons.</p>
+        <span class="impact med">Important · C4.5 + visualisation</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="footer">
+    Revue réalisée le 27 novembre 2026 · Référentiel RNCP 38603 « Développeur en Intelligence Artificielle » · Niveau 6
+    <br>Source données : Open Food Facts © Open Food Facts contributors — ODbL · Dépôt équipe : github.com/SDMM27/NutriScope
+  </div>
+
+</div>
